@@ -1,0 +1,141 @@
+{
+  "chainvalidation_js": {
+    "account_name_should": "Имя аккаунта должно ",
+    "not_be_empty": "не может быть пустым.",
+    "be_longer": " быть длиннее.",
+    "be_shorter": "быть короче.",
+    "each_account_segment_should": "Имя аккаунта должно ",
+    "start_with_a_letter": "начинаться с буквы.",
+    "have_only_letters_digits_or_dashes": "состоять только из букв, цифр или дефисов.",
+    "have_only_one_dash_in_a_row": "иметь только одно тире в строке.",
+    "end_with_a_letter_or_digit": "заканчиваться буквой или цифрой.",
+    "end_with_a_letter": "заканчиваться буквой.",
+    "use_caution_sending_to_this_account": "Перевод невозможен, уточнить причины этого можно в телеграм-группе @golos_id"
+  },
+  "loginform_jsx": {
+    "you_need_a_private_password_or_key": "Вам нужен приватный (не публичный) ключ ...",
+    "cryptography_test_failed": "Криптографический тест провален",
+    "unable_to_log_you_in": "У нас не получится залогинить вас в этом браузере.",
+    "the_latest_versions_of": "Последние версии ",
+    "are_well_tested_and_known_to_work_with": "хорошо протестированы и работают с %(APP_DOMAIN)s.",
+    "due_to_server_maintenance": "Из-за технического обслуживания сервера мы работаем в режиме чтения. Извините за неудобства.",
+    "login_to_vote": "Авторизуйтесь, чтобы проголосовать",
+    "login_to_post": "Авторизуйтесь, чтобы написать пост",
+    "login_to_comment": "Пожалуйста, авторизуйтесь для выполнения следующих действий",
+    "login_to_message": "Пожалуйста, авторизуйтесь с memo-ключом или паролем",
+    "login_with_active_key_USERNAME": "Пожалуйста, авторизуйтесь Вашим активным ключом\n\nИмя:\n%(USERNAME)s\n\nActive-ключ:\n",
+    "login_to_your_steem_account": "Войти в свой Голос аккаунт",
+    "posting": "Постинг",
+    "active_or_owner": "Активного",
+    "this_password_is_bound_to_your_account_owner_key": "Этот пароль не может быть использован для входа на сайт.",
+    "however_you_can_use_it_to": "Его можно использовать чтобы ",
+    "update_your_password": "обновить ваш пароль",
+    "to_obtain_a_more_secure_set_of_keys": "и для получения безопасного набора ключей.",
+    "this_password_is_bound_to_your_account_active_key": "Этот пароль не может быть использован для входа на сайт.",
+    "you_may_use_this_active_key_on_other_more": "Вы можете использовать его для подтверждения операций с токенами в кошельке или на бирже.",
+    "you_account_has_been_successfully_created": "Ваш аккаунт был успешно создан!",
+    "password_update_succes": "Пароль для %(accountName)s был успешно обновлен",
+    "password_info": "Этот пароль или ключ был введён неправильно. Вероятно, есть ошибка при вводе данных.",
+    "enter_your_username": "Введите имя пользователя",
+    "password_or_wif": "Пароль или соответствующий ключ",
+    "this_operation_requires_your_key_or_master_password": "Эта операция требует ввода вашего %(authType)s ключа или главного пароля",
+    "keep_me_logged_in": "Оставить меня залогиненным",
+    "keep_me_logged_in_memo": "Запомнить",
+    "amazing_community": "удивительное сообщество",
+    "to_comment_and_reward_others": " комментировать и вознаграждать других.",
+    "sign_up_now_to_receive": "Зарегистрируйтесь сейчас, чтобы получить ",
+    "free_money": "ЛЕГКИЕ ДЕНЬГИ!",
+    "join_our": "Присоединяйтесь к нашему"
+  },
+  "messages": {
+    "last_seen": "был(а) ",
+    "search": "Поиск людей",
+    "search_not_found": "Никого не найдено",
+    "type_a_message": "Напишите сообщение",
+    "cannot_load_image_try_again": "Не удалось загрузить картинку. Попробуйте другую или еще раз.",
+    "cannot_select_too_much_messages": "Невозможно одновременно выбрать более 10 сообщений.",
+    "new_message1": " новое сообщение",
+    "new_message234": " новых сообщения",
+    "new_message5": " новых сообщений",
+    "invalid_message": "(Это сообщение не может быть отображено в Golos Messenger)",
+    "sync_error": "Ошибка синхронизации. Для получения новых сообщений обновляйте страницу.",
+    "sync_error_short": "Ошибка синхронизации."
+  },
+  "emoji_i18n": {
+    "categoriesLabel": "Категории",
+    "emojiUnsupportedMessage": "Ваш браузер не поддерживает эмодзи.",
+    "favoritesLabel": "Избранное",
+    "loadingMessage": "Загрузка…",
+    "networkErrorMessage": "Не удалось загрузить эмодзи. Попробуйте обновить страницу.",
+    "regionLabel": "Эмодзи",
+    "searchDescription": "When search results are available, press up or down to select and enter to choose.",
+    "searchLabel": "Search",
+    "searchResultsLabel": "Search results",
+    "skinToneDescription": "When expanded, press up or down to select and enter to choose.",
+    "skinToneLabel": "Выберите тон кожи (сейчас {skinTone})",
+    "skinTonesLabel": "Тон кожи",
+    "skinTones": [
+      "Обычный",
+      "Очень светлый",
+      "Светлый",
+      "Средний",
+      "Темный",
+      "Очень темный"
+    ],
+    "categories": {
+      "custom": "Custom",
+      "smileys-emotion": "Эмоции",
+      "people-body": "Жесты и люди",
+      "animals-nature": "Животные и растения",
+      "food-drink": "Еда и напитки",
+      "travel-places": "Путешествия и погода",
+      "activities": "Занятия",
+      "objects": "Одежда и предметы",
+      "symbols": "Символы и знаки",
+      "flags": "Флаги"
+    }
+  },
+  "user_saga_js": {
+    "image_upload": {
+      "uploading": "Загрузка",
+      "error": {
+        "account_is_not_found": "Пользователь не найден",
+        "unsupported_posting_key": "Ошибка постинг ключа",
+        "upload_failed": "Ошибка загрузки изображения",
+        "upload_only_images": "Вы можете загружать только изображения",
+        "signature_did_not_verify": "Ошибка цифровой подписи",
+        "err_uploading": "Ошибка загрузки",
+        "login_first": "Пожалуйста, выполните вход в систему ...",
+        "login_with_posting_key": "Недоступен постинг ключ",
+        "server_unavailable": "Ошибка доступа к серверу",
+        "image_size_is_too_large": "Загрузите фото размером до 1 МБ"
+      }
+    }
+  },
+  "post_editor": {
+    "add_image": "Добавить изображение"
+  },
+  "editor_toolbar": {
+    "add_image_from_computer": "Добавить изображение с устройства",
+    "add_image_via_link": "Добавить изображение ссылкой"
+  },
+  "g": {
+    "and": "и",
+    "blog": "Блог",
+    "cancel": "Отмена",
+    "delete": "Удалить",
+    "dismiss": "Скрыть",
+    "edit": "Редактировать",
+    "feed": "Лента",
+    "incorrect_password": "Неправильный пароль",
+    "login": "Войти",
+    "logout": "Выйти",
+    "night_mode": "Ночной режим",
+    "replies": "Ответы",
+    "reply": "Ответить",
+    "rewards": "Награды",
+    "sign_up": "Регистрация",
+    "username_does_not_exist": "Такого имени не существует",
+    "wallet": "Кошелек"
+  }
+}
