@@ -1,0 +1,41 @@
+{
+  "name": "ui-messenger",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/golos-blockchain/ui-messenger",
+  "author": "1aerostorm <aerostorm1@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "connected-react-router": "^6.9.2",
+    "golos-lib-js": "^0.9.24",
+    "history": "4.10.1",
+    "immutable": "^4.0.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-redux": "^7.2.6",
+    "react-router-dom": "^5.3.0",
+    "redux": "^4.1.2",
+    "redux-logger": "^3.0.6",
+    "redux-modules": "0.0.5",
+    "redux-saga": "^1.1.3"
+  },
+  "devDependencies": {
+    "react-app-rewired": "^2.1.11",
+    "react-scripts": "^5.0.0"
+  },
+  "scripts": {
+    "start": "react-app-rewired start"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
