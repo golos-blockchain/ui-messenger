@@ -10,6 +10,7 @@
     "@koa/cors": "^3.1.0",
     "buffer": "^6.0.3",
     "classnames": "^2.3.1",
+    "co-body": "^6.1.0",
     "config": "^3.3.7",
     "connected-react-router": "^6.9.2",
     "counterpart": "^0.18.6",
