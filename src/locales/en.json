@@ -1,0 +1,141 @@
+{
+  "chainvalidation_js": {
+    "account_name_should": "Account name should ",
+    "not_be_empty": "not be empty.",
+    "be_longer": "be longer.",
+    "be_shorter": "be shorter.",
+    "each_account_segment_should": "Each account segment should ",
+    "start_with_a_letter": "start with a letter.",
+    "have_only_letters_digits_or_dashes": "have only letters, digits, or dashes.",
+    "have_only_one_dash_in_a_row": "have only one dash in a row.",
+    "end_with_a_letter_or_digit": "end with a letter or digit.",
+    "use_caution_sending_to_this_account": "Use caution sending to this account."
+  },
+  "loginform_jsx": {
+    "you_need_a_private_password_or_key": "You need a private password or key (not a public key)",
+    "cryptography_test_failed": "Cryptography test failed",
+    "unable_to_log_you_in": "We will be unable to log you in with this browser.",
+    "the_latest_versions_of": "The latest versions of ",
+    "are_well_tested_and_known_to_work_with": "are well tested and known to work with %(APP_DOMAIN)s.",
+    "due_to_server_maintenance": "Due to server maintenance we are running in read only mode. We are sorry for the inconvenience.",
+    "login_to_vote": "Login to Vote",
+    "login_to_post": "Login to Post",
+    "login_to_comment": "Login to Comment",
+    "login_to_message": "Login with Memo Key or Password",
+    "login_to_your_steem_account": "Login to your Steem Account",
+    "login_with_active_key_USERNAME": "Login with your Active key, please\n\nUsername:\n%(USERNAME)s\n\nActive-key:\n",
+    "posting": "Posting",
+    "active_or_owner": "Active or Owner",
+    "this_password_is_bound_to_your_account_owner_key": "This password is bound to your account's owner key and can not be used to login to this site.",
+    "however_you_can_use_it_to": "However, you can use it to ",
+    "update_your_password": "update your password",
+    "to_obtain_a_more_secure_set_of_keys": "to obtain a more secure set of keys.",
+    "this_password_is_bound_to_your_account_active_key": "This password is bound to your account's active key and can not be used to login to this page.",
+    "you_may_use_this_active_key_on_other_more": "You may use this active key on other more secure pages like the Wallet or Market pages.",
+    "you_account_has_been_successfully_created": "You account has been successfully created!",
+    "password_update_succes": "The password for %(accountName)s was successfully updated",
+    "password_info": "This password or private key was entered incorrectly. There is probably a handwriting or data-entry error.",
+    "enter_your_username": "Enter your username",
+    "password_or_wif": "Password or WIF",
+    "this_operation_requires_your_key_or_master_password": "This operation requires your %(authType)s key or Master password.",
+    "keep_me_logged_in": "Keep me logged in",
+    "keep_me_logged_in_memo": "Remember",
+    "amazing_community": "amazing community",
+    "to_comment_and_reward_others": " to comment and reward others.",
+    "sign_up_now_to_receive": "Sign up now to receive ",
+    "free_money": "FREE MONEY!",
+    "join_our": "Join our"
+  },
+  "messages": {
+    "last_seen": "last seen ",
+    "search": "Search people",
+    "search_not_found": "Nobody found",
+    "type_a_message": "Type a message",
+    "cannot_load_image_try_again": "Cannot upload image. Try again or another one.",
+    "cannot_select_too_much_messages": "Cannot select more than 10 messages at once.",
+    "new_message1": " notification",
+    "new_message234": " notifications",
+    "new_message5": " notifications",
+    "invalid_message": "(This message could not be displayed in Golos Messenger)",
+    "sync_error": "Sync error. To receive new messages please refresh the page.",
+    "sync_error_short": "Sync error."
+  },
+  "emoji_i18n": {
+    "categoriesLabel": "Категории",
+    "emojiUnsupportedMessage": "Ваш браузер не поддерживает эмодзи.",
+    "favoritesLabel": "Избранное",
+    "loadingMessage": "Загрузка…",
+    "networkErrorMessage": "Не удалось загрузить эмодзи. Попробуйте обновить страницу.",
+    "regionLabel": "Эмодзи",
+    "searchDescription": "When search results are available, press up or down to select and enter to choose.",
+    "searchLabel": "Search",
+    "searchResultsLabel": "Search results",
+    "skinToneDescription": "When expanded, press up or down to select and enter to choose.",
+    "skinToneLabel": "Выберите тон кожи (сейчас {skinTone})",
+    "skinTonesLabel": "Тон кожи",
+    "skinTones": [
+      "Обычный",
+      "Очень светлый",
+      "Светлый",
+      "Средний",
+      "Темный",
+      "Очень темный"
+    ],
+    "categories": {
+      "custom": "Custom",
+      "smileys-emotion": "Эмоции",
+      "people-body": "Жесты и люди",
+      "animals-nature": "Животные и растения",
+      "food-drink": "Еда и напитки",
+      "travel-places": "Путешествия и погода",
+      "activities": "Занятия",
+      "objects": "Одежда и предметы",
+      "symbols": "Символы и знаки",
+      "flags": "Флаги"
+    }
+  },
+  "user_saga_js": {
+    "image_upload": {
+      "uploading": "Uploading",
+      "error": {
+        "account_is_not_found": "Account is not found",
+        "unsupported_posting_key": "Unsupported posting key configuration",
+        "upload_failed": "Upload failed",
+        "upload_only_images": "Upload only images",
+        "signature_did_not_verify": "Signature did not verify",
+        "err_uploading": "Error uploading",
+        "login_first": "Please logged in first ...",
+        "login_with_posting_key": "Login with your posting key",
+        "server_unavailable": "The server is unavailable",
+        "image_size_is_too_large": "Upload images up to 1 MB in size"
+      }
+    }
+  },
+  "post_editor": {
+    "add_image": "Add image"
+  },
+  "editor_toolbar": {
+    "add_image_from_computer": "Add image from computer",
+    "add_image_via_link": "Add image via link"
+  },
+  "g": {
+    "and": "and",
+    "blog": "Blog",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "dismiss": "Dismiss",
+    "edit": "Edit",
+    "feed": "Feed",
+    "incorrect_password": "Incorrect password",
+    "login": "Login",
+    "logout": "Logout",
+    "night_mode": "Night Mode",
+    "replies": "Replies",
+    "reply": "Reply",
+    "rewards": "Rewards",
+    "sign_up": "Sign Up",
+    "submit": "Submit",
+    "username_does_not_exist": "Username does not exist",
+    "wallet": "Wallet"
+  }
+}
