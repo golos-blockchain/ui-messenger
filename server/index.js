@@ -4,6 +4,7 @@ const helmet = require('koa-helmet')
 const koaRouter = require('koa-router')
 const static = require('koa-static')
 const cors = require('@koa/cors')
+const coBody = require('co-body')
 const config = require('config')
 const git = require('git-rev-sync')
 const path = require('path')
@@ -45,6 +46,12 @@ router.get('/api/get_config', async (ctx) => {
         notify_service: config.get('notify_service'),
         blogs_service: config.get('blogs_service'),
     }
+})
+
+router.post('/api/csp_violation', async (ctx) => {
+    const params = await coBody.json(ctx)
+    console.log('-- /api/csp_violation -->', ctx.request.headers['user-agent'], params)
+    ctx.body = ''
 })
 
 if (env !== 'production') {
