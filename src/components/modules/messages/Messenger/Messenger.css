@@ -76,3 +76,12 @@
     grid-column-start: 2;
     background: white;
 }
+
+.msgs-empty-chat {
+    opacity: 50%;
+    width: 70%;
+    position: absolute;
+    top: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    left: 50%;
+}

@@ -55,6 +55,9 @@ export default class Messages extends React.Component {
                             topLeft={messagesTopLeft}
                             topCenter={messagesTopCenter}
                             topRight={messagesTopRight}
+                            renderEmpty={() => {
+                                return (<img className='msgs-empty-chat' src='/msg_empty.png' />)
+                            }}
                             messages={messages}
                             replyingMessage={replyingMessage}
                             onCancelReply={onCancelReply}
