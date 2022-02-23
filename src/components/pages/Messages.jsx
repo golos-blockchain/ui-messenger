@@ -631,16 +631,14 @@ class Messages extends React.Component {
         }
 
         const username = currentUser.get('username');
-        const feedLink = `/@${username}/feed`;
         const accountLink = `/@${username}`;
-        const repliesLink = `/@${username}/recent-replies`;
+        const mentionsLink = `/@${username}/mentions`;
         const donatesLink = `/@${username}/donates-to`;
         const walletLink = `/@${username}/transfers`;
 
         let user_menu = [
-            {link: feedLink, extLink: true, icon: 'new/home', value: tt('g.feed'), addon: <NotifiCounter fields='feed' />},
             {link: accountLink, extLink: true, icon: 'new/blogging', value: tt('g.blog')},
-            {link: repliesLink, extLink: true, icon: 'new/answer', value: tt('g.replies'), addon: <NotifiCounter fields='comment_reply' />},
+            {link: mentionsLink, extLink: true, icon: 'new/mention', value: tt('g.mentions'), addon: <NotifiCounter fields='mention' />},
             {link: donatesLink, extLink: true, icon: 'editor/coin', value: tt('g.rewards'), addon: <NotifiCounter fields='donate' />},
             {link: walletLink, extLink: true, icon: 'new/wallet', value: tt('g.wallet'), addon: <NotifiCounter fields='send,receive' />},
             {link: '#', onClick: this.props.toggleNightmode, icon: 'editor/eye', value: tt('g.night_mode')},
@@ -661,7 +659,7 @@ class Messages extends React.Component {
             className='msgs-curruser'>
                 <div className='msgs-curruser-notify-sink'>
                     <Userpic account={username} title={username} width={40} height={40} />
-                    <div className='TopRightMenu__notificounter'><NotifiCounter fields='total' /></div>
+                    <div className='TopRightMenu__notificounter'><NotifiCounter fields='mention,donate,send,receive' /></div>
                 </div>
                 <div className='msgs-curruser-name'>
                     {username}
