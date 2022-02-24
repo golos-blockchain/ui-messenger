@@ -41,7 +41,12 @@ export default class MessageList extends React.Component {
     }
 
     renderMessages = () => {
-        const { messages, selectedMessages, onMessageSelect } = this.props;
+        const { to, renderEmpty, messages, selectedMessages, onMessageSelect } = this.props;
+
+        if (!to && renderEmpty) {
+            return renderEmpty()
+        }
+
         let i = 0;
         let messageCount = messages.length;
         let tempMessages = [];
