@@ -78,7 +78,7 @@
 }
 
 .msgs-empty-chat {
-    opacity: 50%;
+    opacity: 40%;
     width: 70%;
     position: absolute;
     top: 50%;
