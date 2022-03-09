@@ -7,14 +7,12 @@
   "helmet": {
     "directives": {
       "defaultSrc": "'self'",
-      "childSrc": "'self' *.a-ads.com www.youtube.com w.soundcloud.com *.facebook.com player.vimeo.com www.google.com coub.com *.yandex.ru vk.com ok.com rutube.ru",
-      "scriptSrc": "'self' 'unsafe-inline' 'unsafe-eval' files.coinmarketcap.com ajax.googleapis.com app.sharpay.io www.google-analytics.com",
+      "childSrc": "'self' www.youtube.com",
+      "scriptSrc": "'self' 'unsafe-inline' 'unsafe-eval'",
       "styleSrc": "'self' 'unsafe-inline' fonts.googleapis.com",
       "imgSrc": "* data:",
       "fontSrc": "data: fonts.gstatic.com",
-      "connectSrc": "'self' api.imgur.com wss://apibeta.golos.today *.golos.today golos.app *.golos.app app.sharpay.io *.coinmarketcap.com www.google-analytics.com cdn.jsdelivr.net/npm/emoji-picker-element-data@%5E1/",
-      "reportUri": "/api/v1/csp_violation",
-      "objectSrc": "'self'",
+      "connectSrc": "'self' wss://apibeta.golos.today *.golos.app golos.app api.imgur.com devimages.golos.today cdn.jsdelivr.net/npm/emoji-picker-element-data@%5E1/",
       "frameAncestors": "'none'"
     }
   },

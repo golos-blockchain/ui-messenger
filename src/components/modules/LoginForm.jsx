@@ -13,7 +13,7 @@ import tt from 'counterpart';
 import { translateError } from 'app/utils/translateError';
 import { authRegisterUrl, } from 'app/utils/AuthApiClient';
 
-const APP_DOMAIN= 'golos.chat'
+const APP_DOMAIN= 'chat.golos.app'
 
 class LoginForm extends Component {
 
