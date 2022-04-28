@@ -15,7 +15,6 @@ const session = new Session('msgr_auth')
 
 export function* userWatches() {
     yield fork(loginWatch)
-    yield fork(loginErrorWatch)
     yield fork(saveLoginWatch)
     yield fork(logoutWatch)
     yield fork(getAccountWatch)
@@ -28,10 +27,6 @@ function* loginWatch() {
 
 function* saveLoginWatch() {
     yield takeLatest('user/SAVE_LOGIN', saveLogin);
-}
-
-function* loginErrorWatch() {
-    yield takeLatest('user/LOGIN_ERROR', loginError)
 }
 
 function* getAccountWatch() {
@@ -49,7 +44,7 @@ function* logoutWatch() {
 */
 function* usernamePasswordLogin(action) {
     let { username, password, saveLogin,
-        operationType, afterLoginRedirectToWelcome } = action.payload
+        operationType, afterLoginRedirectToWelcome, authType } = action.payload
 
     let saved = false
     let postingWif, memoWif
@@ -100,11 +95,25 @@ function* usernamePasswordLogin(action) {
             return
         }
 
+        if (authType !== 'memo' && authRes.memo && !authRes.posting) {
+            yield put(user.actions.loginError({ error: 'Posting Not Memo Please' }))
+            return
+        }
+
+        if (authType === 'memo' && !authRes.memo) {
+            yield put(user.actions.loginError({ error: 'Incorrect Password' }))
+            return
+        }
+
         postingWif = authRes.posting
         memoWif = authRes.memo
+
+        // clean error, in order to not show it in Memo login form after Posting login form
+        yield put(user.actions.loginError({ error: '' }))
     }
 
     if (!postingWif && !memoWif) {
+        yield put(user.actions.stopLoading())
         return
     }
 
@@ -118,23 +127,8 @@ function* usernamePasswordLogin(action) {
         private_keys = private_keys.set('memo_private', PrivateKey.fromWif(memoWif))
     }
 
-    if (!operationType) {
-        yield put(
-            user.actions.setUser({
-                username,
-                private_keys,
-            })
-        )
-    } else {
-        // yield put(
-        //     user.actions.setUser({
-        //         username,
-        //         operationType,
-        //         vesting_shares: account.get('vesting_shares'),
-        //         received_vesting_shares: account.get('received_vesting_shares'),
-        //         delegated_vesting_shares: account.get('delegated_vesting_shares')
-        //     })
-        // )
+    if (saved && !operationType) {
+        yield put(user.actions.setUser({ username, private_keys, }))
     }
 
     if (postingWif) {
@@ -145,9 +139,9 @@ function* usernamePasswordLogin(action) {
         } catch(error) {
             // Does not need to be fatal
             console.error('Notify Login Checking Error', error);
-            alreadyAuthorized = null;
+            alreadyAuthorized = false;
         }
-        if (alreadyAuthorized === false) {
+        if (!alreadyAuthorized) {
             let authorized = false;
             try {
                 const res = yield authApiLogin(username, null);
@@ -187,13 +181,14 @@ function* usernamePasswordLogin(action) {
         }
     }
 
+    if (!saved && !operationType) {
+        yield put(user.actions.setUser({ username, private_keys, }))
+    }
+
     if (!saved && saveLogin && !operationType)
         yield put(user.actions.saveLogin())
-}
 
-function* loginError({payload: {/*error*/}}) {
-    notifyApiLogout()
-    authApiLogout()
+    yield put(user.actions.stopLoading())
 }
 
 function* saveLogin() {

@@ -7,6 +7,8 @@ export function translateError(string) {
             return tt('g.account_not_found')
         case 'Incorrect Password':
             return tt('g.incorrect_password')
+        case 'Posting Not Memo Please':
+            return tt('g.posting_not_memo')
         case 'Username does not exist':
             return tt('g.username_does_not_exist')
         case 'Account name should be longer.':

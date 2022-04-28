@@ -17,12 +17,19 @@ class MarkNotificationRead extends React.Component {
         return false;
     }
 
-    _activateInterval(interval) {
+    _activateInterval = (interval) => {
         if (!this.interval) {
             const { account, update } = this.props;
             this.interval = setInterval(() => {
                 markNotificationRead(account, this.fields_array).then(nc => update(nc));
             }, interval);
+        }
+    }
+
+    _clearInterval =() => {
+        if (this.interval) {
+            clearInterval(this.interval)
+            this.interval = undefined
         }
     }
 
@@ -39,11 +46,12 @@ class MarkNotificationRead extends React.Component {
         if (nextProps.interval) {
             this._activateInterval(nextProps.interval);
         } else {
-            if (this.interval) {
-                clearInterval(this.interval);
-                this.interval = undefined;
-            }
+            this._clearInterval()
         }
+    }
+
+    componentWillUnmount() {
+        this._clearInterval()
     }
 
     render() {

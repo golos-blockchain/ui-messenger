@@ -24,7 +24,7 @@ import user from 'app/redux/UserReducer'
 import { getProfileImage, getLastSeen } from 'app/utils/NormalizeProfile';
 import { normalizeContacts, normalizeMessages } from 'app/utils/Normalizators';
 import { fitToPreview } from 'app/utils/ImageUtils';
-import { notificationSubscribe, notificationTake, sendOffchainMessage } from 'app/utils/NotifyApiClient';
+import { notificationSubscribe, notificationUnsubscribe, notificationTake, sendOffchainMessage } from 'app/utils/NotifyApiClient';
 import { flash, unflash } from 'app/components/elements/messages/FlashTitle';
 
 class Messages extends React.Component {
@@ -105,7 +105,16 @@ class Messages extends React.Component {
         });
     };
 
+    checkLoggedOut = (username) => {
+        if (this.props.username !== username) {
+            console.log('Logged out, stopping notify taking.')
+            return true
+        }
+        return false
+    }
+
     async setCallback(username, removeTaskIds) {
+        if (this.checkLoggedOut(username)) return
         let subscribed = null;
         try {
             subscribed = await notificationSubscribe(username);
@@ -120,6 +129,7 @@ class Messages extends React.Component {
         if (subscribed) { // if was not already subscribed
             this.notifyErrorsClear();
         }
+        if (this.checkLoggedOut(username)) return
         try {
             removeTaskIds = await notificationTake(username, removeTaskIds, (type, op, timestamp, task_id) => {
                 const updateMessage = op.from === this.state.to || 
@@ -178,8 +188,7 @@ class Messages extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (this.props.username && !prevProps.username
-            || (this.props.username && prevProps.username && this.props.username !== prevProps.username)) {
+        if (this.props.username !== prevProps.username && this.props.username) {
             this.props.fetchState(this.props.to);
             this.setCallback(this.props.username);
         } else if (this.props.to !== this.state.to) {
@@ -636,6 +645,11 @@ class Messages extends React.Component {
         const donatesLink = `/@${username}/donates-to`;
         const walletLink = `/@${username}/transfers`;
 
+        const logout = (e) => {
+            e.preventDefault()
+            this.props.logout(username)
+        }
+
         let user_menu = [
             {link: accountLink, extLink: true, icon: 'new/blogging', value: tt('g.blog')},
             {link: mentionsLink, extLink: true, icon: 'new/mention', value: tt('g.mentions'), addon: <NotifiCounter fields='mention' />},
@@ -646,7 +660,7 @@ class Messages extends React.Component {
                     this.props.changeLanguage(this.props.locale)
                 }, icon: 'ionicons/language-outline', value:
                     this.props.locale === 'ru-RU' ? 'English' : 'Russian'},
-            {link: '#', icon: 'new/logout', onClick: this.props.logout, value: tt('g.logout')},
+            {link: '#', icon: 'new/logout', onClick: logout, value: tt('g.logout')},
         ];
 
         return (<LinkWithDropdown
@@ -908,8 +922,12 @@ export default withRouter(connect(
             if (e) e.preventDefault();
             dispatch(user.actions.toggleNightmode());
         },
-        logout: e => {
-            if (e) e.preventDefault();
+        logout: async (username) => {
+            try {
+                await notificationUnsubscribe(username)
+            } catch (err) {
+                console.error('Cannot unsubscribe', err)
+            }
             dispatch(user.actions.logout());
         },
     }),

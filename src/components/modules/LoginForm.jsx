@@ -3,13 +3,15 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types'
 import {pageSession} from 'golos-lib-js/lib/auth';
 import {PrivateKey, PublicKey} from 'golos-lib-js/lib/auth/ecc'
+import tt from 'counterpart';
+
+import LoadingIndicator from 'app/components/elements/LoadingIndicator'
 //import transaction from 'app/redux/Transaction'
 //import g from 'app/redux/GlobalReducer'
 import user from 'app/redux/UserReducer'
 import {validate_account_name} from 'app/utils/ChainValidation';
 import runTests from 'app/utils/BrowserTests';
 import reactForm from 'app/utils/ReactForm'
-import tt from 'counterpart';
 import { translateError } from 'app/utils/translateError';
 import { authRegisterUrl, } from 'app/utils/AuthApiClient';
 
@@ -112,7 +114,7 @@ class LoginForm extends Component {
             </div>;
         }
 
-        const { loginBroadcastOperation, loginDefault, dispatchSubmit, afterLoginRedirectToWelcome, msg} = this.props;
+        const { loginBroadcastOperation, loginDefault, loginLoading, dispatchSubmit, afterLoginRedirectToWelcome, msg} = this.props;
         const {username, password, saveLogin} = this.state;
         const {submitting, valid, handleSubmit} = this.state.login;
         const {usernameOnChange, onCancel, /*qrReader*/} = this;
@@ -171,7 +173,7 @@ class LoginForm extends Component {
             <center>
             <form onSubmit={handleSubmit(({data}) => {
                 this.state.password.props.onChange('');
-                return dispatchSubmit(data, loginBroadcastOperation, afterLoginRedirectToWelcome)
+                return dispatchSubmit(data, loginBroadcastOperation, afterLoginRedirectToWelcome, authType)
             })}
                 onChange={this.props.clearError}
                 method="post"
@@ -185,7 +187,7 @@ class LoginForm extends Component {
                 {username.touched && username.blur && username.error ? <div className="error">{translateError(username.error)}&nbsp;</div> : null}
 
                 <div>
-                    <input type="password" required ref="pw" placeholder={tt('loginform_jsx.password_or_wif')} {...password.props} autoComplete="on" disabled={submitting} />
+                    <input type="password" required ref="pw" placeholder={isMemo ? tt('loginform_jsx.memo_key') : tt('loginform_jsx.password_or_posting')} {...password.props} autoComplete="on" disabled={submitting} />
                     {error && <div className="error">{translateError(error)}&nbsp;</div>}
                     {error && password_info && <div className="warning">{password_info}&nbsp;</div>}
                 </div>
@@ -197,7 +199,7 @@ class LoginForm extends Component {
                         {tt(isMemo ? 'loginform_jsx.keep_me_logged_in_memo' : 'loginform_jsx.keep_me_logged_in')} &nbsp;
                         <input id="saveLogin" type="checkbox" ref="pw" {...saveLogin.props} onChange={this.saveLoginToggle} disabled={submitting} /></label>
                 </div>}
-                <div>
+                {!loginLoading ? <div>
                     <br />
                     <button type="submit" disabled={submitting || disabled} className="button">
                         {submitLabel}
@@ -208,7 +210,10 @@ class LoginForm extends Component {
                     {cancelIsRegister && !isMemo && <a href={authRegisterUrl()} target='_blank' type="button float-right" disabled={submitting} className="button hollow" onClick={this.checkRegisterEnabled}>
                         {tt('g.sign_up')}
                     </a>}
-                </div>
+                </div> : <div>
+                    <br />
+                    <LoadingIndicator type='circle' size='25px' />
+                </div>}
             </form>
         </center>
         );
@@ -283,6 +288,7 @@ export default connect(
         hasError = !!login_error
         return {
             login_error,
+            loginLoading: state.user.get('loginLoading'),
             loginBroadcastOperation,
             initialValues,
             initialUsername,
@@ -293,7 +299,7 @@ export default connect(
 
     // mapDispatchToProps
     dispatch => ({
-        dispatchSubmit: (data, loginBroadcastOperation, afterLoginRedirectToWelcome) => {
+        dispatchSubmit: (data, loginBroadcastOperation, afterLoginRedirectToWelcome, authType) => {
             const {password, saveLogin} = data
             const username = data.username.trim().toLowerCase()
             if (loginBroadcastOperation) {
@@ -309,7 +315,7 @@ export default connect(
                 dispatch(user.actions.usernamePasswordLogin({username, password, saveLogin: true, afterLoginRedirectToWelcome, operationType: type}))
                 dispatch(user.actions.closeLogin())*/
             } else {
-                dispatch(user.actions.usernamePasswordLogin({username, password, saveLogin, afterLoginRedirectToWelcome}))
+                dispatch(user.actions.usernamePasswordLogin({username, password, saveLogin, afterLoginRedirectToWelcome, authType}))
             }
         },
         /*clearError: () => { if (hasError) dispatch(user.actions.loginError({error: null})) },
