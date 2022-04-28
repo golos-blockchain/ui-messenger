@@ -13,7 +13,10 @@ class MarkNotificationRead extends React.Component {
         interval: PropTypes.number,
     };
 
-    shouldComponentUpdate() {
+    shouldComponentUpdate(nextProps) {
+        if (this.props.interval !== nextProps.interval) {
+            return true
+        }
         return false;
     }
 
@@ -42,9 +45,10 @@ class MarkNotificationRead extends React.Component {
             markNotificationRead(account, this.fields_array).then(nc => update(nc));
     }
 
-    UNSAFE_componentWillReceiveProps(nextProps) {
-        if (nextProps.interval) {
-            this._activateInterval(nextProps.interval);
+    componentDidUpdate() {
+        const { interval } = this.props
+        if (interval) {
+            this._activateInterval(interval);
         } else {
             this._clearInterval()
         }
