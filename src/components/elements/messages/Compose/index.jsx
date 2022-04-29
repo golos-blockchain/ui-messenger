@@ -40,6 +40,7 @@ export default class Compose extends React.Component {
             i18n: tt('emoji_i18n'),
         });
 
+        this._picker.classList.add('light')
         this._picker.addEventListener('emoji-click', this.onEmojiSelect);
 
         this._tooltip.appendChild(this._picker);

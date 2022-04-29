@@ -1,3 +1,5 @@
+import { fetchEx } from 'golos-lib-js/lib/utils'
+
 export function getHost() {
     const { location, } = window;
     if (process.env.NODE_ENV === 'development') {
@@ -16,6 +18,6 @@ export async function callApi(apiName, data) {
         },
         body: data ? JSON.stringify(data) : undefined,
     };
-    let res = await fetch(getHost() + apiName, request);
+    let res = await fetchEx(getHost() + apiName, request);
     return res;
 }

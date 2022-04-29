@@ -7,8 +7,10 @@ import golos from 'golos-lib-js'
 import tt from 'counterpart'
 import debounce from 'lodash/debounce';
 
+import BackButtonController from 'app/components/elements/app/BackButtonController'
 import ExtLink from 'app/components/elements/ExtLink'
 import Icon from 'app/components/elements/Icon'
+import Logo from 'app/components/elements/Logo'
 import MarkNotificationRead from 'app/components/elements/MarkNotificationRead'
 import NotifiCounter from 'app/components/elements/NotifiCounter'
 import DialogManager from 'app/components/elements/common/DialogManager'
@@ -24,8 +26,12 @@ import user from 'app/redux/UserReducer'
 import { getProfileImage, getLastSeen } from 'app/utils/NormalizeProfile';
 import { normalizeContacts, normalizeMessages } from 'app/utils/Normalizators';
 import { fitToPreview } from 'app/utils/ImageUtils';
-import { notificationSubscribe, notificationUnsubscribe, notificationTake, sendOffchainMessage } from 'app/utils/NotifyApiClient';
+import { notificationSubscribe, notificationShallowUnsubscribe, notificationTake, sendOffchainMessage } from 'app/utils/NotifyApiClient';
 import { flash, unflash } from 'app/components/elements/messages/FlashTitle';
+import { addShortcut } from 'app/utils/app/ShortcutUtils'
+import { hideSplash } from 'app/utils/app/SplashUtils'
+import { openAppSettings } from 'app/components/pages/app/AppSettings'
+import { fetchEx } from 'golos-lib-js/lib/utils'
 
 class Messages extends React.Component {
     constructor(props) {
@@ -156,35 +162,42 @@ class Messages extends React.Component {
             }, 250);
         } catch (ex) {
             console.error('notificationTake', ex);
+            if (ex.message.includes('No such queue')) {
+                console.log('notificationTake: resubscribe forced...')
+                notificationShallowUnsubscribe()
+            }
             this.notifyErrorsInc(1);
             setTimeout(() => {
-                this.setCallback(username, removeTaskIds);
+                this.setCallback(username, removeTaskIds)
             }, 2000);
             return;
         }
         this.notifyErrorsClear();
     }
 
-    onWindowResize = (e) => {
-        const isMobile = window.matchMedia('screen and (max-width: 39.9375em)').matches;
-        if (isMobile != this.isMobile) {
-            this.forceUpdate();
-        }
-        this.isMobile = isMobile;
-    };
-
     componentDidMount() {
-        window.addEventListener('resize', this.onWindowResize);
+        // Replacing shortcut (already added) with localized one
+        if (process.env.IS_APP) {
+            addShortcut({
+                id: 'the_settings',
+                shortLabel: tt('app_settings.shortcut'),
+                longLabel: tt('app_settings.shortcut_desc'),
+                hash: '#app-settings'
+            })
+        }
         this.props.loginUser()
-        setTimeout(() => {
+        const checkAuth = () => {
             if (!this.props.username) {
                 this.props.checkMemo(this.props.currentUser);
             }
-        }, 500);
-    }
-
-    componentWillUnmount() {
-        window.removeEventListener('resize', this.onWindowResize);
+        }
+        if (!localStorage.getItem('msgr_auth')) {
+            checkAuth()
+        } else {
+            setTimeout(() => {
+                checkAuth()
+            }, 500)
+        }
     }
 
     componentDidUpdate(prevProps) {
@@ -219,6 +232,7 @@ class Messages extends React.Component {
                 messages: normalizeMessages(messages, accounts, currentUser, prevProps.to, this.preDecoded),
                 messagesCount: messages.size,
             }, () => {
+                hideSplash()
                 if (added)
                     this.markMessages2();
                 setTimeout(() => {
@@ -590,6 +604,34 @@ class Messages extends React.Component {
             this.presavedInput = undefined;
         }
     };
+    
+    _renderConversationTopLeft = () => {
+        return [
+            <Link to='/' key='logo'>
+                <Logo />
+            </Link>
+        ]
+    }
+
+    _renderConversationTopRight = ({ isSmall }) => {
+        if (isSmall) {
+            const menuItems = this._renderMenuItems(isSmall)
+            if (menuItems) {
+                let content = <LinkWithDropdown
+                    closeOnClickOutside
+                    dropdownPosition="bottom"
+                    dropdownAlignment="right"
+                    dropdownContent={<VerticalMenu className={'VerticalMenu_nav-additional'} items={menuItems} />}
+                >
+                    <a href="#" onClick={e => e.preventDefault()} style={{ marginRight: '0.5rem' }}>
+                        <Icon name="new/more" />
+                    </a>
+                </LinkWithDropdown>
+                return { content, flex: false }
+            }
+        }
+        return null
+    }
 
     _renderMessagesTopLeft = () => {
         let messagesTopLeft = [];
@@ -600,7 +642,7 @@ class Messages extends React.Component {
         return messagesTopLeft;
     };
 
-    _renderMessagesTopCenter = () => {
+    _renderMessagesTopCenter = ({ isSmall }) => {
         let messagesTopCenter = [];
         const { to, accounts } = this.props;
         if (accounts[to]) {
@@ -610,10 +652,14 @@ class Messages extends React.Component {
             const { notifyErrors } = this.state;
             if (notifyErrors >= 30) {
                 messagesTopCenter.push(<div key='to-last-seen' style={{fontSize: '13px', fontWeight: 'normal', color: 'red'}}>
-                    {
+                    {isSmall ?
                         <span>
-                            {tt('messages.sync_error')}
-                        </span>
+                            {tt('messages.sync_error_short')}
+                            <a href='#' onClick={e => { e.preventDefault(); this.props.fetchState(this.props.to) }}>
+                                {tt('g.refresh').toLowerCase()}.
+                            </a>
+                        </span> :
+                        <span>{tt('messages.sync_error')}</span>
                     }
                 </div>);
             } else {
@@ -633,17 +679,17 @@ class Messages extends React.Component {
         return messagesTopCenter;
     };
 
-    _renderMessagesTopRight = () => {
-        const { currentUser } = this.props;
+    _renderMenuItems = (isSmall) => {
+        const { currentUser } = this.props
         if (!currentUser) {
-            return null;
+            return null
         }
 
-        const username = currentUser.get('username');
-        const accountLink = `/@${username}`;
-        const mentionsLink = `/@${username}/mentions`;
-        const donatesLink = `/@${username}/donates-to`;
-        const walletLink = `/@${username}/transfers`;
+        const username = currentUser.get('username')
+        const accountLink = `/@${username}`
+        const mentionsLink = `/@${username}/mentions`
+        const donatesLink = `/@${username}/donates-to`
+        const walletLink = `/@${username}/transfers`
 
         const logout = (e) => {
             e.preventDefault()
@@ -651,7 +697,7 @@ class Messages extends React.Component {
         }
 
         let user_menu = [
-            {link: accountLink, extLink: true, icon: 'new/blogging', value: tt('g.blog')},
+            {link: accountLink, extLink: true, icon: 'new/blogging', value: tt('g.blog') + (isSmall ? (' @' + username) : '')},
             {link: mentionsLink, extLink: true, icon: 'new/mention', value: tt('g.mentions'), addon: <NotifiCounter fields='mention' />},
             {link: donatesLink, extLink: true, icon: 'editor/coin', value: tt('g.rewards'), addon: <NotifiCounter fields='donate' />},
             {link: walletLink, extLink: true, icon: 'new/wallet', value: tt('g.wallet'), addon: <NotifiCounter fields='send,receive' />},
@@ -660,24 +706,39 @@ class Messages extends React.Component {
                     this.props.changeLanguage(this.props.locale)
                 }, icon: 'ionicons/language-outline', value:
                     this.props.locale === 'ru-RU' ? 'English' : 'Russian'},
-            {link: '#', icon: 'new/logout', onClick: logout, value: tt('g.logout')},
-        ];
+        ]
+
+        if (process.env.IS_APP) {
+            user_menu.push({link: '#', onClick: this.props.openSettings, icon: 'new/setting', value: tt('g.settings')})
+        }
+
+        user_menu.push({link: '#', icon: 'new/logout', onClick: logout, value: tt('g.logout')})
+
+        return user_menu
+    }
+
+    _renderMessagesTopRight = ({ isSmall }) => {
+        const menuItems = this._renderMenuItems(isSmall)
+
+        if (!menuItems) return null
+
+        const { currentUser } = this.props
+        const username = currentUser.get('username')
 
         return (<LinkWithDropdown
                 closeOnClickOutside
                 dropdownPosition='bottom'
                 dropdownAlignment='bottom'
-                dropdownContent={<VerticalMenu className={'VerticalMenu_nav-profile'} items={user_menu} />}
+                dropdownContent={<VerticalMenu className={'VerticalMenu_nav-profile'} items={menuItems} />}
             >
-                <div 
-            className='msgs-curruser'>
-                <div className='msgs-curruser-notify-sink'>
-                    <Userpic account={username} title={username} width={40} height={40} />
-                    <div className='TopRightMenu__notificounter'><NotifiCounter fields='mention,donate,send,receive' /></div>
-                </div>
-                <div className='msgs-curruser-name'>
-                    {username}
-                </div>
+                <div className='msgs-curruser'>
+                    <div className='msgs-curruser-notify-sink'>
+                        <Userpic account={username} title={isSmall ? username : null} width={40} height={40} />
+                        <div className='TopRightMenu__notificounter'><NotifiCounter fields='mention,donate,send,receive' /></div>
+                    </div>
+                    {!isSmall ? <div className='msgs-curruser-name'>
+                        {username}
+                    </div> : null}
                 </div>
             </LinkWithDropdown>);
     };
@@ -694,11 +755,61 @@ class Messages extends React.Component {
         }
     }
 
+    _renderError = (nodeError) => {
+        let bbc
+        let settingsOpen
+        if (process.env.IS_APP) {
+            bbc = <BackButtonController goHome={true} />
+            settingsOpen = <div>
+                {tt('app_settings.node_error_NODE3')}
+                <a href='#' onClick={this.props.openSettings}>{tt('g.settings')}</a>
+            </div>
+        }
+        const NODE = nodeError.get('node') || 'node'
+        const refresh = (e) => {
+            e.preventDefault()
+            const errMsg = document.getElementById('msgs-node-error')
+            if (errMsg) {
+                errMsg.style.display = 'none'
+                setTimeout(() => {
+                    errMsg.style.display = 'block'
+                    this.props.fetchState(this.props.to)
+                }, 1000)
+            } else {
+                this.props.fetchState(this.props.to)
+            }
+        }
+        return (<div>
+            {bbc}
+            <Logo />
+            <div id='msgs-node-error'>
+                {tt('app_settings.node_error_NODE', { NODE } )}
+                <a href='#' onClick={refresh}>{tt('g.refresh').toLowerCase()}</a>
+                {tt('app_settings.node_error_NODE2')}
+                {settingsOpen}
+            </div>
+        </div>)
+    }
+
     render() {
-        const { contacts, account, to } = this.props;
-        if (!contacts || !account) return (<div></div>);
+        const { contacts, account, to, nodeError } = this.props;
+        let bbc
+        if (process.env.IS_APP) {
+            bbc = <BackButtonController goHome={!to} />
+        }
+        if (nodeError) {
+            return this._renderError(nodeError)
+        }
+        if (!contacts || !account) return (<div>
+                {bbc}
+                <Messenger
+                    contacts={[]}
+                    conversationTopLeft={this._renderConversationTopLeft}
+                    />
+            </div>);
         return (
             <div>
+                {bbc}
                 <PageFocus onChange={this.handleFocusChange}>
                     {(focused) => (
                         <MarkNotificationRead fields='message' account={account.name}
@@ -709,17 +820,14 @@ class Messages extends React.Component {
                     account={this.props.account}
                     to={to}
                     contacts={this.state.searchContacts || this.state.contacts}
-                    conversationTopLeft={[
-                        <Link to='/' key='logo'>
-                            <img className='msgs-logo' src={require('app/assets/images/msg.png')} />
-                        </Link>
-                    ]}
+                    conversationTopLeft={this._renderConversationTopLeft}
+                    conversationTopRight={this._renderConversationTopRight}
                     conversationLinkPattern='/@*'
                     onConversationSearch={this.onConversationSearch}
                     messages={this.state.messages}
                     messagesTopLeft={this._renderMessagesTopLeft()}
-                    messagesTopCenter={this._renderMessagesTopCenter()}
-                    messagesTopRight={this._renderMessagesTopRight()}
+                    messagesTopCenter={this._renderMessagesTopCenter}
+                    messagesTopRight={this._renderMessagesTopRight}
                     replyingMessage={this.state.replyingMessage}
                     onCancelReply={this.onCancelReply}
                     onSendMessage={this.onSendMessage}
@@ -744,6 +852,7 @@ export default withRouter(connect(
         const accounts = state.global.get('accounts')
         const contacts = state.global.get('contacts')
         const messages = state.global.get('messages')
+        const nodeError = state.global.get('nodeError')
 
         const messages_update = state.global.get('messages_update')
         const username = state.user.getIn(['current', 'username'])
@@ -769,6 +878,7 @@ export default withRouter(connect(
             accounts: accounts ?  accounts.toJS() : {},
             username,
             locale,
+            nodeError
         }
     },
     dispatch => ({
@@ -776,6 +886,7 @@ export default withRouter(connect(
 
         checkMemo: (currentUser) => {
             if (!currentUser) {
+                hideSplash()
                 dispatch(user.actions.showLogin({
                     loginDefault: { cancelIsRegister: true, unclosable: true }
                 }));
@@ -783,6 +894,7 @@ export default withRouter(connect(
             }
             const private_key = currentUser.getIn(['private_keys', 'memo_private']);
             if (!private_key) {
+                hideSplash()
                 dispatch(user.actions.showLogin({
                     loginDefault: { username: currentUser.get('username'), authType: 'memo', unclosable: true }
                 }));
@@ -844,11 +956,9 @@ export default withRouter(connect(
             };
 
             if (!editInfo) {
-                try {
-                    sendOffchainMessage(opData);
-                } catch (ex) {
-                    console.error('sendOffchainMessage', ex);
-                }
+                sendOffchainMessage(opData).catch(err => {
+                    console.error('sendOffchainMessage', err)
+                })
             }
 
             const json = JSON.stringify(['private_message', opData]);
@@ -918,16 +1028,15 @@ export default withRouter(connect(
             dispatch(user.actions.changeLanguage(language))
             localStorage.setItem('locale', language)
         },
+        openSettings: (e) => {
+            if (e) e.preventDefault()
+            openAppSettings()
+        },
         toggleNightmode: (e) => {
             if (e) e.preventDefault();
             dispatch(user.actions.toggleNightmode());
         },
         logout: async (username) => {
-            try {
-                await notificationUnsubscribe(username)
-            } catch (err) {
-                console.error('Cannot unsubscribe', err)
-            }
             dispatch(user.actions.logout());
         },
     }),

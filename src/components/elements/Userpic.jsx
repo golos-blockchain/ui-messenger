@@ -14,6 +14,7 @@ class Userpic extends Component {
         showProgress: PropTypes.bool,
         progressClass: PropTypes.string,
         imageUrl: PropTypes.string,
+        title: PropTypes.string,
         onClick: PropTypes.func,
     }
 
@@ -90,7 +91,7 @@ class Userpic extends Component {
     }
 
     render() {
-        const { width, height, votingPower, reputation, hideReputationForSmall, showProgress, onClick } = this.props
+        const { title, width, height, votingPower, reputation, hideReputationForSmall, showProgress, onClick } = this.props
 
         const style = {
             width: `${width}px`,
@@ -103,17 +104,17 @@ class Userpic extends Component {
             const toggle = showProgress ? () => { } : this.toggleProgress
 
             return (
-                <div className="Userpic" onClick={toggle} style={style}>
+                <div className="Userpic" title={title} onClick={toggle} style={style}>
                     {percentage ? this.getVotingIndicator(percentage) : null}
                 </div>
             )
         } else if (reputation !== undefined) {
             return <div className="Userpic_parent" onClick={onClick}>
-                    <div className="Userpic" style={style}></div>
+                    <div className="Userpic" title={title} style={style}></div>
                     <div className="Userpic__badge" title={tt('g.reputation')}>{reputation}</div>
                 </div>
        } else {
-            return <div className="Userpic" style={style} onClick={onClick} />
+            return <div className="Userpic" title={title} style={style} onClick={onClick} />
         }
     }
 }

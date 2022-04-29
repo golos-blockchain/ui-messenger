@@ -16,7 +16,10 @@ export default class ConversationSearch extends React.Component {
         this.setState({
             query: value,
         });
-        this.props.onSearch(value, event);
+        const { onSearch } = this.props
+        if (onSearch) {
+            onSearch(value, event)
+        }
     };
 
     onChange = (event) => {

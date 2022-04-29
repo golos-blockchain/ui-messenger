@@ -26,3 +26,12 @@ body {
     transform: rotate(360deg);
   }
 }
+
+.secondary {
+  color: $dark-gray;
+  font-size: 90%;
+  a {
+    color: $dark-gray;
+    text-decoration: underline;
+  }
+}

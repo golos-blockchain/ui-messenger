@@ -6,6 +6,7 @@ import {PrivateKey, PublicKey} from 'golos-lib-js/lib/auth/ecc'
 import tt from 'counterpart';
 
 import LoadingIndicator from 'app/components/elements/LoadingIndicator'
+import Logo from 'app/components/elements/Logo'
 //import transaction from 'app/redux/Transaction'
 //import g from 'app/redux/GlobalReducer'
 import user from 'app/redux/UserReducer'
@@ -61,6 +62,11 @@ class LoginForm extends Component {
     componentDidMount() {
         if (this.refs.username && !this.refs.username.value) this.refs.username.focus();
         if (this.refs.username && this.refs.username.value) this.refs.pw.focus();
+       /*document.body.onclick = async () => { alert('...'); setTimeout(() => { cordova.plugins.notification.local.schedule({
+    title: 'My first notification',
+    text: 'Thats pretty easy...',
+    foreground: true
+        }); }, 5000) }*/
     }
 
     componentDidUpdate(prevProps) {
@@ -188,7 +194,7 @@ class LoginForm extends Component {
 
                 <div>
                     <input type="password" required ref="pw" placeholder={isMemo ? tt('loginform_jsx.memo_key') : tt('loginform_jsx.password_or_posting')} {...password.props} autoComplete="on" disabled={submitting} />
-                    {error && <div className="error">{translateError(error)}&nbsp;</div>}
+                    {error && !loginLoading && <div className="error">{translateError(error)}&nbsp;</div>}
                     {error && password_info && <div className="warning">{password_info}&nbsp;</div>}
                 </div>
                 {loginBroadcastOperation && <div>
@@ -218,8 +224,11 @@ class LoginForm extends Component {
         </center>
         );
 
-        return (
+        let loginForm = (
            <div className="LoginForm">
+                <div style={{marginBottom: '3rem'}} className='logo'>
+                    <Logo />
+                </div>
                {message}
                <center>
                    <h3><span className="OpAction">{title}</span></h3>
@@ -227,7 +236,9 @@ class LoginForm extends Component {
                <br />
                {form}
            </div>
-       )
+        )
+
+        return loginForm
     }
 }
 
@@ -269,6 +280,8 @@ export default connect(
 
         const initialValues = {
             saveLogin: saveLoginDefault,
+            username: 'inviter',
+            password: 'P5KBN9sJKwtpejudxuGF5W55ZF7NNfrCaYT4ofiTBC7ku6nVHp1c'
         }
 
         // The username input has a value prop, so it should not use initialValues

@@ -9,7 +9,7 @@ import user from 'app/redux/UserReducer'
 import { getAccount } from 'app/redux/SagaShared'
 import uploadImageWatch from 'app/redux/UserSaga_UploadImage'
 import { authApiLogin, authApiLogout } from 'app/utils/AuthApiClient'
-import { notifyApiLogin, notifyApiLogout } from 'app/utils/NotifyApiClient'
+import { notifyApiLogin, notifyApiLogout, notificationUnsubscribe } from 'app/utils/NotifyApiClient'
 
 const session = new Session('msgr_auth')
 
@@ -78,9 +78,11 @@ function* usernamePasswordLogin(action) {
             if (err === 'No such account') {
                 yield put(user.actions.loginError({ error: 'Username does not exist' }))
                 return
+            } else {
+                console.error(err)
+                yield put(user.actions.loginError({ error: 'Node failure' }))
+                return
             }
-            console.error(err)
-            alert(err)
             return
         }
 
@@ -215,6 +217,13 @@ function* saveLogin() {
 
 function* logout() {
     yield put(user.actions.saveLoginConfirm(false)) // Just incase it is still showing
+    const data = session.load()
+    const username = data[0]
+    try {
+        yield notificationUnsubscribe(username)
+    } catch (err) {
+        console.error('Cannot unsubscribe', err)
+    }
     session.clear()
     notifyApiLogout()
     authApiLogout()

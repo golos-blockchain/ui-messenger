@@ -4,6 +4,7 @@ import Compose from 'app/components/elements/messages/Compose';
 import Toolbar from 'app/components/elements/messages/Toolbar';
 import ToolbarButton from 'app/components/elements/messages/ToolbarButton';
 import Message from 'app/components/elements/messages/Message';
+import { renderPart } from 'app/utils/misc'
 import './MessageList.css';
 
 /*{
@@ -115,13 +116,14 @@ export default class MessageList extends React.Component {
     render() {
         const { account, to, topLeft, topCenter, topRight, replyingMessage, onCancelReply, onSendMessage, selectedMessages,
             onButtonImageClicked, onImagePasted,
-            onPanelDeleteClick, onPanelReplyClick, onPanelEditClick, onPanelCloseClick } = this.props;
+            onPanelDeleteClick, onPanelReplyClick, onPanelEditClick, onPanelCloseClick,
+            isSmall } = this.props;
         return (
             <div className='message-list'>
                 <Toolbar
-                    leftItems={topLeft}
-                    title={topCenter}
-                    rightItems={topRight}
+                    leftItems={renderPart(topLeft, { isSmall })}
+                    title={renderPart(topCenter, { isSmall })}
+                    rightItems={renderPart(topRight, { isSmall })}
                 />
 
                 <div className='message-list-container'>{this.renderMessages()}</div>
