@@ -9,6 +9,7 @@ import tt from 'counterpart'
 import debounce from 'lodash/debounce';
 
 import BackButtonController from 'app/components/elements/app/BackButtonController'
+import AppUpdateChecker from 'app/components/elements/app/AppUpdateChecker'
 import ExtLink from 'app/components/elements/ExtLink'
 import Icon from 'app/components/elements/Icon'
 import Logo from 'app/components/elements/Logo'
@@ -775,14 +776,16 @@ class Messages extends React.Component {
     }
 
     _renderError = (nodeError) => {
-        let bbc
+        let bbc 
         let settingsOpen
+        let troubleshoot
         if (process.env.IS_APP) {
             bbc = <BackButtonController goHome={true} />
             settingsOpen = <div>
                 {tt('app_settings.node_error_NODE3')}
                 <a href='#' onClick={this.props.openSettings}>{tt('g.settings')}</a>
             </div>
+            troubleshoot = <AppUpdateChecker troubleshoot={true} style={{marginTop: '1rem'}} />
         }
         const NODE = nodeError.get('node') || 'node'
         const refresh = (e) => {
@@ -806,21 +809,24 @@ class Messages extends React.Component {
                 <a href='#' onClick={refresh}>{tt('g.refresh').toLowerCase()}</a>
                 {tt('app_settings.node_error_NODE2')}
                 {settingsOpen}
+                {troubleshoot}
             </div>
         </div>)
     }
 
     render() {
         const { contacts, account, to, nodeError } = this.props;
-        let bbc
+        let bbc, auc
         if (process.env.IS_APP) {
             bbc = <BackButtonController goHome={!to} />
+            auc = <AppUpdateChecker dialog={true} />
         }
         if (nodeError) {
             return this._renderError(nodeError)
         }
         if (!contacts || !account) return (<div>
                 {bbc}
+                {auc}
                 <Messenger
                     contacts={[]}
                     conversationTopLeft={this._renderConversationTopLeft}
@@ -829,6 +835,7 @@ class Messages extends React.Component {
         return (
             <div>
                 {bbc}
+                {auc}
                 <PageFocus onChange={this.handleFocusChange}>
                     {(focused) => (
                         <MarkNotificationRead fields='message' account={account.name}

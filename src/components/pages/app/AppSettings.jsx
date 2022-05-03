@@ -2,6 +2,7 @@ import React from 'react'
 import tt from 'counterpart'
 import { Formik, Field } from 'formik'
 
+import AppUpdateChecker from 'app/components/elements/app/AppUpdateChecker'
 import BackButtonController from 'app/components/elements/app/BackButtonController'
 import Icon from 'app/components/elements/Icon'
 
@@ -99,6 +100,7 @@ class AppSettings extends React.Component {
                     </h1>
                 </div>
             </div>
+            <AppUpdateChecker style={{ paddingLeft: '0.625rem', marginBottom: '0.5rem' }} />
             <div className='secondary' style={{ paddingLeft: '0.625rem', marginBottom: '0.25rem' }}>
                 {tt('app_settings.to_save_click_button')}
             </div>

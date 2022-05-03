@@ -134,6 +134,11 @@
     "node_error_NODE3b": "to set another GOLOS node in the ",
     "to_save_click_button": "To save settings, click \"Save\" button at bottom."
   },
+  "app_update": {
+    "notify": "Here is a new version",
+    "troubleshoot": "Maybe its download can solve problem.",
+    "download": "Download"
+  },
   "g": {
     "and": "and",
     "blog": "Blog",
@@ -148,6 +153,7 @@
     "logout": "Logout",
     "mentions": "Mentions",
     "night_mode": "Night Mode",
+    "ok": "OK",
     "refresh": "Refresh",
     "required": "Required",
     "replies": "Replies",

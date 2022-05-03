@@ -1,4 +1,5 @@
 module.exports = {
+    "app_version": "1.0.0",
     "nodes": [
         {
             "address": "wss://apibeta.golos.today/ws"
@@ -19,5 +20,8 @@ module.exports = {
     },
     "blogs_service": {
         "host": "https://beta.golos.today"
+    },
+    "app_updater": {
+        "host": "https://files.golos.app"
     }
 }

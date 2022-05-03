@@ -79,6 +79,8 @@ class App extends React.Component {
         if (cfg) {
             try {
                 cfg = JSON.parse(cfg)
+                // Add here migrations in future, if need
+                cfg = { ...defaultCfg, ...cfg }
             } catch (err) {
                 console.error('Cannot parse app_settings', err)
                 cfg = defaultCfg
@@ -167,11 +169,13 @@ class App extends React.Component {
                             <Route path='/__app_settings'>
                                 <Themifier>
                                     <AppSettings />
+                                    <DialogManager />
                                 </Themifier>
                             </Route>
                             <Route path='/:to?'>
                                 {this.appSettings ? <Themifier>
                                         <AppSettings />
+                                        <DialogManager />
                                     </Themifier> : <Themifier>
                                         <Messages />
                                         <Modals />

@@ -21,6 +21,9 @@
     },
     "blogs_service": {
       "host": "https://beta.golos.today"
+    },
+    "app_updater": {
+      "host": "https://files.golos.app"
     }
   }
 }
