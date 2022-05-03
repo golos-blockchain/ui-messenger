@@ -633,8 +633,15 @@ class Messages extends React.Component {
                     dropdownAlignment="right"
                     dropdownContent={<VerticalMenu className={'VerticalMenu_nav-additional'} items={menuItems} />}
                 >
-                    <a href="#" onClick={e => e.preventDefault()} style={{ marginRight: '0.5rem' }}>
-                        <Icon name="new/more" />
+                    <a href="#" onClick={e => e.preventDefault()}>
+                        <div className='msgs-curruser-notify-sink' style={{ marginRight: '0.2rem' }}>
+                            <div style={{ marginRight: '0.5rem' }}>
+                            <Icon name="new/more" />
+                            </div>
+                            <div className='TopRightMenu__notificounter'>
+                                <NotifiCounter fields='mention,donate,send,receive' />
+                            </div>
+                        </div>
                     </a>
                 </LinkWithDropdown>
                 return { content, flex: false }
@@ -744,7 +751,9 @@ class Messages extends React.Component {
                 <div className='msgs-curruser'>
                     <div className='msgs-curruser-notify-sink'>
                         <Userpic account={username} title={isSmall ? username : null} width={40} height={40} />
-                        <div className='TopRightMenu__notificounter'><NotifiCounter fields='mention,donate,send,receive' /></div>
+                        <div className='TopRightMenu__notificounter'>
+                            <NotifiCounter fields='mention,donate,send,receive' />
+                        </div>
                     </div>
                     {!isSmall ? <div className='msgs-curruser-name'>
                         {username}
