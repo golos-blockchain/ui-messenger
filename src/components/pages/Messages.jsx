@@ -780,6 +780,7 @@ class Messages extends React.Component {
         let settingsOpen
         let troubleshoot
         if (process.env.IS_APP) {
+            hideSplash()
             bbc = <BackButtonController goHome={true} />
             settingsOpen = <div>
                 {tt('app_settings.node_error_NODE3')}
