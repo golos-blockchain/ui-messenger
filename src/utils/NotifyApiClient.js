@@ -134,7 +134,7 @@ export function notificationShallowUnsubscribe(sidKey = '__subscriber_id') {
     window[sidKey] = null
 }
 
-export async function notificationTake(account, removeTaskIds, forEach, sidKey = '__subscriber_id') {
+export async function notificationTake(account, removeTaskIds, forEach, abortController = null, sidKey = '__subscriber_id') {
     if (!notifyAvailable()) return;
     let url = notifyUrl(`/take/@${account}/${window[sidKey]}`);
     if (removeTaskIds)
@@ -145,6 +145,9 @@ export async function notificationTake(account, removeTaskIds, forEach, sidKey =
             method: 'get',
             timeout: 61000
         });
+        if (abortController) {
+            request.signal = abortController.signal
+        }
         setSession(request);
         response = await fetchEx(url, request);
         if (response.ok) {

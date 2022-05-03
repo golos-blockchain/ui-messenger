@@ -83,12 +83,12 @@ export default createModule({
         },
         {
             action: 'CLOSE_LOGIN',
-            reducer: (state) => state.merge({ login_error: undefined, show_login_modal: false, loginBroadcastOperation: undefined, loginDefault: undefined })
+            reducer: (state) => state.merge({ loginError: undefined, show_login_modal: false, loginBroadcastOperation: undefined, loginDefault: undefined })
         },
         {
             action: 'LOGIN_ERROR',
-            reducer: (state, {payload: {error}}) => state.merge({
-                login_error: error,
+            reducer: (state, {payload: {error, ...rest}}) => state.merge({
+                loginError: { error, ...rest },
                 logged_out: undefined,
                 loginLoading: error ? false : state.get('loginLoading')
             })

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { LinkWithDropdown } from 'react-foundation-components/lib/global/dropdown'
 import { withRouter } from 'react-router'
 import golos from 'golos-lib-js'
+import { fetchEx } from 'golos-lib-js/lib/utils'
 import tt from 'counterpart'
 import debounce from 'lodash/debounce';
 
@@ -31,7 +32,6 @@ import { flash, unflash } from 'app/components/elements/messages/FlashTitle';
 import { addShortcut } from 'app/utils/app/ShortcutUtils'
 import { hideSplash } from 'app/utils/app/SplashUtils'
 import { openAppSettings } from 'app/components/pages/app/AppSettings'
-import { fetchEx } from 'golos-lib-js/lib/utils'
 
 class Messages extends React.Component {
     constructor(props) {
@@ -137,6 +137,8 @@ class Messages extends React.Component {
         }
         if (this.checkLoggedOut(username)) return
         try {
+            this.notifyAbort = new fetchEx.AbortController()
+            window.notifyAbort = this.notifyAbort
             removeTaskIds = await notificationTake(username, removeTaskIds, (type, op, timestamp, task_id) => {
                 const updateMessage = op.from === this.state.to || 
                     op.to === this.state.to;
@@ -156,7 +158,7 @@ class Messages extends React.Component {
                 } else if (type === 'private_mark_message') {
                     this.props.messageRead(op, timestamp, updateMessage, isMine);
                 }
-            });
+            }, this.notifyAbort);
             setTimeout(() => {
                 this.setCallback(username, removeTaskIds);
             }, 250);
@@ -166,7 +168,7 @@ class Messages extends React.Component {
                 console.log('notificationTake: resubscribe forced...')
                 notificationShallowUnsubscribe()
             }
-            this.notifyErrorsInc(1);
+            this.notifyErrorsInc(3);
             setTimeout(() => {
                 this.setCallback(username, removeTaskIds)
             }, 2000);
@@ -310,7 +312,11 @@ class Messages extends React.Component {
             editInfo = { nonce: this.editNonce };
         }
 
-        this.props.sendMessage(account, private_key, accounts[to], message, editInfo, 'text', {}, this.state.replyingMessage);
+        this.props.sendMessage({
+            senderAcc: account, memoKey: private_key, toAcc: accounts[to],
+            body: message, editInfo, type: 'text', replyingMessage: this.state.replyingMessage,
+            notifyAbort: this.notifyAbort
+        })
         if (this.editNonce) {
             this.restoreInput();
             this.focusInput();
@@ -507,7 +513,11 @@ class Messages extends React.Component {
 
             const { to, account, accounts, currentUser, messages } = this.props;
             const private_key = currentUser.getIn(['private_keys', 'memo_private']);
-            this.props.sendMessage(account, private_key, accounts[to], url, undefined, 'image', {width, height}, this.state.replyingMessage);
+            this.props.sendMessage({
+                senderAcc: account, memoKey: private_key, toAcc: accounts[to],
+                body: url, type: 'image', meta: {width, height}, replyingMessage: this.state.replyingMessage,
+                notifyAbort: this.notifyAbort
+            });
 
             if (this.state.replyingMessage)
                 this.setState({
@@ -924,7 +934,7 @@ export default withRouter(connect(
                 })
             );
         },
-        sendMessage: (senderAcc, senderPrivMemoKey, toAcc, body, editInfo = undefined, type = 'text', meta = {}, replyingMessage = null) => {
+        sendMessage: ({ senderAcc, memoKey, toAcc, body, editInfo = undefined, type = 'text', meta = {}, replyingMessage = null, notifyAbort }) => {
             let message = {
                 app: 'golos-messenger',
                 version: 1,
@@ -942,7 +952,7 @@ export default withRouter(connect(
                 message = {...message, ...replyingMessage};
             }
 
-            const data = golos.messages.encode(senderPrivMemoKey, toAcc.memo_key, message, editInfo ? editInfo.nonce : undefined);
+            const data = golos.messages.encode(memoKey, toAcc.memo_key, message, editInfo ? editInfo.nonce : undefined);
 
             const opData = {
                 from: senderAcc.name,
@@ -958,6 +968,9 @@ export default withRouter(connect(
             if (!editInfo) {
                 sendOffchainMessage(opData).catch(err => {
                     console.error('sendOffchainMessage', err)
+                    if (notifyAbort) {
+                        notifyAbort.abort()
+                    }
                 })
             }
 

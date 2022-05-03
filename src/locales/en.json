@@ -128,9 +128,10 @@
     "notify_service": "Golos Notify Service (for messenger)",
     "blogs_service": "Blogs",
     "save": "Save",
-    "node_error_NODE": "Cannot connect to %(NODE)s. It may be internet failure. Try to ",
+    "node_error_NODE": "Cannot connect to %(NODE)s. It may be internet failure. Try ",
     "node_error_NODE2": " page.",
     "node_error_NODE3": "Or set another GOLOS node in the ",
+    "node_error_NODE3b": "to set another GOLOS node in the ",
     "to_save_click_button": "To save settings, click \"Save\" button at bottom."
   },
   "g": {

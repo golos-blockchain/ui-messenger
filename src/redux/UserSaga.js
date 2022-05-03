@@ -1,6 +1,6 @@
 import { Map, fromJS } from 'immutable'
 import { call, put, select, fork, takeLatest, takeEvery } from 'redux-saga/effects'
-import { auth, api } from 'golos-lib-js'
+import { auth, api, config } from 'golos-lib-js'
 import { Session, signData } from 'golos-lib-js/lib/auth'
 import { PrivateKey, Signature, hash } from 'golos-lib-js/lib/auth/ecc'
 
@@ -77,11 +77,8 @@ function* usernamePasswordLogin(action) {
         } catch (err) {
             if (err === 'No such account') {
                 yield put(user.actions.loginError({ error: 'Username does not exist' }))
-                return
             } else {
-                console.error(err)
-                yield put(user.actions.loginError({ error: 'Node failure' }))
-                return
+                yield put(user.actions.loginError({ error: 'Node failure', node: config.get('websocket') }))
             }
             return
         }

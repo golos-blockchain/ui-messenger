@@ -15,14 +15,14 @@ import runTests from 'app/utils/BrowserTests';
 import reactForm from 'app/utils/ReactForm'
 import { translateError } from 'app/utils/translateError';
 import { authRegisterUrl, } from 'app/utils/AuthApiClient';
+import { openAppSettings } from 'app/components/pages/app/AppSettings'
 
 const APP_DOMAIN= 'chat.golos.app'
 
 class LoginForm extends Component {
 
     static propTypes = {
-        //Steemit
-        login_error: PropTypes.string,
+        loginError: PropTypes.object,
         onCancel: PropTypes.func,
     };
 
@@ -143,7 +143,8 @@ class LoginForm extends Component {
         const title = postType ? postType : tt('g.login');
         const submitLabel = loginBroadcastOperation ? tt('g.sign_in') : tt('g.login');
         const cancelIsRegister = loginDefault && loginDefault.get('cancelIsRegister');
-        let error = password.touched && password.error ? password.error : this.props.login_error;
+        const { loginError } = this.props
+        let error = !loginLoading && (loginError ? loginError.error : (password.touched && password.error && password.error))
         if (error === 'owner_login_blocked') {
             error = <span>
                 {tt('loginform_jsx.this_password_is_bound_to_your_account_owner_key')}
@@ -158,6 +159,16 @@ class LoginForm extends Component {
               {tt('loginform_jsx.this_password_is_bound_to_your_account_active_key')}
               &nbsp;
               {tt('loginform_jsx.you_may_use_this_active_key_on_other_more')}
+            </span>
+        } else if (error === 'Node failure') {
+            const NODE = loginError && loginError.node
+            error = <span>
+                {tt('app_settings.node_error_NODE', { NODE } )}
+                {tt('app_settings.node_error_NODE3b')}
+                <a href='#' onClick={e => {
+                    e.preventDefault()
+                    openAppSettings()                  
+                }}>{tt('g.settings')}</a>.
             </span>
         }
         let message = null;
@@ -194,7 +205,7 @@ class LoginForm extends Component {
 
                 <div>
                     <input type="password" required ref="pw" placeholder={isMemo ? tt('loginform_jsx.memo_key') : tt('loginform_jsx.password_or_posting')} {...password.props} autoComplete="on" disabled={submitting} />
-                    {error && !loginLoading && <div className="error">{translateError(error)}&nbsp;</div>}
+                    {error && <div className="error">{translateError(error)}&nbsp;</div>}
                     {error && password_info && <div className="warning">{password_info}&nbsp;</div>}
                 </div>
                 {loginBroadcastOperation && <div>
@@ -274,7 +285,7 @@ export default connect(
 
     // mapStateToProps
     (state) => {
-        const login_error = state.user.get('login_error')
+        const loginError = state.user.get('loginError')
         const currentUser = state.user.get('current')
         const loginBroadcastOperation = state.user.get('loginBroadcastOperation')
 
@@ -298,9 +309,9 @@ export default connect(
         let msg = '';
         const msg_match = window.location.hash.match(/msg\=([\w]+)/);
         if (msg_match && msg_match.length > 1) msg = msg_match[1];
-        hasError = !!login_error
+        hasError = !!loginError
         return {
-            login_error,
+            loginError: (loginError && loginError.toJS) ? loginError.toJS() : loginError,
             loginLoading: state.user.get('loginLoading'),
             loginBroadcastOperation,
             initialValues,
