@@ -48,6 +48,7 @@ let idx = fs.readFileSync(indexHtml, 'utf8')
 idx = cheerio.load(idx)
 if (idx('script[src="cordova.js"]').length === 0) {
     idx('<script src="cordova.js"></script>').insertBefore('script')
+    idx('<script>var FileReader0 = FileReader</script>').insertBefore('script')
     console.log('Included.')
 } else {
     console.log('Already exists.')

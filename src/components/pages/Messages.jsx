@@ -120,8 +120,22 @@ class Messages extends React.Component {
         return false
     }
 
+    onPause = () => {
+        this.paused = true
+    }
+
+    onResume = () => {
+        this.paused = false
+    }
+
     async setCallback(username, removeTaskIds) {
         if (this.checkLoggedOut(username)) return
+        if (this.paused) {
+            setTimeout(() => {
+                this.setCallback(username, removeTaskIds)
+            }, 250)
+            return
+        }
         let subscribed = null;
         try {
             subscribed = await notificationSubscribe(username);
@@ -165,14 +179,16 @@ class Messages extends React.Component {
             }, 250);
         } catch (ex) {
             console.error('notificationTake', ex);
+            this.notifyErrorsInc(3);
+            let delay = 2000
             if (ex.message.includes('No such queue')) {
                 console.log('notificationTake: resubscribe forced...')
                 notificationShallowUnsubscribe()
+                delay = 250
             }
-            this.notifyErrorsInc(3);
             setTimeout(() => {
                 this.setCallback(username, removeTaskIds)
-            }, 2000);
+            }, delay);
             return;
         }
         this.notifyErrorsClear();
@@ -187,6 +203,8 @@ class Messages extends React.Component {
                 longLabel: tt('app_settings.shortcut_desc'),
                 hash: '#app-settings'
             })
+            document.addEventListener('pause', this.onPause)
+            document.addEventListener('resume', this.onResume)
         }
         this.props.loginUser()
         const checkAuth = () => {
@@ -244,6 +262,13 @@ class Messages extends React.Component {
                     }
                 }, focusTimeout);
             })
+        }
+    }
+    
+    componentWillUnmount() {
+        if (process.env.IS_APP) {
+            document.addEventListener('pause', this.onPause)
+            document.addEventListener('resume', this.onResume)
         }
     }
 
