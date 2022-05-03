@@ -32,6 +32,8 @@
         <preference name="AutoHideSplashScreen" value="false" />
         <preference name="SplashScreenSpinnerColor" value="#37a5ff" />
 
+		<preference name="Orientation" value="portrait" />
+
         <resource-file src="res/msgs_setting.png" target="app/src/main/res/drawable/msgs_setting.png" />
     </platform>
 </widget>
