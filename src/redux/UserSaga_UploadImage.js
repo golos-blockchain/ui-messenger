@@ -54,7 +54,7 @@ function* uploadImage(action) {
     let data, dataBase64;
 
     if (file) {
-        const reader = new (FileReader0 || FileReader)();
+        const reader = new (window.FileReader0 || FileReader)();
 
         data = yield new Promise(resolve => {
             reader.addEventListener('load', () => {

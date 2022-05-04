@@ -33,6 +33,7 @@ import { flash, unflash } from 'app/components/elements/messages/FlashTitle';
 import { addShortcut } from 'app/utils/app/ShortcutUtils'
 import { hideSplash } from 'app/utils/app/SplashUtils'
 import { openAppSettings } from 'app/components/pages/app/AppSettings'
+import { proxifyImageUrl } from 'app/utils/ProxifyUrl'
 
 class Messages extends React.Component {
     constructor(props) {
@@ -603,7 +604,7 @@ class Messages extends React.Component {
         if (!file) {
             if (rejectedFiles.length) {
                 DialogManager.alert(
-                    tt('reply_editor.please_insert_only_image_files')
+                    tt('post_editor.please_insert_only_image_files')
                 );
             }
             return;

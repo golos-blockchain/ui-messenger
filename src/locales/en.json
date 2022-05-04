@@ -113,7 +113,8 @@
     }
   },
   "post_editor": {
-    "add_image": "Add image"
+    "add_image": "Add image",
+    "please_insert_only_image_files": "Upload image files only"
   },
   "editor_toolbar": {
     "add_image_from_computer": "Add image from computer",
@@ -138,6 +139,12 @@
     "notify": "Here is a new version",
     "troubleshoot": "Maybe its download can solve problem.",
     "download": "Download"
+  },
+  "dialog": {
+    "info": "Information",
+    "alert": "Alert",
+    "confirm": "Confirmation",
+    "prompt": "Enter the data"
   },
   "g": {
     "and": "and",

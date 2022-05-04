@@ -78,7 +78,7 @@ export default class AddImageDialog extends React.PureComponent {
         if (!file) {
             if (rejectedFiles.length) {
                 DialogManager.alert(
-                    tt('reply_editor.please_insert_only_image_files')
+                    tt('post_editor.please_insert_only_image_files')
                 );
             }
             return;

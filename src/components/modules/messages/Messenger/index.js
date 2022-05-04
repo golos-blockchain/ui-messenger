@@ -49,13 +49,14 @@ export default class Messages extends React.Component {
         return (
             <Dropzone
                 className='messenger-dropzone'
-                disableClick
+                noClick
                 multiple={false}
                 accept='image/*'
                 disabled={!to}
                 onDrop={this.onDrop}
             >
-                {(dropzoneParams) => (<div className='messenger'>
+                {({getRootProps, getInputProps, isDragActive}) => (<div className='messenger' {...getRootProps()}>
+                    <input {...getInputProps()} />
                     {(!isSmall || !to) ? <div className='msgs-scrollable msgs-sidebar'>
                         <ConversationList
                             isSmall={isSmall}
@@ -97,7 +98,7 @@ export default class Messages extends React.Component {
                             />
                     </div> : null}
 
-                    {dropzoneParams.isDragActive ? (<div className='messenger-dropzone-shade'>
+                    {isDragActive ? (<div className='messenger-dropzone-shade'>
                         <div className='messenger-dropzone-modal'>
                             Test
                         </div>
