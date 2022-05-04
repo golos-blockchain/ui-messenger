@@ -123,10 +123,20 @@ class Messages extends React.Component {
 
     onPause = () => {
         this.paused = true
+        this.pausedTime = Date.now()
     }
 
     onResume = () => {
         this.paused = false
+        if (this.pausedTime) {
+            const elapsed = Date.now() - this.pausedTime
+            if (elapsed > 60*1000) {
+                const { to, contacts, account, nodeError } = this.props
+                if (contacts && account && !nodeError) {
+                    this.props.fetchState(to)
+                }
+            }
+        }
     }
 
     async setCallback(username, removeTaskIds) {
