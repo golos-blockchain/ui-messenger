@@ -23,5 +23,11 @@ module.exports = function override(config, env) {
         }),
     )
 
+    config.plugins.push(
+        new webpack.DefinePlugin({
+            'process.env.IS_APP': JSON.stringify(!!process.env.IS_APP),
+        }),
+    )
+
     return config
 }

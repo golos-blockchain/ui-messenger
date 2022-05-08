@@ -36,7 +36,8 @@
     "password_update_succes": "The password for %(accountName)s was successfully updated",
     "password_info": "This password or private key was entered incorrectly. There is probably a handwriting or data-entry error.",
     "enter_your_username": "Enter your username",
-    "password_or_wif": "Password or WIF",
+    "password_or_posting": "Password or posting key",
+    "memo_key": "Memo key",
     "this_operation_requires_your_key_or_master_password": "This operation requires your %(authType)s key or Master password.",
     "keep_me_logged_in": "Keep me logged in",
     "keep_me_logged_in_memo": "Remember",
@@ -58,7 +59,7 @@
     "new_message5": " notifications",
     "invalid_message": "(This message could not be displayed in Golos Messenger)",
     "sync_error": "Sync error. To receive new messages please refresh the page.",
-    "sync_error_short": "Sync error."
+    "sync_error_short": "Sync error. To receive new messages touch "
   },
   "emoji_i18n": {
     "categoriesLabel": "Категории",
@@ -112,11 +113,38 @@
     }
   },
   "post_editor": {
-    "add_image": "Add image"
+    "add_image": "Add image",
+    "please_insert_only_image_files": "Upload image files only"
   },
   "editor_toolbar": {
     "add_image_from_computer": "Add image from computer",
     "add_image_via_link": "Add image via link"
+  },
+  "app_settings": {
+    "shortcut": "Settings",
+    "shortcut_desc": "If something broken, changing of node address can solve the problem.",
+    "current_node": "GOLOS node URL",
+    "img_proxy_prefix": "Use Proxy For Images",
+    "auth_service": "Golos Auth & Registration Service (for messenger)",
+    "notify_service": "Golos Notify Service (for messenger)",
+    "blogs_service": "Blogs",
+    "save": "Save",
+    "node_error_NODE": "Cannot connect to %(NODE)s. It may be internet failure. Try ",
+    "node_error_NODE2": " page.",
+    "node_error_NODE3": "Or set another GOLOS node in the ",
+    "node_error_NODE3b": "to set another GOLOS node in the ",
+    "to_save_click_button": "To save settings, click \"Save\" button at bottom."
+  },
+  "app_update": {
+    "notify": "Here is a new version",
+    "troubleshoot": "Maybe its download can solve problem.",
+    "download": "Download"
+  },
+  "dialog": {
+    "info": "Information",
+    "alert": "Alert",
+    "confirm": "Confirmation",
+    "prompt": "Enter the data"
   },
   "g": {
     "and": "and",
@@ -127,13 +155,18 @@
     "edit": "Edit",
     "feed": "Feed",
     "incorrect_password": "Incorrect password",
+    "posting_not_memo": "Use posting key now, not memo",
     "login": "Login",
     "logout": "Logout",
     "mentions": "Mentions",
     "night_mode": "Night Mode",
+    "ok": "OK",
+    "refresh": "Refresh",
+    "required": "Required",
     "replies": "Replies",
     "reply": "Reply",
     "rewards": "Rewards",
+    "settings": "Settings",
     "sign_up": "Sign Up",
     "submit": "Submit",
     "username_does_not_exist": "Username does not exist",

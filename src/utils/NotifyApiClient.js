@@ -1,3 +1,5 @@
+import { fetchEx } from 'golos-lib-js/lib/utils'
+
 const request_base = {
     method: 'post',
     credentials: 'include',
@@ -38,7 +40,7 @@ export function notifyApiLogin(account, authSession) {
         body: JSON.stringify({account, authSession}),
     });
     setSession(request);
-    return fetch(notifyUrl(`/login_account`), request).then(r => {
+    return fetchEx(notifyUrl(`/login_account`), request).then(r => {
         saveSession(r);
         return r.json();
     });
@@ -50,7 +52,7 @@ export function notifyApiLogout() {
         method: 'get',
     });
     setSession(request);
-    fetch(notifyUrl(`/logout_account`), request).then(r => {
+    fetchEx(notifyUrl(`/logout_account`), request).then(r => {
         saveSession(r);
     });
 }
@@ -59,7 +61,7 @@ export function getNotifications(account) {
     if (!notifyAvailable()) return Promise.resolve(null);
     let request = Object.assign({}, request_base, {method: 'get'});
     setSession(request);
-    return fetch(notifyUrl(`/counters/@${account}`), request).then(r => {
+    return fetchEx(notifyUrl(`/counters/@${account}`), request).then(r => {
         saveSession(r);
         return r.json();
     }).then(res => {
@@ -72,7 +74,7 @@ export function markNotificationRead(account, fields) {
     let request = Object.assign({}, request_base, {method: 'put', mode: 'cors'});
     setSession(request);
     const fields_str = fields.join(',');
-    return fetch(notifyUrl(`/counters/@${account}/${fields_str}`), request).then(r => {
+    return fetchEx(notifyUrl(`/counters/@${account}/${fields_str}`), request).then(r => {
         saveSession(r);
         return r.json();
     }).then(res => {
@@ -86,7 +88,7 @@ export async function notificationSubscribe(account, scopes = 'message', sidKey 
     try {
         let request = Object.assign({}, request_base, {method: 'get'});
         setSession(request);
-        let response = await fetch(notifyUrl(`/subscribe/@${account}/${scopes}`), request);
+        let response = await fetchEx(notifyUrl(`/subscribe/@${account}/${scopes}`), request);
         const result = await response.json();
         if (response.ok) {
             saveSession(response);
@@ -111,7 +113,7 @@ export async function notificationUnsubscribe(account, sidKey = '__subscriber_id
     try {
         let request = Object.assign({}, request_base, {method: 'get'});
         setSession(request);
-        response = await fetch(url, request);
+        response = await fetchEx(url, request);
         if (response.ok) {
             saveSession(response);
         }
@@ -128,16 +130,26 @@ export async function notificationUnsubscribe(account, sidKey = '__subscriber_id
     }
 }
 
-export async function notificationTake(account, removeTaskIds, forEach, sidKey = '__subscriber_id') {
+export function notificationShallowUnsubscribe(sidKey = '__subscriber_id') {
+    window[sidKey] = null
+}
+
+export async function notificationTake(account, removeTaskIds, forEach, abortController = null, sidKey = '__subscriber_id') {
     if (!notifyAvailable()) return;
     let url = notifyUrl(`/take/@${account}/${window[sidKey]}`);
     if (removeTaskIds)
         url += '/' + removeTaskIds;
     let response;
     try {
-        let request = Object.assign({}, request_base, {method: 'get'});
+        let request = Object.assign({}, request_base, {
+            method: 'get',
+            timeout: 61000
+        });
+        if (abortController) {
+            request.signal = abortController.signal
+        }
         setSession(request);
-        response = await fetch(url, request);
+        response = await fetchEx(url, request);
         if (response.ok) {
             saveSession(response);
         }
@@ -176,7 +188,7 @@ export async function sendOffchainMessage(op) {
             body: JSON.stringify(op),
         });
         setSession(request);
-        response = await fetch(url, request);
+        response = await fetchEx(url, request);
         if (response.ok) {
             saveSession(response);
         }
@@ -197,5 +209,6 @@ if (process.env.BROWSER) {
     window.markNotificationRead = markNotificationRead;
     window.notificationSubscribe = notificationSubscribe;
     window.notificationUnsubscribe = notificationUnsubscribe;
+    window.notificationShallowUnsubscribe = notificationShallowUnsubscribe
     window.notificationTake = notificationTake;
 }

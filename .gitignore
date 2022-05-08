@@ -105,3 +105,5 @@ dist
 
 # React build output
 build/
+
+cordova/

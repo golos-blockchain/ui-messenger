@@ -3,23 +3,20 @@ import React from 'react';
 import ConversationSearch from 'app/components/elements/messages/ConversationSearch';
 import ConversationListItem from 'app/components/elements/messages/ConversationListItem';
 import Toolbar from 'app/components/elements/messages/Toolbar';
-import ToolbarButton from 'app/components/elements/messages/ToolbarButton';
+import { renderPart } from 'app/utils/misc'
 import './ConversationList.css';
 
 export default class ConversationList extends React.Component {
     render() {
-        const { conversationTopLeft,
-            conversationSelected, conversationLinkPattern,
-            onConversationAdd, onConversationSearch,
-            onConversationSelect } = this.props;
+        const { topLeft, topRight,
+            conversationSelected, conversationLinkPattern, onConversationSearch,
+            onConversationSelect,
+            isSmall } = this.props;
         return (
             <div className='conversation-list'>
                 <Toolbar
-                    leftItems={conversationTopLeft}
-                    rightItems={onConversationAdd ? [
-                       <ToolbarButton key='add' icon='ion-ios-add-circle-outline'
-                            onClick={onConversationAdd} />
-                    ] : undefined}
+                    leftItems={renderPart(topLeft, { isSmall })}
+                    rightItems={renderPart(topRight, { isSmall })}
                 />
                 <ConversationSearch onSearch={onConversationSearch} />
                 {

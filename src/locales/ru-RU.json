@@ -37,7 +37,8 @@
     "password_update_succes": "Пароль для %(accountName)s был успешно обновлен",
     "password_info": "Этот пароль или ключ был введён неправильно. Вероятно, есть ошибка при вводе данных.",
     "enter_your_username": "Введите имя пользователя",
-    "password_or_wif": "Пароль или соответствующий ключ",
+    "password_or_posting": "Пароль или posting-ключ",
+    "memo_key": "Memo-ключ",
     "this_operation_requires_your_key_or_master_password": "Эта операция требует ввода вашего %(authType)s ключа или главного пароля",
     "keep_me_logged_in": "Оставить меня залогиненным",
     "keep_me_logged_in_memo": "Запомнить",
@@ -59,7 +60,7 @@
     "new_message5": " новых сообщений",
     "invalid_message": "(Это сообщение не может быть отображено в Golos Messenger)",
     "sync_error": "Ошибка синхронизации. Для получения новых сообщений обновляйте страницу.",
-    "sync_error_short": "Ошибка синхронизации."
+    "sync_error_short": "Ошибка синхронизации. Для получения новых сообщений нажимайте "
   },
   "emoji_i18n": {
     "categoriesLabel": "Категории",
@@ -113,11 +114,38 @@
     }
   },
   "post_editor": {
-    "add_image": "Добавить изображение"
+    "add_image": "Добавить изображение",
+    "please_insert_only_image_files": "Вставляйте только файлы изображений"
   },
   "editor_toolbar": {
     "add_image_from_computer": "Добавить изображение с устройства",
     "add_image_via_link": "Добавить изображение ссылкой"
+  },
+  "app_settings": {
+    "shortcut": "Настройки",
+    "shortcut_desc": "Если возникли неполадки, то настройка адресов ноды и микросервисов может помочь.",
+    "current_node": "Адрес ноды GOLOS",
+    "img_proxy_prefix": "Использовать прокси для изображений",
+    "auth_service": "Golos Auth & Registration Service (для мгновенных сообщений)",
+    "notify_service": "Golos Notify Service (для мгновенных сообщений)",
+    "blogs_service": "Блоги",
+    "save": "Сохранить",
+    "node_error_NODE": "Не удалось подключиться к ноде %(NODE)s. Возможно, это проблемы с интернетом. Попробуйте ",
+    "node_error_NODE2": " страницу.",
+    "node_error_NODE3": "Или попробуйте задать другую ноду GOLOS в меню ",
+    "node_error_NODE3b": "еще раз или задайте другую ноду GOLOS в меню ",
+    "to_save_click_button": "Чтобы сохранить настройки, нажмите кнопку \"Сохранить\" внизу."
+  },
+  "app_update": {
+    "notify": "Доступна новая версия",
+    "troubleshoot": "Возможно ее скачивание решит проблему.",
+    "download": "Скачать"
+  },
+  "dialog": {
+    "info": "Информация",
+    "alert": "Предупреждение",
+    "confirm": "Подтверждение",
+    "prompt": "Введите данные"
   },
   "g": {
     "and": "и",
@@ -128,13 +156,18 @@
     "edit": "Редактировать",
     "feed": "Лента",
     "incorrect_password": "Неправильный пароль",
+    "posting_not_memo": "Сейчас нужно ввести posting-ключ. Вы ввели memo.",
     "login": "Войти",
     "logout": "Выйти",
     "mentions": "Упоминания",
     "night_mode": "Ночной режим",
+    "ok": "OK",
+    "refresh": "Обновить",
+    "required": "Обязательно",
     "replies": "Ответы",
     "reply": "Ответить",
     "rewards": "Награды",
+    "settings": "Настройки",
     "sign_up": "Регистрация",
     "username_does_not_exist": "Такого имени не существует",
     "wallet": "Кошелек"

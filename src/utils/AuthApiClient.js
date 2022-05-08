@@ -1,3 +1,5 @@
+import { fetchEx } from 'golos-lib-js/lib/utils'
+
 const request_base = {
     method: 'post',
     credentials: 'include',
@@ -46,7 +48,7 @@ export function authApiLogin(account, signatures) {
         body: JSON.stringify({account, signatures}),
     });
     setSession(request);
-    return fetch(authUrl(`/api/login_account`), request).then(r => {
+    return fetchEx(authUrl(`/api/login_account`), request).then(r => {
         saveSession(r);
         return r.json();
     });
@@ -58,7 +60,7 @@ export function authApiLogout() {
         method: 'get',
     });
     setSession(request);
-    fetch(authUrl(`/api/logout_account`), request).then(r => {
+    fetchEx(authUrl(`/api/logout_account`), request).then(r => {
         saveSession(r);
     });
 }

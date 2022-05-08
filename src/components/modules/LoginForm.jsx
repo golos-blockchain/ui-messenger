@@ -3,23 +3,26 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types'
 import {pageSession} from 'golos-lib-js/lib/auth';
 import {PrivateKey, PublicKey} from 'golos-lib-js/lib/auth/ecc'
+import tt from 'counterpart';
+
+import LoadingIndicator from 'app/components/elements/LoadingIndicator'
+import Logo from 'app/components/elements/Logo'
 //import transaction from 'app/redux/Transaction'
 //import g from 'app/redux/GlobalReducer'
 import user from 'app/redux/UserReducer'
 import {validate_account_name} from 'app/utils/ChainValidation';
 import runTests from 'app/utils/BrowserTests';
 import reactForm from 'app/utils/ReactForm'
-import tt from 'counterpart';
 import { translateError } from 'app/utils/translateError';
 import { authRegisterUrl, } from 'app/utils/AuthApiClient';
+import { openAppSettings } from 'app/components/pages/app/AppSettings'
 
 const APP_DOMAIN= 'chat.golos.app'
 
 class LoginForm extends Component {
 
     static propTypes = {
-        //Steemit
-        login_error: PropTypes.string,
+        loginError: PropTypes.object,
         onCancel: PropTypes.func,
     };
 
@@ -59,6 +62,11 @@ class LoginForm extends Component {
     componentDidMount() {
         if (this.refs.username && !this.refs.username.value) this.refs.username.focus();
         if (this.refs.username && this.refs.username.value) this.refs.pw.focus();
+       /*document.body.onclick = async () => { alert('...'); setTimeout(() => { cordova.plugins.notification.local.schedule({
+    title: 'My first notification',
+    text: 'Thats pretty easy...',
+    foreground: true
+        }); }, 5000) }*/
     }
 
     componentDidUpdate(prevProps) {
@@ -112,7 +120,7 @@ class LoginForm extends Component {
             </div>;
         }
 
-        const { loginBroadcastOperation, loginDefault, dispatchSubmit, afterLoginRedirectToWelcome, msg} = this.props;
+        const { loginBroadcastOperation, loginDefault, loginLoading, dispatchSubmit, afterLoginRedirectToWelcome, msg} = this.props;
         const {username, password, saveLogin} = this.state;
         const {submitting, valid, handleSubmit} = this.state.login;
         const {usernameOnChange, onCancel, /*qrReader*/} = this;
@@ -135,7 +143,8 @@ class LoginForm extends Component {
         const title = postType ? postType : tt('g.login');
         const submitLabel = loginBroadcastOperation ? tt('g.sign_in') : tt('g.login');
         const cancelIsRegister = loginDefault && loginDefault.get('cancelIsRegister');
-        let error = password.touched && password.error ? password.error : this.props.login_error;
+        const { loginError } = this.props
+        let error = !loginLoading && (loginError ? loginError.error : (password.touched && password.error && password.error))
         if (error === 'owner_login_blocked') {
             error = <span>
                 {tt('loginform_jsx.this_password_is_bound_to_your_account_owner_key')}
@@ -150,6 +159,16 @@ class LoginForm extends Component {
               {tt('loginform_jsx.this_password_is_bound_to_your_account_active_key')}
               &nbsp;
               {tt('loginform_jsx.you_may_use_this_active_key_on_other_more')}
+            </span>
+        } else if (error === 'Node failure') {
+            const NODE = loginError && loginError.node
+            error = <span>
+                {tt('app_settings.node_error_NODE', { NODE } )}
+                {tt('app_settings.node_error_NODE3b')}
+                <a href='#' onClick={e => {
+                    e.preventDefault()
+                    openAppSettings()                  
+                }}>{tt('g.settings')}</a>.
             </span>
         }
         let message = null;
@@ -171,7 +190,7 @@ class LoginForm extends Component {
             <center>
             <form onSubmit={handleSubmit(({data}) => {
                 this.state.password.props.onChange('');
-                return dispatchSubmit(data, loginBroadcastOperation, afterLoginRedirectToWelcome)
+                return dispatchSubmit(data, loginBroadcastOperation, afterLoginRedirectToWelcome, authType)
             })}
                 onChange={this.props.clearError}
                 method="post"
@@ -185,7 +204,7 @@ class LoginForm extends Component {
                 {username.touched && username.blur && username.error ? <div className="error">{translateError(username.error)}&nbsp;</div> : null}
 
                 <div>
-                    <input type="password" required ref="pw" placeholder={tt('loginform_jsx.password_or_wif')} {...password.props} autoComplete="on" disabled={submitting} />
+                    <input type="password" required ref="pw" placeholder={isMemo ? tt('loginform_jsx.memo_key') : tt('loginform_jsx.password_or_posting')} {...password.props} autoComplete="on" disabled={submitting} />
                     {error && <div className="error">{translateError(error)}&nbsp;</div>}
                     {error && password_info && <div className="warning">{password_info}&nbsp;</div>}
                 </div>
@@ -197,7 +216,7 @@ class LoginForm extends Component {
                         {tt(isMemo ? 'loginform_jsx.keep_me_logged_in_memo' : 'loginform_jsx.keep_me_logged_in')} &nbsp;
                         <input id="saveLogin" type="checkbox" ref="pw" {...saveLogin.props} onChange={this.saveLoginToggle} disabled={submitting} /></label>
                 </div>}
-                <div>
+                {!loginLoading ? <div>
                     <br />
                     <button type="submit" disabled={submitting || disabled} className="button">
                         {submitLabel}
@@ -208,13 +227,19 @@ class LoginForm extends Component {
                     {cancelIsRegister && !isMemo && <a href={authRegisterUrl()} target='_blank' type="button float-right" disabled={submitting} className="button hollow" onClick={this.checkRegisterEnabled}>
                         {tt('g.sign_up')}
                     </a>}
-                </div>
+                </div> : <div>
+                    <br />
+                    <LoadingIndicator type='circle' size='25px' />
+                </div>}
             </form>
         </center>
         );
 
-        return (
+        let loginForm = (
            <div className="LoginForm">
+                <div style={{marginBottom: '3rem'}} className='logo'>
+                    <Logo />
+                </div>
                {message}
                <center>
                    <h3><span className="OpAction">{title}</span></h3>
@@ -222,7 +247,9 @@ class LoginForm extends Component {
                <br />
                {form}
            </div>
-       )
+        )
+
+        return loginForm
     }
 }
 
@@ -258,12 +285,14 @@ export default connect(
 
     // mapStateToProps
     (state) => {
-        const login_error = state.user.get('login_error')
+        const loginError = state.user.get('loginError')
         const currentUser = state.user.get('current')
         const loginBroadcastOperation = state.user.get('loginBroadcastOperation')
 
         const initialValues = {
             saveLogin: saveLoginDefault,
+            username: 'inviter',
+            password: 'P5KBN9sJKwtpejudxuGF5W55ZF7NNfrCaYT4ofiTBC7ku6nVHp1c'
         }
 
         // The username input has a value prop, so it should not use initialValues
@@ -280,9 +309,10 @@ export default connect(
         let msg = '';
         const msg_match = window.location.hash.match(/msg\=([\w]+)/);
         if (msg_match && msg_match.length > 1) msg = msg_match[1];
-        hasError = !!login_error
+        hasError = !!loginError
         return {
-            login_error,
+            loginError: (loginError && loginError.toJS) ? loginError.toJS() : loginError,
+            loginLoading: state.user.get('loginLoading'),
             loginBroadcastOperation,
             initialValues,
             initialUsername,
@@ -293,7 +323,7 @@ export default connect(
 
     // mapDispatchToProps
     dispatch => ({
-        dispatchSubmit: (data, loginBroadcastOperation, afterLoginRedirectToWelcome) => {
+        dispatchSubmit: (data, loginBroadcastOperation, afterLoginRedirectToWelcome, authType) => {
             const {password, saveLogin} = data
             const username = data.username.trim().toLowerCase()
             if (loginBroadcastOperation) {
@@ -309,7 +339,7 @@ export default connect(
                 dispatch(user.actions.usernamePasswordLogin({username, password, saveLogin: true, afterLoginRedirectToWelcome, operationType: type}))
                 dispatch(user.actions.closeLogin())*/
             } else {
-                dispatch(user.actions.usernamePasswordLogin({username, password, saveLogin, afterLoginRedirectToWelcome}))
+                dispatch(user.actions.usernamePasswordLogin({username, password, saveLogin, afterLoginRedirectToWelcome, authType}))
             }
         },
         /*clearError: () => { if (hasError) dispatch(user.actions.loginError({error: null})) },

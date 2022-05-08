@@ -1,4 +1,12 @@
 .LoginForm {
+  .logo {
+    display: none;
+  }
+  @media screen and (max-width: 39.9375em) {
+    .logo {
+      display: block;
+    }
+  }
   label {
     text-transform: none;
   }

@@ -1,9 +1,11 @@
 import React from 'react';
+import throttle from 'lodash/throttle'
 
 import Compose from 'app/components/elements/messages/Compose';
 import Toolbar from 'app/components/elements/messages/Toolbar';
 import ToolbarButton from 'app/components/elements/messages/ToolbarButton';
 import Message from 'app/components/elements/messages/Message';
+import { renderPart } from 'app/utils/misc'
 import './MessageList.css';
 
 /*{
@@ -13,16 +15,44 @@ import './MessageList.css';
     timestamp: new Date().getTime()
 },*/
 export default class MessageList extends React.Component {
-    scroll() {
-        let scroll = document.getElementsByClassName('msgs-content')[0];
+    _getScrollable = () => {
+        return document.getElementsByClassName('msgs-content')[0]
+    }
+
+    scrollToEnd() {
+        let scroll = this._getScrollable()
         if (scroll) {
-            scroll.scrollTo(0,scroll.scrollHeight);
+            scroll.scrollTo(0, scroll.scrollHeight)
+        }
+    }
+
+    scrollBy = (delta) => {
+        let scroll = this._getScrollable()
+        if (scroll) {
+            scroll.scrollBy(0, delta)
         }
     }
 
     componentDidMount() {
-        this.scroll()
+        this.scrollToEnd()
+        this.prevHeight = window.innerHeight
+        window.addEventListener('resize', this.onWindowResizeThrottle)
     }
+
+    componentWillUnmount() {
+        window.removeEventListener('resize', this.onWindowResizeThrottle)
+    }
+
+    onWindowResize = (e) => {
+        const height = window.innerHeight
+        const delta = this.prevHeight - height
+        if (delta > 0) {
+            this.scrollBy(delta)
+        }
+        this.prevHeight = height
+    }
+
+    onWindowResizeThrottle = throttle(this.onWindowResize, 100)
 
     componentDidUpdate(prevProps) {
         const { to, messages } = this.props;
@@ -31,12 +61,12 @@ export default class MessageList extends React.Component {
         if (!scroll && hasMsgs && messages.length) {
             const msg1 = prevProps.messages[0];
             const msg2 = messages[0];
-            if (msg1.from !== msg2.from || msg1.to !== msg2.to) {
+            if (msg1 && (msg1.from !== msg2.from || msg1.to !== msg2.to)) {
                 scroll = true;
             }
         }
         if (scroll) {
-            this.scroll()
+            this.scrollToEnd()
         }
     }
 
@@ -115,13 +145,14 @@ export default class MessageList extends React.Component {
     render() {
         const { account, to, topLeft, topCenter, topRight, replyingMessage, onCancelReply, onSendMessage, selectedMessages,
             onButtonImageClicked, onImagePasted,
-            onPanelDeleteClick, onPanelReplyClick, onPanelEditClick, onPanelCloseClick } = this.props;
+            onPanelDeleteClick, onPanelReplyClick, onPanelEditClick, onPanelCloseClick,
+            isSmall } = this.props;
         return (
             <div className='message-list'>
                 <Toolbar
-                    leftItems={topLeft}
-                    title={topCenter}
-                    rightItems={topRight}
+                    leftItems={renderPart(topLeft, { isSmall })}
+                    title={renderPart(topCenter, { isSmall })}
+                    rightItems={renderPart(topRight, { isSmall })}
                 />
 
                 <div className='message-list-container'>{this.renderMessages()}</div>

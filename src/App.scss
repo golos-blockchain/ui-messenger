@@ -17,3 +17,21 @@ body {
 }
 
 @import "app/components/all";
+
+@keyframes loading {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.secondary {
+  color: $dark-gray;
+  font-size: 90%;
+  a {
+    color: $dark-gray;
+    text-decoration: underline;
+  }
+}

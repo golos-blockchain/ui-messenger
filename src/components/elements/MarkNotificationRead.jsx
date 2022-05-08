@@ -13,16 +13,26 @@ class MarkNotificationRead extends React.Component {
         interval: PropTypes.number,
     };
 
-    shouldComponentUpdate() {
+    shouldComponentUpdate(nextProps) {
+        if (this.props.interval !== nextProps.interval) {
+            return true
+        }
         return false;
     }
 
-    _activateInterval(interval) {
+    _activateInterval = (interval) => {
         if (!this.interval) {
             const { account, update } = this.props;
             this.interval = setInterval(() => {
                 markNotificationRead(account, this.fields_array).then(nc => update(nc));
             }, interval);
+        }
+    }
+
+    _clearInterval =() => {
+        if (this.interval) {
+            clearInterval(this.interval)
+            this.interval = undefined
         }
     }
 
@@ -35,15 +45,17 @@ class MarkNotificationRead extends React.Component {
             markNotificationRead(account, this.fields_array).then(nc => update(nc));
     }
 
-    UNSAFE_componentWillReceiveProps(nextProps) {
-        if (nextProps.interval) {
-            this._activateInterval(nextProps.interval);
+    componentDidUpdate() {
+        const { interval } = this.props
+        if (interval) {
+            this._activateInterval(interval);
         } else {
-            if (this.interval) {
-                clearInterval(this.interval);
-                this.interval = undefined;
-            }
+            this._clearInterval()
         }
+    }
+
+    componentWillUnmount() {
+        this._clearInterval()
     }
 
     render() {

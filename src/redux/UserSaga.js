@@ -1,6 +1,6 @@
 import { Map, fromJS } from 'immutable'
 import { call, put, select, fork, takeLatest, takeEvery } from 'redux-saga/effects'
-import { auth, api } from 'golos-lib-js'
+import { auth, api, config } from 'golos-lib-js'
 import { Session, signData } from 'golos-lib-js/lib/auth'
 import { PrivateKey, Signature, hash } from 'golos-lib-js/lib/auth/ecc'
 
@@ -9,13 +9,12 @@ import user from 'app/redux/UserReducer'
 import { getAccount } from 'app/redux/SagaShared'
 import uploadImageWatch from 'app/redux/UserSaga_UploadImage'
 import { authApiLogin, authApiLogout } from 'app/utils/AuthApiClient'
-import { notifyApiLogin, notifyApiLogout } from 'app/utils/NotifyApiClient'
+import { notifyApiLogin, notifyApiLogout, notificationUnsubscribe } from 'app/utils/NotifyApiClient'
 
 const session = new Session('msgr_auth')
 
 export function* userWatches() {
     yield fork(loginWatch)
-    yield fork(loginErrorWatch)
     yield fork(saveLoginWatch)
     yield fork(logoutWatch)
     yield fork(getAccountWatch)
@@ -28,10 +27,6 @@ function* loginWatch() {
 
 function* saveLoginWatch() {
     yield takeLatest('user/SAVE_LOGIN', saveLogin);
-}
-
-function* loginErrorWatch() {
-    yield takeLatest('user/LOGIN_ERROR', loginError)
 }
 
 function* getAccountWatch() {
@@ -49,7 +44,7 @@ function* logoutWatch() {
 */
 function* usernamePasswordLogin(action) {
     let { username, password, saveLogin,
-        operationType, afterLoginRedirectToWelcome } = action.payload
+        operationType, afterLoginRedirectToWelcome, authType } = action.payload
 
     let saved = false
     let postingWif, memoWif
@@ -82,10 +77,9 @@ function* usernamePasswordLogin(action) {
         } catch (err) {
             if (err === 'No such account') {
                 yield put(user.actions.loginError({ error: 'Username does not exist' }))
-                return
+            } else {
+                yield put(user.actions.loginError({ error: 'Node failure', node: config.get('websocket') }))
             }
-            console.error(err)
-            alert(err)
             return
         }
 
@@ -100,11 +94,25 @@ function* usernamePasswordLogin(action) {
             return
         }
 
+        if (authType !== 'memo' && authRes.memo && !authRes.posting) {
+            yield put(user.actions.loginError({ error: 'Posting Not Memo Please' }))
+            return
+        }
+
+        if (authType === 'memo' && !authRes.memo) {
+            yield put(user.actions.loginError({ error: 'Incorrect Password' }))
+            return
+        }
+
         postingWif = authRes.posting
         memoWif = authRes.memo
+
+        // clean error, in order to not show it in Memo login form after Posting login form
+        yield put(user.actions.loginError({ error: '' }))
     }
 
     if (!postingWif && !memoWif) {
+        yield put(user.actions.stopLoading())
         return
     }
 
@@ -118,23 +126,8 @@ function* usernamePasswordLogin(action) {
         private_keys = private_keys.set('memo_private', PrivateKey.fromWif(memoWif))
     }
 
-    if (!operationType) {
-        yield put(
-            user.actions.setUser({
-                username,
-                private_keys,
-            })
-        )
-    } else {
-        // yield put(
-        //     user.actions.setUser({
-        //         username,
-        //         operationType,
-        //         vesting_shares: account.get('vesting_shares'),
-        //         received_vesting_shares: account.get('received_vesting_shares'),
-        //         delegated_vesting_shares: account.get('delegated_vesting_shares')
-        //     })
-        // )
+    if (saved && !operationType) {
+        yield put(user.actions.setUser({ username, private_keys, }))
     }
 
     if (postingWif) {
@@ -145,9 +138,9 @@ function* usernamePasswordLogin(action) {
         } catch(error) {
             // Does not need to be fatal
             console.error('Notify Login Checking Error', error);
-            alreadyAuthorized = null;
+            alreadyAuthorized = false;
         }
-        if (alreadyAuthorized === false) {
+        if (!alreadyAuthorized) {
             let authorized = false;
             try {
                 const res = yield authApiLogin(username, null);
@@ -187,13 +180,14 @@ function* usernamePasswordLogin(action) {
         }
     }
 
+    if (!saved && !operationType) {
+        yield put(user.actions.setUser({ username, private_keys, }))
+    }
+
     if (!saved && saveLogin && !operationType)
         yield put(user.actions.saveLogin())
-}
 
-function* loginError({payload: {/*error*/}}) {
-    notifyApiLogout()
-    authApiLogout()
+    yield put(user.actions.stopLoading())
 }
 
 function* saveLogin() {
@@ -220,6 +214,13 @@ function* saveLogin() {
 
 function* logout() {
     yield put(user.actions.saveLoginConfirm(false)) // Just incase it is still showing
+    const data = session.load()
+    const username = data[0]
+    try {
+        yield notificationUnsubscribe(username)
+    } catch (err) {
+        console.error('Cannot unsubscribe', err)
+    }
     session.clear()
     notifyApiLogout()
     authApiLogout()

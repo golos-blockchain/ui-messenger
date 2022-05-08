@@ -3,59 +3,84 @@ import Dropzone from 'react-dropzone';
 
 import ConversationList from '../ConversationList';
 import MessageList from '../MessageList';
+import isScreenSmall from 'app/utils/isScreenSmall'
 import './Messenger.css';
 
 export default class Messages extends React.Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            isSmall: isScreenSmall()
+        }
+    }
+
+    componentDidMount() {
+        this._checkSmall()
+        window.addEventListener('resize', this._checkSmall)
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('resize', this._checkSmall)
+    }
+
+    _checkSmall = () => {
+        const isSmall = isScreenSmall()
+        if (this.state.isSmall !== isSmall) {
+            this.setState({ isSmall })
+        }
+    }
+
     onDrop = (acceptedFiles, rejectedFiles, event) => {
         if (this.props.onImageDropped) {
-            this.props.onImageDropped(acceptedFiles, rejectedFiles, event);
+            this.props.onImageDropped(acceptedFiles, rejectedFiles, event)
         }
-    };
+    }
 
     render() {
         const { account, to,
-            contacts, conversationTopLeft, conversationLinkPattern,
-            onConversationAdd, onConversationSearch, onConversationSelect,
+            contacts, conversationTopLeft, conversationTopRight, conversationLinkPattern,
+            onConversationSearch, onConversationSelect,
             messagesTopLeft, messagesTopCenter, messagesTopRight, messages, replyingMessage, onCancelReply, onSendMessage,
             onButtonImageClicked, onImagePasted,
             selectedMessages, onMessageSelect, onPanelDeleteClick, onPanelReplyClick, onPanelEditClick, onPanelCloseClick } = this.props;
 
-        let isMobile = false;
-        if (typeof(window) !== 'undefined') {
-            isMobile = window.matchMedia('screen and (max-width: 39.9375em)').matches;
-        }
+        const { isSmall } = this.state
 
         return (
             <Dropzone
                 className='messenger-dropzone'
-                disableClick
+                noClick
                 multiple={false}
                 accept='image/*'
                 disabled={!to}
                 onDrop={this.onDrop}
             >
-                {(dropzoneParams) => (<div className='messenger'>
-                    {(!isMobile || !to) ? <div className='msgs-scrollable msgs-sidebar'>
+                {({getRootProps, getInputProps, isDragActive}) => (<div className='messenger' {...getRootProps()}>
+                    <input {...getInputProps()} />
+                    {(!isSmall || !to) ? <div className='msgs-scrollable msgs-sidebar'>
                         <ConversationList
-                            conversationTopLeft={conversationTopLeft}
+                            isSmall={isSmall}
+                            topLeft={conversationTopLeft}
+                            topRight={conversationTopRight}
                             account={account}
                             conversations={contacts}
                             conversationSelected={to}
                             conversationLinkPattern={conversationLinkPattern}
-                            onConversationAdd={onConversationAdd}
                             onConversationSearch={onConversationSearch}
                             onConversationSelect={onConversationSelect}
                             />
                     </div> : null}
 
-                    {(!isMobile || to) ? <div className='msgs-scrollable msgs-content'>
+                    {(!isSmall || to) ? <div className='msgs-scrollable msgs-content'>
                         <MessageList
                             account={account}
                             to={to}
+                            isSmall={isSmall}
                             topLeft={messagesTopLeft}
                             topCenter={messagesTopCenter}
                             topRight={messagesTopRight}
                             renderEmpty={() => {
+                                if (localStorage.getItem('msgr_auth') || process.env.IS_APP) return null
                                 return (<img className='msgs-empty-chat' src='/msg_empty.png' />)
                             }}
                             messages={messages}
@@ -73,7 +98,7 @@ export default class Messages extends React.Component {
                             />
                     </div> : null}
 
-                    {dropzoneParams.isDragActive ? (<div className='messenger-dropzone-shade'>
+                    {isDragActive ? (<div className='messenger-dropzone-shade'>
                         <div className='messenger-dropzone-modal'>
                             Test
                         </div>
