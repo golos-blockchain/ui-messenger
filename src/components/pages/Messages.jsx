@@ -50,6 +50,9 @@ class Messages extends React.Component {
         this.cachedProfileImages = {};
         this.windowFocused = true;
         this.newMessages = 0;
+        if (process.env.IS_APP) {
+            this.stopService()
+        }
     }
 
     markMessages() {
@@ -124,6 +127,16 @@ class Messages extends React.Component {
     onPause = () => {
         this.paused = true
         this.pausedTime = Date.now()
+        const { username } = this.props
+        const session = localStorage.getItem('X-Session')
+        if (username && session) {
+            const lastTake = window.__lastTake || 0
+            cordova.exec((winParam) => {
+                console.log('pause ok', winParam)
+            }, (err) => {
+                console.error('pause err', err)
+            }, 'CorePlugin', 'startService', [username, session, lastTake])
+        }
     }
 
     onResume = () => {
@@ -137,6 +150,15 @@ class Messages extends React.Component {
                 }
             }
         }
+        this.stopService()
+    }
+    
+    stopService = () => {
+        cordova.exec((winParam) => {
+            console.log('resume ok', winParam)
+        }, (err) => {
+            console.error('resume err', err)
+        }, 'CorePlugin', 'stopService', [])
     }
 
     async setCallback(username, removeTaskIds) {
@@ -165,7 +187,7 @@ class Messages extends React.Component {
         try {
             this.notifyAbort = new fetchEx.AbortController()
             window.notifyAbort = this.notifyAbort
-            removeTaskIds = await notificationTake(username, removeTaskIds, (type, op, timestamp, task_id) => {
+            const { removeTaskIds, __lastTake } = await notificationTake(username, removeTaskIds, (type, op, timestamp, task_id) => {
                 const updateMessage = op.from === this.state.to || 
                     op.to === this.state.to;
                 const isMine = username === op.from;
@@ -185,6 +207,7 @@ class Messages extends React.Component {
                     this.props.messageRead(op, timestamp, updateMessage, isMine);
                 }
             }, this.notifyAbort);
+            window.__lastTake = __lastTake
             setTimeout(() => {
                 this.setCallback(username, removeTaskIds);
             }, 250);

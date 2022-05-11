@@ -3389,11 +3389,6 @@ cordova-plugin-file@^7.0.0:
   resolved "https://registry.yarnpkg.com/cordova-plugin-file/-/cordova-plugin-file-7.0.0.tgz#40e72468e09439c402c81ff063d6ee74fffd763a"
   integrity sha512-mSwy9GE5pHq2ZHhu/wYk/VhrwR5VLk+XQsk3+IiiFmDgcPsrVIyELkM2FZKX09cC6i+bJVTFVKUlwteSStj3ow==
 
-cordova-plugin-local-notification@^0.9.0-beta.2:
-  version "0.9.0-beta.2"
-  resolved "https://registry.yarnpkg.com/cordova-plugin-local-notification/-/cordova-plugin-local-notification-0.9.0-beta.2.tgz#e3a0b4a35d11f95bb4f1e367d9baee9909cca695"
-  integrity sha512-63n77K1pt8dnbWnNR8QWETi9Glezi1bvNHvHWmGNIOv0xCb0phZnm+Ku49BQ+omwe8Z5voMvrA4I03SYPpv38w==
-
 cordova-plugin-splashscreen@^6.0.1:
   version "6.0.1"
   resolved "https://registry.yarnpkg.com/cordova-plugin-splashscreen/-/cordova-plugin-splashscreen-6.0.1.tgz#dc7bf1365ed1da13382faccd339bd6f7f85aa53a"
@@ -5049,6 +5044,9 @@ globby@^11.0.1, globby@^11.0.4:
     ignore "^5.2.0"
     merge2 "^1.4.1"
     slash "^3.0.0"
+
+"gls-messenger-native-core@file:native_core":
+  version "1.0.0"
 
 golos-lib-js@^0.9.32:
   version "0.9.32"
