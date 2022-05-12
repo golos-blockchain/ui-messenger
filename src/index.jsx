@@ -5,7 +5,7 @@ import App from './App'
 import { addShortcut } from 'app/utils/app/ShortcutUtils'
 
 // First add - for case if all failed at all, and not rendering Messages
-if (process.env.IS_APP) {
+if (process.env.MOBILE_APP) {
     addShortcut({
         id: 'the_settings',
         shortLabel: 'Настройки',

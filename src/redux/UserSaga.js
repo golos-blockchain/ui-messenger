@@ -224,7 +224,7 @@ function* logout() {
     session.clear()
     notifyApiLogout()
     authApiLogout()
-    if (process.env.IS_APP) {
+    if (process.env.MOBILE_APP) {
         cordova.exec((winParam) => {
             console.log('logout ok', winParam)
         }, (err) => {

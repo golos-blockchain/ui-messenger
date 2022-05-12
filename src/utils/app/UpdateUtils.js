@@ -5,7 +5,7 @@ import { fetchEx } from 'golos-lib-js/lib/utils'
 const folder = '/msg-android'
 
 async function httpGet(url, timeout = fetchEx.COMMON_TIMEOUT, responseType = 'text') {
-    if (process.env.IS_APP) {
+    if (process.env.MOBILE_APP) {
         return await new Promise((resolve, reject) => {
             try {
                 cordova.plugin.http.sendRequest(url, {

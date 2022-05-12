@@ -69,8 +69,9 @@
     "build": "react-app-rewired build",
     "prod": "NODE_ENV=production node server/index.js",
     "prebuild:mobile": "cross-env NODE_CONFIG_ENV=production,mobile node ./prebuild_mobile.js",
-    "build:mobile": "cross-env IS_APP=1 react-app-rewired build",
-    "postbuild:mobile": "cross-env NODE_CONFIG_ENV=production,mobile node ./postbuild_mobile.js && cd cordova && cordova prepare && cordova run android"
+    "build:mobile": "cross-env IS_APP=1 MOBILE_APP=1 react-app-rewired build",
+    "postbuild:mobile": "cross-env NODE_CONFIG_ENV=production,mobile node ./postbuild_mobile.js && cd cordova && cordova prepare && cordova run android",
+    "build:desktop": "cross-env IS_APP=1 DESKTOP_APP=1 react-app-rewired build"
   },
   "browserslist": {
     "production": [

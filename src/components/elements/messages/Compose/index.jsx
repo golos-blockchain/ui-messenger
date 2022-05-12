@@ -9,7 +9,7 @@ import './Compose.css';
 
 export default class Compose extends React.Component {
     onKeyDown = (e) => {
-        if (!window.IS_MOBILE && e.keyCode === 13) {
+        if (!window.IS_MOBILE_DEVICE && e.keyCode === 13) {
             if (e.shiftKey) {
             } else {
                 e.preventDefault();

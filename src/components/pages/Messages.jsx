@@ -50,7 +50,7 @@ class Messages extends React.Component {
         this.cachedProfileImages = {};
         this.windowFocused = true;
         this.newMessages = 0;
-        if (process.env.IS_APP) {
+        if (process.env.MOBILE_APP) {
             this.stopService()
         }
     }
@@ -231,7 +231,7 @@ class Messages extends React.Component {
 
     componentDidMount() {
         // Replacing shortcut (already added) with localized one
-        if (process.env.IS_APP) {
+        if (process.env.MOBILE_APP) {
             addShortcut({
                 id: 'the_settings',
                 shortLabel: tt('app_settings.shortcut'),
@@ -302,7 +302,7 @@ class Messages extends React.Component {
     }
     
     componentWillUnmount() {
-        if (process.env.IS_APP) {
+        if (process.env.MOBILE_APP) {
             document.addEventListener('pause', this.onPause)
             document.addEventListener('resume', this.onResume)
         }
@@ -663,7 +663,7 @@ class Messages extends React.Component {
     };
 
     focusInput = (workOnMobile = false) => {
-        if (!workOnMobile && window.IS_MOBILE) return;
+        if (!workOnMobile && window.IS_MOBILE_DEVICE) return;
         const input = document.getElementsByClassName('msgs-compose-input')[0];
         if (input) input.focus();
     };
@@ -801,7 +801,7 @@ class Messages extends React.Component {
                     this.props.locale === 'ru-RU' ? 'English' : 'Russian'},
         ]
 
-        if (process.env.IS_APP) {
+        if (process.env.MOBILE_APP) {
             user_menu.push({link: '#', onClick: this.props.openSettings, icon: 'new/setting', value: tt('g.settings')})
         }
 
@@ -854,7 +854,7 @@ class Messages extends React.Component {
         let bbc 
         let settingsOpen
         let troubleshoot
-        if (process.env.IS_APP) {
+        if (process.env.MOBILE_APP) {
             hideSplash()
             bbc = <BackButtonController goHome={true} />
             settingsOpen = <div>
@@ -893,7 +893,7 @@ class Messages extends React.Component {
     render() {
         const { contacts, account, to, nodeError } = this.props;
         let bbc, auc
-        if (process.env.IS_APP) {
+        if (process.env.MOBILE_APP) {
             bbc = <BackButtonController goHome={!to} />
             auc = <AppUpdateChecker dialog={true} />
         }
