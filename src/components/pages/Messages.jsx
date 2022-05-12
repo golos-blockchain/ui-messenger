@@ -262,6 +262,7 @@ class Messages extends React.Component {
             this.setCallback(this.props.username);
         } else if (this.props.to !== this.state.to) {
             this.props.fetchState(this.props.to);
+            this.leaveChat()
         }
         if (this.props.messages.size !== prevProps.messages.size
             || this.props.messages_update !== prevProps.messages_update
@@ -349,6 +350,20 @@ class Messages extends React.Component {
             }
         }, 10000);
     };
+
+    leaveChat = () => {
+        this.setState({
+            replyingMessage: null,
+            selectedMessages: {}
+        }, () => {
+            // if editing - cancel edit
+            if (this.editNonce) {
+                this.restoreInput()
+                this.editNonce = undefined
+            }
+            this.focusInput();
+        })
+    }
 
     onCancelReply = (event) => {
         this.setState({
