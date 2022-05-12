@@ -187,7 +187,7 @@ class Messages extends React.Component {
         try {
             this.notifyAbort = new fetchEx.AbortController()
             window.notifyAbort = this.notifyAbort
-            const { removeTaskIds, __lastTake } = await notificationTake(username, removeTaskIds, (type, op, timestamp, task_id) => {
+            const takeResult = await notificationTake(username, removeTaskIds, (type, op, timestamp, task_id) => {
                 const updateMessage = op.from === this.state.to || 
                     op.to === this.state.to;
                 const isMine = username === op.from;
@@ -207,7 +207,8 @@ class Messages extends React.Component {
                     this.props.messageRead(op, timestamp, updateMessage, isMine);
                 }
             }, this.notifyAbort);
-            window.__lastTake = __lastTake
+            removeTaskIds = takeResult.removeTaskIds
+            window.__lastTake = takeResult.__lastTake
             setTimeout(() => {
                 this.setCallback(username, removeTaskIds);
             }, 250);

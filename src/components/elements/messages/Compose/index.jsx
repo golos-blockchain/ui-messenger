@@ -184,7 +184,7 @@ export default class Compose extends React.Component {
     }
 
     render() {
-        const { account, rightItems, replyingMessage } = this.props;
+        const { account, rightItems, replyingMessage, textareaProps } = this.props
         const { onPanelDeleteClick, onPanelReplyClick, onPanelEditClick, onPanelCloseClick, onCancelReply } = this;
 
         const selectedMessages = Object.entries(this.props.selectedMessages);
@@ -231,7 +231,8 @@ export default class Compose extends React.Component {
                         minRows={2}
                         maxRows={14}
                         onHeightChange={this.onHeightChange}
-                        />
+                        {...textareaProps}
+                    />
                 </div>) : null}
 
                 {sendButton}
