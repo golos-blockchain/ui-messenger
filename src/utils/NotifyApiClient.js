@@ -168,7 +168,7 @@ export async function notificationTake(account, removeTaskIds, forEach, abortCon
 
             removeTaskIds = removeTaskIdsArr.join(',');
 
-            return removeTaskIds;
+            return { removeTaskIds, __lastTake: result.__ }
         } else {
             throw new Error(response.status + ': ' + result.error);
         }

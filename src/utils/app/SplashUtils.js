@@ -1,6 +1,6 @@
 
 export function hideSplash() {
-    if (process.env.IS_APP) {
+    if (process.env.MOBILE_APP) {
         try {
             navigator.splashscreen.hide()
         } catch (err) {

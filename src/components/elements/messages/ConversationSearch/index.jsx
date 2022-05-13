@@ -23,7 +23,7 @@ export default class ConversationSearch extends React.Component {
     };
 
     onChange = (event) => {
-        this.search(event.target.value, event);
+        this.search(event.target.value.toLowerCase(), event);
     };
 
     clear = (event) => {

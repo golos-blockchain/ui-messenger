@@ -80,7 +80,7 @@ export default class Messages extends React.Component {
                             topCenter={messagesTopCenter}
                             topRight={messagesTopRight}
                             renderEmpty={() => {
-                                if (localStorage.getItem('msgr_auth') || process.env.IS_APP) return null
+                                if ((localStorage.getItem('msgr_auth') && !account) || process.env.MOBILE_APP) return null
                                 return (<img className='msgs-empty-chat' src='/msg_empty.png' />)
                             }}
                             messages={messages}

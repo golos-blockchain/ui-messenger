@@ -26,6 +26,8 @@ module.exports = function override(config, env) {
     config.plugins.push(
         new webpack.DefinePlugin({
             'process.env.IS_APP': JSON.stringify(!!process.env.IS_APP),
+            'process.env.DESKTOP_APP': JSON.stringify(!!process.env.DESKTOP_APP),
+            'process.env.MOBILE_APP': JSON.stringify(!!process.env.MOBILE_APP),
         }),
     )
 
