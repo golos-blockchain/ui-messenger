@@ -291,8 +291,8 @@ export default connect(
 
         const initialValues = {
             saveLogin: saveLoginDefault,
-            username: 'aerostorm1',
-            password: 'P5K2Z6YePy7HP18LCrrWHwmJ4o1SeEYVfW98ARZahmQkKTWJiQmj'
+            username: '',
+            password: ''
         }
 
         // The username input has a value prop, so it should not use initialValues
