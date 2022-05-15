@@ -9,6 +9,7 @@ import android.content.SharedPreferences
 const val PREF_ACCOUNT = "pref_account"
 const val PREF_SESSION = "pref_session"
 const val PREF_LAST_TAKE = "pref_last_take"
+const val PREF_NOTIFYHOST = "pref_notify_host"
 
 class ServiceHelper {
     companion object {
@@ -22,6 +23,7 @@ class ServiceHelper {
                 putString(PREF_ACCOUNT, prefs.account)
                 putString(PREF_SESSION, prefs.session)
                 putLong(PREF_LAST_TAKE, prefs.lastTake)
+                putString(PREF_NOTIFYHOST, prefs.notifyHost)
                 apply()
             }
         }
@@ -31,7 +33,8 @@ class ServiceHelper {
             return AppPrefs(
                 sharedPrefs.getString(PREF_ACCOUNT, "")!!,
                 sharedPrefs.getString(PREF_SESSION, "")!!,
-                sharedPrefs.getLong(PREF_LAST_TAKE, 0)
+                sharedPrefs.getLong(PREF_LAST_TAKE, 0),
+                sharedPrefs.getString(PREF_NOTIFYHOST, "")!!
             )
         }
 
@@ -41,6 +44,7 @@ class ServiceHelper {
                 remove(PREF_ACCOUNT)
                 remove(PREF_SESSION)
                 remove(PREF_LAST_TAKE)
+                remove(PREF_NOTIFYHOST)
                 apply()
             }
         }

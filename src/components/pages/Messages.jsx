@@ -130,13 +130,14 @@ class Messages extends React.Component {
         this.pausedTime = Date.now()
         const { username } = this.props
         const session = localStorage.getItem('X-Session')
+        const notifyHost = $GLS_Config.notify_service.host
         if (username && session) {
             const lastTake = window.__lastTake || 0
             cordova.exec((winParam) => {
                 console.log('pause ok', winParam)
             }, (err) => {
                 console.error('pause err', err)
-            }, 'CorePlugin', 'startService', [username, session, lastTake])
+            }, 'CorePlugin', 'startService', [username, session, lastTake, notifyHost])
         }
     }
 
