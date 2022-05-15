@@ -17,8 +17,8 @@ class NotifyService() : Service() {
         const val ACTION_STOP = "ACTION_STOP"
     }
 
-    private val nac: NotifyApiClient? = null
-    private var nh: NotificationHelper? = null
+    private lateinit var nac: NotifyApiClient
+    private lateinit var nh: NotificationHelper
     private lateinit var prefs: AppPrefs
     private var workThread: Thread? = null
 
@@ -30,7 +30,7 @@ class NotifyService() : Service() {
         var descr = "@" + nicks.joinToString(", @")
         descr = "Новое сообщение от $descr"
         Handler(Looper.getMainLooper()).post {
-            nh?.notifyMessage("GOLOS Мессенджер", descr)
+            nh.notifyMessage("GOLOS Мессенджер", descr)
         }
     }
 
@@ -143,7 +143,7 @@ class NotifyService() : Service() {
         }
 
         nh = NotificationHelper(this)
-        val n = nh!!.makeForeground(" ", "GOLOS Мессенджер работает.", R.drawable.ic_empty)
+        val n = nh.makeForeground(" ", "GOLOS Мессенджер работает.", R.drawable.ic_empty)
         startForeground(FOREGROUND_NOTIFICATION_ID, n)
 
         Log.i(TAG, "Started")
