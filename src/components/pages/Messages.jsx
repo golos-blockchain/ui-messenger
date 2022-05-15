@@ -53,6 +53,7 @@ class Messages extends React.Component {
         if (process.env.MOBILE_APP) {
             this.stopService()
         }
+        this.composeRef = React.createRef()
     }
 
     markMessages() {
@@ -678,9 +679,8 @@ class Messages extends React.Component {
     };
 
     setInput = (value) => {
-        const input = document.getElementsByClassName('msgs-compose-input')[0];
-        if (input) {
-            input.value = value;
+        if (this.composeRef.current) {
+            this.composeRef.current.setInput(value)
         }
     };
 
@@ -942,6 +942,7 @@ class Messages extends React.Component {
                     onButtonImageClicked={this.onButtonImageClicked}
                     onImagePasted={this.onImagePasted}
                     onImageDropped={this.onImageDropped}
+                    composeRef={this.composeRef}
                 />) : null}
             </div>
         )

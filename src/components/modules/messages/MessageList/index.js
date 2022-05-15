@@ -16,6 +16,7 @@ import './MessageList.css';
 },*/
 export default class MessageList extends React.Component {
     state = {
+        inputEmpty: true
     }
 
     _getScrollable = () => {
@@ -73,18 +74,8 @@ export default class MessageList extends React.Component {
         }
     }
 
-    inputFocused = (e) => {
-        const { isSmall } = this.props
-        if (isSmall) {
-            this.setState({ inputFocus: true })
-        }
-    }
-
-    inputBlured = (e) => {
-        const { isSmall } = this.props
-        if (isSmall) {
-            this.setState({ inputFocus: false })
-        }
+    onChange = (val) => {
+        this.setState({ inputEmpty: !val })
     }
 
     renderMessages = () => {
@@ -164,7 +155,7 @@ export default class MessageList extends React.Component {
             onButtonImageClicked, onImagePasted,
             onPanelDeleteClick, onPanelReplyClick, onPanelEditClick, onPanelCloseClick,
             isSmall } = this.props;
-        const { inputFocus } = this.state
+        const showImageBtn = !isSmall || this.state.inputEmpty
         return (
             <div className='message-list'>
                 <Toolbar
@@ -180,7 +171,7 @@ export default class MessageList extends React.Component {
                         onCancelReply={onCancelReply}
                         onSendMessage={onSendMessage}
                         rightItems={[
-                            ((!isSmall || !inputFocus) ? <ToolbarButton key='image' icon='image-outline' onClick={onButtonImageClicked} /> : undefined),
+                            (showImageBtn ? <ToolbarButton key='image' icon='image-outline' onClick={onButtonImageClicked} /> : undefined),
                             (<div key='emoji'>
                                 <ToolbarButton className='msgs-emoji-picker-opener' icon='happy-outline' />
                                 <div className='msgs-emoji-picker-tooltip' role='tooltip'></div>
@@ -192,10 +183,8 @@ export default class MessageList extends React.Component {
                         onPanelEditClick={onPanelEditClick}
                         onPanelCloseClick={onPanelCloseClick}
                         onImagePasted={onImagePasted}
-                        textareaProps={{
-                            onFocus: this.inputFocused,
-                            onBlur: this.inputBlured
-                        }}
+                        onChange={this.onChange}
+                        ref={this.props.composeRef}
                     />) : null}
             </div>
         );
