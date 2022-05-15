@@ -262,8 +262,10 @@ class Messages extends React.Component {
             this.props.fetchState(this.props.to);
             this.setCallback(this.props.username);
         } else if (this.props.to !== this.state.to) {
-            this.props.fetchState(this.props.to);
-            this.leaveChat()
+            this.props.fetchState(this.props.to)
+            if (this.state.to) {
+                this.leaveChat()
+            }
         }
         if (this.props.messages.size !== prevProps.messages.size
             || this.props.messages_update !== prevProps.messages_update
@@ -797,6 +799,9 @@ class Messages extends React.Component {
             {link: '#', onClick: this.props.toggleNightmode, icon: 'editor/eye', value: tt('g.night_mode')},
             {link: '#', onClick: () => {
                     this.props.changeLanguage(this.props.locale)
+                    if (!this.state.to) {
+                        this.props.fetchState()
+                    }
                 }, icon: 'ionicons/language-outline', value:
                     this.props.locale === 'ru-RU' ? 'English' : 'Russian'},
         ]
