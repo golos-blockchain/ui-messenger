@@ -42,7 +42,9 @@ export default class Messages extends React.Component {
             onConversationSearch, onConversationSelect,
             messagesTopLeft, messagesTopCenter, messagesTopRight, messages, replyingMessage, onCancelReply, onSendMessage,
             onButtonImageClicked, onImagePasted,
-            selectedMessages, onMessageSelect, onPanelDeleteClick, onPanelReplyClick, onPanelEditClick, onPanelCloseClick } = this.props;
+            selectedMessages, onMessageSelect, onPanelDeleteClick, onPanelReplyClick, onPanelEditClick, onPanelCloseClick,
+            composeRef
+        } = this.props;
 
         const { isSmall } = this.state
 
@@ -95,6 +97,7 @@ export default class Messages extends React.Component {
                             onPanelCloseClick={onPanelCloseClick}
                             onButtonImageClicked={onButtonImageClicked}
                             onImagePasted={onImagePasted}
+                            composeRef={composeRef}
                             />
                     </div> : null}
 

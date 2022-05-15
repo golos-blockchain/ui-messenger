@@ -53,6 +53,7 @@ class Messages extends React.Component {
         if (process.env.MOBILE_APP) {
             this.stopService()
         }
+        this.composeRef = React.createRef()
     }
 
     markMessages() {
@@ -129,13 +130,14 @@ class Messages extends React.Component {
         this.pausedTime = Date.now()
         const { username } = this.props
         const session = localStorage.getItem('X-Session')
+        const notifyHost = $GLS_Config.notify_service.host
         if (username && session) {
             const lastTake = window.__lastTake || 0
             cordova.exec((winParam) => {
                 console.log('pause ok', winParam)
             }, (err) => {
                 console.error('pause err', err)
-            }, 'CorePlugin', 'startService', [username, session, lastTake])
+            }, 'CorePlugin', 'startService', [username, session, lastTake, notifyHost])
         }
     }
 
@@ -261,8 +263,10 @@ class Messages extends React.Component {
             this.props.fetchState(this.props.to);
             this.setCallback(this.props.username);
         } else if (this.props.to !== this.state.to) {
-            this.props.fetchState(this.props.to);
-            this.leaveChat()
+            this.props.fetchState(this.props.to)
+            if (this.state.to) {
+                this.leaveChat()
+            }
         }
         if (this.props.messages.size !== prevProps.messages.size
             || this.props.messages_update !== prevProps.messages_update
@@ -678,9 +682,8 @@ class Messages extends React.Component {
     };
 
     setInput = (value) => {
-        const input = document.getElementsByClassName('msgs-compose-input')[0];
-        if (input) {
-            input.value = value;
+        if (this.composeRef.current) {
+            this.composeRef.current.setInput(value)
         }
     };
 
@@ -797,6 +800,9 @@ class Messages extends React.Component {
             {link: '#', onClick: this.props.toggleNightmode, icon: 'editor/eye', value: tt('g.night_mode')},
             {link: '#', onClick: () => {
                     this.props.changeLanguage(this.props.locale)
+                    if (!this.state.to) {
+                        this.props.fetchState()
+                    }
                 }, icon: 'ionicons/language-outline', value:
                     this.props.locale === 'ru-RU' ? 'English' : 'Russian'},
         ]
@@ -942,6 +948,7 @@ class Messages extends React.Component {
                     onButtonImageClicked={this.onButtonImageClicked}
                     onImagePasted={this.onImagePasted}
                     onImageDropped={this.onImageDropped}
+                    composeRef={this.composeRef}
                 />) : null}
             </div>
         )

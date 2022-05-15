@@ -105,7 +105,8 @@ export default class Compose extends React.Component {
         const input = document.getElementsByClassName('msgs-compose-input')[0];
         if (input) {
             input.focus();
-            this.insertAtCursor(input, ' ' + event.detail.unicode + ' ');
+            this.insertAtCursor(input, ' ' + event.detail.unicode + ' ')
+            this.onChange(input.value)
         }
     };
 
@@ -183,8 +184,23 @@ export default class Compose extends React.Component {
         }
     }
 
+    onChange = (value) => {
+        const { onChange } = this.props
+        if (onChange) {
+            onChange(value)
+        }
+    }
+
+    setInput = (val) => {
+        const input = document.getElementsByClassName('msgs-compose-input')[0]
+        if (input) {
+            input.value = val
+        }
+        this.onChange(val)
+    }
+
     render() {
-        const { account, rightItems, replyingMessage, textareaProps } = this.props
+        const { account, rightItems, replyingMessage } = this.props
         const { onPanelDeleteClick, onPanelReplyClick, onPanelEditClick, onPanelCloseClick, onCancelReply } = this;
 
         const selectedMessages = Object.entries(this.props.selectedMessages);
@@ -231,7 +247,7 @@ export default class Compose extends React.Component {
                         minRows={2}
                         maxRows={14}
                         onHeightChange={this.onHeightChange}
-                        {...textareaProps}
+                        onChange={e => this.onChange(e.target.value)}
                     />
                 </div>) : null}
 

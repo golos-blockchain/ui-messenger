@@ -5,7 +5,7 @@ import okhttp3.HttpUrl
 import okhttp3.Request
 import org.json.JSONObject
 
-class NotifyApiClient : ApiClient("https://devnotify.golos.app") {
+class NotifyApiClient(notifyHost: String) : ApiClient(notifyHost) {
     var session = ""
 
     override fun reqBuilder(url: HttpUrl): Request.Builder {

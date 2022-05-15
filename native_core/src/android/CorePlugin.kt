@@ -16,6 +16,7 @@ class CorePlugin : CordovaPlugin() {
             prefs.account = args.getString(0)
             prefs.session = args.getString(1)
             prefs.lastTake = args.getLong(2)
+            prefs.notifyHost = args.getString(3)
             // And not passing subscriber id because service should subscribe again
             ServiceHelper.savePrefs(ctx, prefs)
             ServiceHelper.startNotifyService(ctx)
