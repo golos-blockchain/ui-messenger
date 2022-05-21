@@ -49,6 +49,7 @@
   },
   "messages": {
     "last_seen": "last seen ",
+    "verified_golos_account": "Verified account of Golos staff",
     "search": "Search people",
     "search_not_found": "Nobody found",
     "type_a_message": "Type a message",

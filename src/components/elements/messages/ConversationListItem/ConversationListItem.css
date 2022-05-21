@@ -28,6 +28,10 @@
     margin: 0;
 }
 
+.conversation-checkmark {
+    margin-left: 15px;
+}
+
 .conversation-info {
     width: 100%;
 }

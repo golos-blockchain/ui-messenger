@@ -30,3 +30,13 @@
     margin-top: 8px;
     margin-left: 10px;
 }
+
+.msgs-checkmark  {
+    margin-left: 3px;
+    svg {
+        pointer-events: none;
+        color: green;
+        fill: green;
+        stroke: green;
+    }
+}
