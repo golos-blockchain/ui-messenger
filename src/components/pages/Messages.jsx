@@ -742,8 +742,14 @@ class Messages extends React.Component {
         let messagesTopCenter = [];
         const { to, accounts } = this.props;
         if (accounts[to]) {
+            let checkmark
+            if (to === 'notify') {
+                checkmark = <span className='msgs-checkmark'>
+                    <Icon name='ionicons/checkmark-circle' size='0_95x' title={tt('messages.verified_golos_account')} />
+                </span>
+            }
             messagesTopCenter.push(<div key='to-link' style={{fontSize: '15px', width: '100%', textAlign: 'center'}}>
-                <ExtLink href={'/@' + to}>{to}</ExtLink>
+                <ExtLink href={'/@' + to}>{to}{checkmark}</ExtLink>
             </div>);
             const { notifyErrors } = this.state;
             if (notifyErrors >= 30) {

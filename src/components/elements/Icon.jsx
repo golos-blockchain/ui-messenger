@@ -127,6 +127,8 @@ const icons = new Map([
     // ['editor-toolbar/picture', require('app/assets/icons/editor-toolbar/picture.svg')],
     // ['editor-toolbar/video', require('app/assets/icons/editor-toolbar/video.svg')],
     // ['editor-toolbar/search', require('app/assets/icons/editor-toolbar/search.svg')],
+    ['ionicons/checkmark-circle', require('app/assets/icons/ionicons/checkmark-circle.svg')],
+    ['ionicons/checkmark-sharp', require('app/assets/icons/ionicons/checkmark-sharp.svg')],
     ['ionicons/happy-outline', require('app/assets/icons/ionicons/happy-outline.svg')],
     ['ionicons/image-outline', require('app/assets/icons/ionicons/image-outline.svg')],
     ['ionicons/language-outline', require('app/assets/icons/ionicons/language-outline.svg')],

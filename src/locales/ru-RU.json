@@ -50,6 +50,7 @@
   },
   "messages": {
     "last_seen": "был(а) ",
+    "verified_golos_account": "Этот аккаунт принадлежит Golos",
     "search": "Поиск людей",
     "search_not_found": "Никого не найдено",
     "type_a_message": "Напишите сообщение",

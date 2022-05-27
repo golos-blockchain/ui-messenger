@@ -1,7 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import truncate from 'lodash/truncate';
+import tt from 'counterpart'
 
+import Icon from 'app/components/elements/Icon'
 import './ConversationListItem.css';
 
 export default class ConversationListItem extends React.Component {
@@ -70,11 +72,18 @@ export default class ConversationListItem extends React.Component {
             unread = (<div className='conversation-unread'>{unreadMessages}</div>);
         }
 
+        let checkmark
+        if (contact === 'notify') {
+            checkmark = <span className='msgs-checkmark' title={tt('messages.verified_golos_account')}>
+                    <Icon name='ionicons/checkmark-circle' size='0_95x' />
+                </span>
+        }
+
         return (
             <Link to={isSystemMessage ? null : link} className={'conversation-list-item' + (selected ? ' selected' : '')}>
                 <img className='conversation-photo' src={this.state.avatarSrc} alt={''} />
                 <div className='conversation-info'>
-                    <h1 className='conversation-title'>{contact}</h1>
+                    <h1 className='conversation-title'>{contact}{checkmark}</h1>
                     <div className='conversation-snippet'>{last_body && truncate(last_body, {length: 30})}
                     </div>
                     {unread}
