@@ -82,7 +82,7 @@ export function markNotificationRead(account, fields) {
     });
 }
 
-export async function notificationSubscribe(account, scopes = 'message', sidKey = '__subscriber_id') {
+export async function notificationSubscribe(account, scopes = 'message,donate_msgs', sidKey = '__subscriber_id') {
     if (!notifyAvailable()) return;
     if (window[sidKey]) return;
     try {

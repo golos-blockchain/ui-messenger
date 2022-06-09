@@ -1,6 +1,8 @@
 import React from 'react';
 import tt from 'counterpart';
+import { Asset } from 'golos-lib-js/lib/utils'
 
+import Donating from 'app/components/elements/messages/Donating'
 import { displayQuoteMsg } from 'app/utils/MessageUtils';
 import { proxifyImageUrl } from 'app/utils/ProxifyUrl';
 import './Message.css';
@@ -91,6 +93,13 @@ export default class Message extends React.Component {
 
         const modified = (data.receive_date !== data.create_date) && !data.receive_date.startsWith('19');
 
+        const hasDonates = Asset(data.donates).amount || data.donates_uia
+        const gift = <Donating data={data} isMine={isMine} />
+        let adds = [ gift ]
+        if (!hasDonates || !isMine) {
+            adds.unshift(unread)
+        }
+
         return (
             <div className={[
                 'msgs-message',
@@ -106,12 +115,12 @@ export default class Message extends React.Component {
                 }
 
                 <div className={'bubble-container' + (selected ? ' selected' : '')}>
-                    {isMine ? unread : null}
+                    {isMine ? adds : null}
                     <div className={'bubble' + loading} onClick={(event) => this.onMessageSelect(idx, event)} title={friendlyDate + (modified ? tt('g.modified') : '')}>
                         { quoteHeader }
                         { content }
                     </div>
-                    {!isMine ? unread : null}
+                    {!isMine ? adds : null}
                 </div>
             </div>
         );

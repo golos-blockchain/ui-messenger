@@ -6,6 +6,7 @@ import g from 'app/redux/GlobalReducer'
 export function* fetchDataWatches () {
     yield fork(watchLocationChange)
     yield fork(watchFetchState)
+    yield fork(watchFetchUiaBalances)
 }
 
 export function* watchLocationChange() {
@@ -29,6 +30,7 @@ export function* fetchState(location_change_action) {
         state.messages = [];
         state.messages_update = '0';
         state.accounts = {}
+        state.assets = {}
 
         let hasErr = false
 
@@ -84,5 +86,21 @@ export function* fetchState(location_change_action) {
         yield put(g.actions.receiveState(state))
     } catch (err) {
         console.error('fetchDataSaga error', err)
+    }
+}
+
+export function* watchFetchUiaBalances() {
+    yield takeLatest('global/FETCH_UIA_BALANCES', fetchUiaBalances)
+}
+
+export function* fetchUiaBalances({ payload: { account } }) {
+    try {
+        let assets = yield call([api, api.getAccountsBalancesAsync], [account])
+        assets = assets && assets[0]
+        if (assets) {
+            yield put(g.actions.receiveUiaBalances({assets}))
+        }
+    } catch (err) {
+        console.error('fetchUiaBalances', err)
     }
 }

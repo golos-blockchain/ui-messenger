@@ -1,5 +1,6 @@
 import { Map, List, fromJS, fromJSGreedy } from 'immutable';
 import createModule from 'redux-modules'
+import { Asset } from 'golos-lib-js/lib/utils'
 
 import { processDatedGroup } from 'app/utils/MessageUtils'
 
@@ -52,6 +53,10 @@ export default createModule({
                 message.create_date = timestamp;
                 message.receive_date = timestamp;
                 message.read_date = '1970-01-01T00:00:00';
+                if (!message.donates) {
+                    message.donates = '0.000 GOLOS'
+                    message.donates_uia = 0
+                }
 
                 let new_state = state;
                 let messages_update = message.nonce;
@@ -196,6 +201,67 @@ export default createModule({
                     });
                 }
                 return new_state;
+            },
+        },
+        {
+            action: 'MESSAGE_DONATED',
+            reducer: (
+                state,
+                { payload: { op, updateMessage, isMine } }
+            ) => {
+                let new_state = state
+                if (updateMessage) {
+                    const { from, to, nonce } = op.memo.target
+                    const amount = Asset(op.amount)
+                    new_state = new_state.updateIn(['messages'],
+                    List(),
+                    messages => {
+                        const idx = messages.findIndex(i => i.get('nonce') === nonce);
+                        if (idx !== -1) {
+                            messages = messages.update(idx, (obj) => {
+                                if (!amount.isUIA) {
+                                    const donates = Asset(obj.get('donates')).plus(amount)
+                                    obj = obj.set('donates', donates.toString())
+                                } else {
+                                    let donates_uia = parseInt(obj.get('donates_uia'))
+                                    donates_uia += parseInt(amount.amountFloat.split('.')[0])
+                                    obj = obj.set('donates_uia', donates_uia)
+                                }
+                                return obj;
+                            });
+                        }
+                        return messages;
+                    })
+                    new_state = new_state.set('messages_update', Math.random())
+                } else if (!isMine) {
+                    const { from, to, nonce } = op.memo.target
+                    new_state = new_state.updateIn(['contacts'],
+                    List(),
+                    contacts => {
+                        let idx = contacts.findIndex(i =>
+                            i.get('contact') === to
+                            || i.get('contact') === from)
+                        if (idx !== -1) {
+                            contacts = contacts.update(idx, contact => {
+                                contact = contact.set('unread_donate', true)
+                                return contact
+                            })
+                        }
+                        return contacts
+                    })
+                    new_state = new_state.set('messages_update', Math.random())
+                }
+                return new_state
+            },
+        },
+        {
+            action: 'FETCH_UIA_BALANCES',
+            reducer: state => state,
+        },
+        {
+            action: 'RECEIVE_UIA_BALANCES',
+            reducer: (state, { payload: { assets } }) => {
+                return state.set('assets', fromJS(assets))
             },
         },
     ],

@@ -1,0 +1,20 @@
+
+.TipBalance {
+  display: inline-block;
+  border-radius: 10px;
+  margin-left: 20px;
+  border: 1px solid black;
+  vertical-align: middle;
+  padding-left: 1em;
+  padding-right: 1em;
+  padding-top: 0.25em;
+  padding-bottom: 0.25em;
+  margin-bottom: 1rem;
+  text-align: center;
+  width: 180px;
+
+  .VerticalMenu {
+    width: 180px;
+    min-width: 180px;
+  }
+}

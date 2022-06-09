@@ -1,18 +1,22 @@
 import React from 'react';
 import PropTypes from 'prop-types'
+import {NotificationStack} from 'react-notification'
 import { connect } from 'react-redux';
 import CloseButton from 'react-foundation-components/lib/global/close-button';
 import Reveal from 'react-foundation-components/lib/global/reveal';
+
+import Donate from 'app/components/modules/Donate'
 import LoginForm from 'app/components/modules/LoginForm';
 import user from 'app/redux/UserReducer'
 //import tr from 'app/redux/Transaction';
-import {NotificationStack} from 'react-notification';
 
 let keyIndex = 0;
 
 class Modals extends React.Component {
     static propTypes = {
         show_login_modal: PropTypes.bool,
+        show_donate_modal: PropTypes.bool,
+        hideDonate: PropTypes.func.isRequired,
         notifications: PropTypes.object,
         removeNotification: PropTypes.func,
     };
@@ -26,7 +30,9 @@ class Modals extends React.Component {
     render() {
         const {
             show_login_modal,
+            show_donate_modal,
             hideLogin,
+            hideDonate,
             notifications,
             removeNotification,
         } = this.props;
@@ -45,6 +51,10 @@ class Modals extends React.Component {
                 {show_login_modal && <Reveal onBackdropClick={this.onLoginBackdropClick} onHide={hideLogin} show={show_login_modal}>
                     <LoginForm onCancel={hideLogin} />
                 </Reveal>}
+                {show_donate_modal && <Reveal revealStyle={{ overflow: 'hidden' }} onHide={hideDonate} show={show_donate_modal}>
+                    <CloseButton onClick={hideDonate} />
+                    <Donate />
+                </Reveal>}
                 <NotificationStack
                     style={false}
                     notifications={notifications_array}
@@ -61,6 +71,7 @@ export default connect(
         const loginUnclosable = loginDefault && loginDefault.get('unclosable');
         return {
             show_login_modal: state.user.get('show_login_modal'),
+            show_donate_modal: state.user.get('show_donate_modal'),
             loginUnclosable,
             notifications: state.app.get('notifications'),
         }
@@ -69,6 +80,10 @@ export default connect(
         hideLogin: e => {
             if (e) e.preventDefault();
             dispatch(user.actions.hideLogin())
+        },
+        hideDonate: e => {
+            if (e) e.preventDefault()
+            dispatch(user.actions.hideDonate())
         },
         
         // example: addNotification: ({key, message}) => dispatch({type: 'ADD_NOTIFICATION', payload: {key, message}}),
