@@ -13,7 +13,7 @@
   },
   "donate_jsx": {
     "title": "Support user",
-    "donate_amount": "Amount",
+    "donate_amount": "Donate",
     "tip_balance": "TIP-balance",
     "submit": "Support",
     "insufficient_funds": "Insufficient funds"

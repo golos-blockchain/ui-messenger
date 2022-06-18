@@ -14,7 +14,7 @@
   },
   "donate_jsx": {
     "title": "Поддержать пользователя",
-    "donate_amount": "Благодарность",
+    "donate_amount": "Донат",
     "tip_balance": "TIP-баланс",
     "submit": "Поддержать",
     "insufficient_funds": "Недостаточно средств"
