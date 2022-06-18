@@ -1,4 +1,5 @@
 @import "./elements/CircularProgress";
+@import "./elements/DropdownMenu";
 @import './elements/Icon.scss';
 @import './elements/LoadingIndicator';
 @import './elements/Logo';
@@ -7,6 +8,8 @@
 @import "./elements/VerticalMenu";
 @import "./elements/common/DialogManager/index";
 @import "./elements/common/Input/index";
+@import './elements/donate/PresetSelector';
+@import './elements/donate/TipAssetList';
 
 // dialogs
 @import "./dialogs/DialogFrame/index";

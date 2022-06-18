@@ -12,6 +12,17 @@
     "end_with_a_letter": "заканчиваться буквой.",
     "use_caution_sending_to_this_account": "Перевод невозможен, уточнить причины этого можно в телеграм-группе @golos_id"
   },
+  "donate_jsx": {
+    "title": "Поддержать пользователя",
+    "donate_amount": "Благодарность",
+    "tip_balance": "TIP-баланс",
+    "submit": "Поддержать",
+    "insufficient_funds": "Недостаточно средств"
+  },
+  "donating_jsx": {
+    "title": "Отблагодарить",
+    "reward": "Вознаграждение"
+  },
   "loginform_jsx": {
     "you_need_a_private_password_or_key": "Вам нужен приватный (не публичный) ключ ...",
     "cryptography_test_failed": "Криптографический тест провален",

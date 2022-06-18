@@ -1,0 +1,40 @@
+.msgs-donating {
+    margin-top: 8px;
+    padding-left: 8px;
+    padding-right: 8px;
+    display: none;
+    fill: #007aff;
+    color: #007aff;
+    max-height: 2rem;
+}
+
+.msgs-donating.animating {
+    animation:  fadeinout 2s linear forwards;
+}
+
+@keyframes fadeinout {
+    0% { opacity: 0; }
+    50% { opacity: 1; }
+}
+
+.msgs-donating svg {
+    pointer-events: none;
+}
+
+.msgs-message.start .bubble-container .msgs-donating {
+    margin-top: 18px;
+}
+
+.msgs-donating.some {
+    display: block;
+}
+
+.msgs-message:not(.mine) .bubble-container:hover .msgs-donating {
+    cursor: pointer;
+    display: block;
+}
+
+.msgs-some {
+    vertical-align: middle;
+    margin-left: 3px;
+}

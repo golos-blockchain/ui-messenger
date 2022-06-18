@@ -11,6 +11,17 @@
     "end_with_a_letter_or_digit": "end with a letter or digit.",
     "use_caution_sending_to_this_account": "Use caution sending to this account."
   },
+  "donate_jsx": {
+    "title": "Support user",
+    "donate_amount": "Amount",
+    "tip_balance": "TIP-balance",
+    "submit": "Support",
+    "insufficient_funds": "Insufficient funds"
+  },
+  "donating_jsx": {
+    "title": "Donate",
+    "reward": "Reward"
+  },
   "loginform_jsx": {
     "you_need_a_private_password_or_key": "You need a private password or key (not a public key)",
     "cryptography_test_failed": "Cryptography test failed",

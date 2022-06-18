@@ -241,7 +241,10 @@ function* getAccountHandler({ payload: { usernames, resolve, reject }}) {
     }
 
     const accounts = yield call([api, api.getAccountsAsync], usernames)
-    yield accounts.map((account) => put(g.actions.receiveAccount({ account })))
+
+    for (let account of accounts) {
+        yield put(g.actions.receiveAccount({ account }))
+    }
     if (resolve && accounts[0]) {
         resolve(accounts);
     } else if (reject && !accounts[0]) {

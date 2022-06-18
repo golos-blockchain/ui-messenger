@@ -1,0 +1,33 @@
+.PresetSelector__container {
+  display: inline-block;
+}
+
+.PresetSelector.button {
+  border-radius: 50%;
+  padding: 0;
+}
+
+.PresetSelector.button:nth-child(1n) {
+  width: 30px;
+  height: 30px;
+}
+
+.PresetSelector.button:nth-child(2n) {
+  width: 35px;
+  height: 35px;
+}
+
+.PresetSelector.button:nth-child(3n) {
+  width: 40px;
+  height: 40px;
+}
+
+.PresetSelector.button:nth-child(4n) {
+  width: 45px;
+  height: 45px;
+}
+
+.PresetSelector.button:nth-child(5n) {
+  width: 50px;
+  height: 50px;
+}

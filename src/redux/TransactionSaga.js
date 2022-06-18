@@ -3,6 +3,7 @@ import { List, fromJS } from 'immutable'
 import golos from 'golos-lib-js'
 
 import g from 'app/redux/GlobalReducer'
+import user from 'app/redux/UserReducer'
 
 export function* transactionWatches() {
     yield fork(watchForBroadcast)
@@ -34,7 +35,9 @@ function* preBroadcast_custom_json({operation}) {
                             read_date: '1970-01-01T00:00:00',
                             create_date: new Date().toISOString().split('.')[0],
                             receive_date: '1970-01-01T00:00:00',
-                            encrypted_message: json[1].encrypted_message
+                            encrypted_message: json[1].encrypted_message,
+                            donates: '0.000 GOLOS',
+                            donates_uia: 0
                         }))
                     } else {
                         messages_update = json[1].nonce;
@@ -144,5 +147,13 @@ function* broadcastOperation(
         tx, [posting_private])
     } catch (err) {
         console.error('Broadcast error', err)
+        if (errorCallback) {
+            errorCallback(err)
+        }
+        return
+    }
+
+    if (successCallback) {
+        successCallback()
     }
 }

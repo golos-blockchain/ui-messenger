@@ -190,8 +190,9 @@ class Messages extends React.Component {
             this.notifyAbort = new fetchEx.AbortController()
             window.notifyAbort = this.notifyAbort
             const takeResult = await notificationTake(username, removeTaskIds, (type, op, timestamp, task_id) => {
-                const updateMessage = op.from === this.state.to || 
-                    op.to === this.state.to;
+                const isDonate = type === 'donate'
+                let updateMessage = op.from === this.state.to || 
+                    op.to === this.state.to
                 const isMine = username === op.from;
                 if (type === 'private_message') {
                     if (op.update) {
@@ -207,6 +208,8 @@ class Messages extends React.Component {
                     this.props.messageDeleted(op, updateMessage, isMine);
                 } else if (type === 'private_mark_message') {
                     this.props.messageRead(op, timestamp, updateMessage, isMine);
+                } else if (isDonate) {
+                    this.props.messageDonated(op, updateMessage, isMine)
                 }
             }, this.notifyAbort);
             removeTaskIds = takeResult.removeTaskIds
@@ -926,7 +929,7 @@ class Messages extends React.Component {
                 {auc}
                 <PageFocus onChange={this.handleFocusChange}>
                     {(focused) => (
-                        <MarkNotificationRead fields='message' account={account.name}
+                        <MarkNotificationRead fields='message,donate_msgs' account={account.name}
                             interval={focused ? 5000 : null}
                         />)}
                 </PageFocus>
@@ -1102,6 +1105,9 @@ export default withRouter(connect(
         },
         messageDeleted: (message, updateMessage, isMine) => {
             dispatch(g.actions.messageDeleted({message, updateMessage, isMine}));
+        },
+        messageDonated: (op, updateMessage, isMine) => {
+            dispatch(g.actions.messageDonated({op, updateMessage, isMine}))
         },
         uploadImage({ file, progress }) {
             this.showError(`${tt(

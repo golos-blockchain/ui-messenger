@@ -50,9 +50,13 @@ export default class ConversationListItem extends React.Component {
 
     render() {
         const { selected } = this.props;
-        const { avatar, isSystemMessage, contact, last_message, size } = this.props.data;
+        const { avatar, isSystemMessage, contact, last_message, size, unread_donate } = this.props.data;
 
         const link = this.makeLink();
+
+        const unreadDonate = unread_donate ? <span className='conversation-unread-donate'>
+            <Icon name='ionicons/gift'></Icon>
+            </span> : null
 
         let last_body = null;
         let unread = null;
@@ -69,7 +73,9 @@ export default class ConversationListItem extends React.Component {
         const unreadMessages = size && size.unread_inbox_messages;
 
         if (!unread && unreadMessages) {
-            unread = (<div className='conversation-unread'>{unreadMessages}</div>);
+            unread = (<div className='conversation-unread'>
+                {unreadMessages}
+            </div>)
         }
 
         let checkmark
@@ -87,6 +93,7 @@ export default class ConversationListItem extends React.Component {
                     <div className='conversation-snippet'>{last_body && truncate(last_body, {length: 30})}
                     </div>
                     {unread}
+                    {unreadDonate}
                 </div>
             </Link>
         );
