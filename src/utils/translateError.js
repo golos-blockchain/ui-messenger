@@ -11,6 +11,8 @@ export function translateError(string) {
             return tt('g.posting_not_memo')
         case 'Username does not exist':
             return tt('g.username_does_not_exist')
+        case 'Account is frozen':
+            return tt('loginform_jsx.account_frozen')
         case 'Account name should be longer.':
             return tt('g.account_name_should_be_longer')
         case 'Account name should be shorter.':

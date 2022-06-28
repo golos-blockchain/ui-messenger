@@ -77,7 +77,10 @@ function* usernamePasswordLogin(action) {
         } catch (err) {
             if (err === 'No such account') {
                 yield put(user.actions.loginError({ error: 'Username does not exist' }))
+            } else if (err === 'Account is frozen') {
+                yield put(user.actions.loginError({ error: 'Account is frozen' }))
             } else {
+                console.error(err)
                 yield put(user.actions.loginError({ error: 'Node failure', node: config.get('websocket') }))
             }
             return

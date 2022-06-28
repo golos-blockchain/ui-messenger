@@ -17,7 +17,7 @@
     "emoji-picker-element": "^1.10.1",
     "formik": "https://gitpkg.now.sh/golos-blockchain/formik/packages/formik?b697b6ef3f13c795bb862b35589fffde442ab465",
     "git-rev-sync": "^3.0.2",
-    "golos-lib-js": "^0.9.32",
+    "golos-lib-js": "^0.9.34",
     "history": "4.10.1",
     "immutable": "^4.0.0",
     "koa": "^2.13.4",
