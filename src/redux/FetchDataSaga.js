@@ -1,5 +1,6 @@
 import { call, put, select, fork, cancelled, takeLatest, takeEvery } from 'redux-saga/effects';
 import golos, { api } from 'golos-lib-js'
+import tt from 'counterpart'
 
 import g from 'app/redux/GlobalReducer'
 
@@ -79,6 +80,10 @@ export function* fetchState(location_change_action) {
 
                 for (let i in accs) {
                     state.accounts[ accs[i].name ] = accs[i]
+                }
+
+                if (accs[0] && accs[0].frozen) {
+                    alert(accs[0].name + ' - ' + tt('loginform_jsx.account_frozen'))
                 }
             }
         }
