@@ -1,6 +1,6 @@
 {
   "name": "ui-messenger",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "index.js",
   "repository": "https://github.com/golos-blockchain/ui-messenger",
   "author": "1aerostorm <aerostorm1@gmail.com>",

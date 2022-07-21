@@ -220,7 +220,7 @@ export default connect(
             }
 
             operation.memo = {
-                app: 'golos-mssgr', version: 1, comment: '',
+                app: 'golos-messenger', version: 1, comment: '',
                 target: {
                     from, to, nonce: nonce.toString()
                 }

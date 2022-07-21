@@ -1,35 +1,35 @@
 {
   "nodes": [
     {
-      "address": "wss://apibeta.golos.today/ws"
+      "address": "wss://api.golos.id/ws"
     }
   ],
   "helmet": {
     "directives": {
       "defaultSrc": "'self'",
-      "childSrc": "'self' www.youtube.com",
+      "childSrc": "'self'",
       "scriptSrc": "'self' 'unsafe-inline' 'unsafe-eval'",
       "styleSrc": "'self' 'unsafe-inline' fonts.googleapis.com",
       "imgSrc": "* data:",
       "fontSrc": "data: fonts.gstatic.com",
-      "connectSrc": "'self' wss://apibeta.golos.today *.golos.app golos.app api.imgur.com devimages.golos.today cdn.jsdelivr.net/npm/emoji-picker-element-data@%5E1/",
+      "connectSrc": "'self' wss://api.golos.id golos.app notify.golos.app api.imgur.com images.golos.today cdn.jsdelivr.net/npm/emoji-picker-element-data@%5E1/",
       "frameAncestors": "'none'"
     }
   },
   "images": {
-    "img_proxy_prefix": "https://devimages.golos.today",
+    "img_proxy_prefix": "https://images.golos.today",
     "img_proxy_backup_prefix": "https://steemitimages.com",
     "upload_image": "https://api.imgur.com/3/image",
     "client_id": "6c09ebf8c548126"
   },
   "auth_service": {
-    "host": "https://dev.golos.app",
+    "host": "https://golos.app",
     "custom_client": "blogs"
   },
   "notify_service": {
-    "host": "https://devnotify.golos.app"
+    "host": "https://notify.golos.app"
   },
   "blogs_service": {
-    "host": "https://beta.golos.today"
+    "host": "https://golos.id"
   }
 }
