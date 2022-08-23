@@ -1042,7 +1042,7 @@ export default withRouter(connect(
                 })
             );
         },
-        sendMessage: ({ senderAcc, memoKey, toAcc, body, editInfo = undefined, type = 'text', meta = {}, replyingMessage = null, notifyAbort }) => {
+        sendMessage ({ senderAcc, memoKey, toAcc, body, editInfo = undefined, type = 'text', meta = {}, replyingMessage = null, notifyAbort }) {
             let message = {
                 app: 'golos-messenger',
                 version: 1,
@@ -1091,7 +1091,27 @@ export default withRouter(connect(
                     json,
                 },
                 successCallback: null,
-                errorCallback: null,
+                errorCallback: (err) => {
+                    if (err && err.message) {
+                        if (err.message.includes('blocked by')) {
+                            this.showError(tt(
+                                'messages.blocked_BY', {
+                                    BY: toAcc.name
+                                }
+                            ), 10000)
+                            return
+                        }
+                        if (err.message.includes('do not bother')) {
+                            this.showError(tt(
+                                'messages.do_not_bother_BY', {
+                                    BY: toAcc.name
+                                }
+                            ), 10000)
+                            return
+                        }
+                    }
+                    console.error(err)
+                },
             }));
         },
         messaged: (message, timestamp, updateMessage, isMine) => {
