@@ -72,7 +72,9 @@
     "new_message5": " notifications",
     "invalid_message": "(This message could not be displayed in Golos Messenger)",
     "sync_error": "Sync error. To receive new messages please refresh the page.",
-    "sync_error_short": "Sync error. To receive new messages touch "
+    "sync_error_short": "Sync error. To receive new messages touch ",
+    "blocked_BY": "You are blocked by @%(BY)s.",
+    "do_not_bother_BY": "@%(BY)s wants to not be bothered by low-reputation users."
   },
   "emoji_i18n": {
     "categoriesLabel": "Категории",
