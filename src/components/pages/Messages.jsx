@@ -802,10 +802,10 @@ class Messages extends React.Component {
         }
 
         let user_menu = [
-            {link: accountLink, extLink: true, icon: 'new/blogging', value: tt('g.blog') + (isSmall ? (' @' + username) : '')},
-            {link: mentionsLink, extLink: true, icon: 'new/mention', value: tt('g.mentions'), addon: <NotifiCounter fields='mention' />},
-            {link: donatesLink, extLink: true, icon: 'editor/coin', value: tt('g.rewards'), addon: <NotifiCounter fields='donate' />},
-            {link: walletLink, extLink: true, icon: 'new/wallet', value: tt('g.wallet'), addon: <NotifiCounter fields='send,receive' />},
+            {link: accountLink, extLink: 'blogs', icon: 'new/blogging', value: tt('g.blog') + (isSmall ? (' @' + username) : '')},
+            {link: mentionsLink, extLink: 'blogs', icon: 'new/mention', value: tt('g.mentions'), addon: <NotifiCounter fields='mention' />},
+            {link: donatesLink, extLink: 'wallet', icon: 'editor/coin', value: tt('g.rewards'), addon: <NotifiCounter fields='donate' />},
+            {link: walletLink, extLink: 'wallet', icon: 'new/wallet', value: tt('g.wallet'), addon: <NotifiCounter fields='send,receive,fill_order' />},
             {link: '#', onClick: this.props.toggleNightmode, icon: 'editor/eye', value: tt('g.night_mode')},
             {link: '#', onClick: () => {
                     this.props.changeLanguage(this.props.locale)
@@ -843,7 +843,7 @@ class Messages extends React.Component {
                     <div className='msgs-curruser-notify-sink'>
                         <Userpic account={username} title={isSmall ? username : null} width={40} height={40} />
                         <div className='TopRightMenu__notificounter'>
-                            <NotifiCounter fields='mention,donate,send,receive' />
+                            <NotifiCounter fields='mention,donate,send,receive,fill_order' />
                         </div>
                     </div>
                     {!isSmall ? <div className='msgs-curruser-name'>

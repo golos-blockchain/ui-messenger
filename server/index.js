@@ -45,6 +45,7 @@ router.get('/api/get_config', async (ctx) => {
         auth_service: config.get('auth_service'),
         notify_service: config.get('notify_service'),
         blogs_service: config.get('blogs_service'),
+        wallet_service: config.get('wallet_service'),
     }
 })
 
