@@ -60,13 +60,14 @@
     "cross-env": "^7.0.3",
     "fs-extra": "^10.1.0",
     "gls-messenger-native-core": "file:native_core",
+    "nodemon": "^2.0.20",
     "react-app-rewired": "^2.1.11",
     "react-scripts": "^5.0.0"
   },
   "scripts": {
     "cordova": "cordova",
-    "start": "react-app-rewired start",
-    "start:server": "nodemon server",
+    "dev": "react-app-rewired start",
+    "dev:server": "nodemon server",
     "build": "react-app-rewired build",
     "prod": "NODE_ENV=production node server/index.js",
     "prebuild:mobile": "cross-env NODE_CONFIG_ENV=production,mobile node ./prebuild_mobile.js",

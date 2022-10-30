@@ -14,6 +14,7 @@ copyKey('images')
 copyKey('auth_service')
 copyKey('notify_service')
 copyKey('blogs_service')
+copyKey('wallet_service')
 copyKey('app_updater')
 fs.writeFileSync('src/app/default_cfg.js', 'module.exports = ' + JSON.stringify(cfg, null, 4))
 

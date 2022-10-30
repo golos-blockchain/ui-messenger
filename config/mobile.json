@@ -22,6 +22,9 @@
     "blogs_service": {
       "host": "https://golos.id"
     },
+    "wallet_service": {
+      "host": "https://wallet.golos.id"
+    },
     "app_updater": {
       "host": "https://files.golos.app"
     }

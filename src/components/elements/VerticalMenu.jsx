@@ -37,8 +37,9 @@ export default class VerticalMenu extends React.Component {
                 const iconSize = i.iconSize || '1x'
                 const target = i.target
                 const LinkType = i.extLink ? ExtLink : Link
+                const service = i.extLink || undefined
                 return <li data-link={i.link} data-value={i.value} key={i.key ? i.key : i.value} onClick={i.link ? this.closeMenu : null}>
-                    {i.link ? <LinkType to={i.link} target={target} onClick={i.onClick}>
+                    {i.link ? <LinkType to={i.link} target={target} onClick={i.onClick} service={service}>
                         {i.icon && <Icon name={i.icon} size={iconSize} />}{i.label ? i.label : i.value}
                         {i.data && <span>{i.data}</span>}
                         &nbsp; {i.addon}

@@ -31,5 +31,8 @@
   },
   "blogs_service": {
     "host": "https://golos.id"
+  },
+  "wallet_service": {
+    "host": "https://devwallet.golos.today"
   }
 }

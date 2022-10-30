@@ -69,7 +69,7 @@ const loadConfigCache = async () => {
             return false
         }
         const now = Date.now()
-        if (now - serverConfig.time < cacheMaxAge) {
+        if (now - serverConfig.time < cacheMaxAge && serverConfig.config.wallet_service) {
             window.$GLS_Config = serverConfig.config
             window.$GLS_Config.current_node = window.$GLS_Config.nodes[0].address
             await initGolos()
