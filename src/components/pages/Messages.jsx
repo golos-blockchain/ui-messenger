@@ -911,6 +911,8 @@ class Messages extends React.Component {
         if (process.env.MOBILE_APP) {
             bbc = <BackButtonController goHome={!to} />
             auc = <AppUpdateChecker dialog={true} />
+        } else if (process.env.DESKTOP_APP) {
+            auc = <AppUpdateChecker dialog={true} />
         }
         if (nodeError) {
             return this._renderError(nodeError)

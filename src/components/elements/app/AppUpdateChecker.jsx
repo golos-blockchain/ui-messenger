@@ -16,7 +16,7 @@ class AppUpdateChecker extends React.Component {
             this.setState({ loading: true }, async () => {
                 const res = await checkUpdates()
                 if (res.version) {
-                    let changes = await getChangelog(res)
+                    let changes = await getChangelog(res.txtLink)
                     this.setState({
                         loading: false,
                         availVersion: res.version,
@@ -71,7 +71,7 @@ class AppUpdateChecker extends React.Component {
         const res = await checkUpdates()
         const memKey = 'skippedVersion'
         if (res.version && localStorage.getItem(memKey) !== res.version) {
-            let changes = await getChangelog(res)
+            let changes = await getChangelog(res.txtLink)
 
             const conf = await this._dialog(res.version, changes, res.exeLink)
             if (!conf) {

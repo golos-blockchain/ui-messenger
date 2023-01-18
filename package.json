@@ -42,7 +42,6 @@
     "redux-modules": "0.0.5",
     "redux-saga": "^1.1.3",
     "sass": "^1.49.7",
-    "semver": "^7.3.7",
     "zlib": "^1.0.5"
   },
   "devDependencies": {
