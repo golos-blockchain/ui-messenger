@@ -33,6 +33,6 @@
     "host": "https://golos.id"
   },
   "wallet_service": {
-    "host": "https://devwallet.golos.today"
+    "host": "https://wallet.golos.id"
   }
 }
