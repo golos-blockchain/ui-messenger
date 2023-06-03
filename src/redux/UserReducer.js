@@ -5,6 +5,7 @@ const defaultState = fromJS({
     current: null,
     show_login_modal: false,
     show_donate_modal: false,
+    show_app_download_modal: false,
     loginLoading: false,
     pub_keys_used: null,
     locale: localStorage.getItem('locale') || 'ru-RU',
@@ -127,6 +128,8 @@ export default createModule({
         { action: 'HIDE_CONNECTION_ERROR_MODAL', reducer: state => state.set('hide_connection_error_modal', true) },
         { action: 'SHOW_DONATE', reducer: state => state.set('show_donate_modal', true) },
         { action: 'HIDE_DONATE', reducer: state => state.set('show_donate_modal', false) },
+        { action: 'SHOW_APP_DOWNLOAD', reducer: state => state.set('show_app_download_modal', true) },
+        { action: 'HIDE_APP_DOWNLOAD', reducer: state => state.set('show_app_download_modal', false) },
         { action: 'SET_DONATE_DEFAULTS', reducer: (state, {payload}) => state.set('donate_defaults', fromJS(payload)) },
         {
             action: 'SET',

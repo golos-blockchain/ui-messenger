@@ -9,6 +9,7 @@ import { Provider } from 'react-redux'
 import { ConnectedRouter } from 'connected-react-router'
 
 import configureStore, { history}  from './redux/store'
+import AppReminder from 'app/components/elements/app/AppReminder'
 import DialogManager from 'app/components/elements/common/DialogManager'
 import DelayedLoadingIndicator from 'app/components/elements/DelayedLoadingIndicator'
 import Modals from 'app/components/modules/Modals'
@@ -22,6 +23,8 @@ import { getShortcutIntent, onShortcutIntent } from 'app/utils/app/ShortcutUtils
 import 'app/App.scss'
 
 const store = configureStore()
+
+const APP_REMINDER_INTERVAL = 30*24*60*60*1000
 
 class App extends React.Component {
     state = {
@@ -65,6 +68,16 @@ class App extends React.Component {
         })
     }
 
+    showAppReminder = () => {
+        if (process.env.MOBILE_APP || process.env.DESKTOP_APP) {
+            return
+        }
+        const now = Date.now()
+        let reminded = localStorage.getItem('app_reminder') || 0
+        reminded = parseInt(reminded)
+        return !reminded || (now - reminded > APP_REMINDER_INTERVAL)
+    }
+
     render() {
         if (!this.state.config) {
             return <div style={{ marginTop: '2rem' }}>
@@ -73,6 +86,7 @@ class App extends React.Component {
                 </center>
             </div>
         }
+        const reminder = this.showAppReminder() ? <AppReminder /> : null
         return (
             <Provider store={store}>
                 <Translator>
@@ -92,6 +106,7 @@ class App extends React.Component {
                                         <Messages />
                                         <Modals />
                                         <DialogManager />
+                                        {reminder}
                                 </Themifier>}
                             </Route>
                         </Switch>

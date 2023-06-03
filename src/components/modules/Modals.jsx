@@ -7,6 +7,7 @@ import Reveal from 'react-foundation-components/lib/global/reveal';
 
 import Donate from 'app/components/modules/Donate'
 import LoginForm from 'app/components/modules/LoginForm';
+import AppDownload from 'app/components/modules/app/AppDownload'
 import user from 'app/redux/UserReducer'
 //import tr from 'app/redux/Transaction';
 
@@ -16,7 +17,9 @@ class Modals extends React.Component {
     static propTypes = {
         show_login_modal: PropTypes.bool,
         show_donate_modal: PropTypes.bool,
+        show_app_download_modal: PropTypes.bool,
         hideDonate: PropTypes.func.isRequired,
+        hideAppDownload: PropTypes.func.isRequired,
         notifications: PropTypes.object,
         removeNotification: PropTypes.func,
     };
@@ -31,8 +34,10 @@ class Modals extends React.Component {
         const {
             show_login_modal,
             show_donate_modal,
+            show_app_download_modal,
             hideLogin,
             hideDonate,
+            hideAppDownload,
             notifications,
             removeNotification,
         } = this.props;
@@ -55,6 +60,10 @@ class Modals extends React.Component {
                     <CloseButton onClick={hideDonate} />
                     <Donate />
                 </Reveal>}
+                {show_app_download_modal && <Reveal onHide={hideAppDownload} show={show_app_download_modal}>
+                    <CloseButton onClick={hideAppDownload} />
+                    <AppDownload />
+                </Reveal>}
                 <NotificationStack
                     style={false}
                     notifications={notifications_array}
@@ -72,6 +81,7 @@ export default connect(
         return {
             show_login_modal: state.user.get('show_login_modal'),
             show_donate_modal: state.user.get('show_donate_modal'),
+            show_app_download_modal: state.user.get('show_app_download_modal'),
             loginUnclosable,
             notifications: state.app.get('notifications'),
         }
@@ -84,6 +94,10 @@ export default connect(
         hideDonate: e => {
             if (e) e.preventDefault()
             dispatch(user.actions.hideDonate())
+        },
+        hideAppDownload: e => {
+            if (e) e.preventDefault()
+            dispatch(user.actions.hideAppDownload())
         },
         
         // example: addNotification: ({key, message}) => dispatch({type: 'ADD_NOTIFICATION', payload: {key, message}}),

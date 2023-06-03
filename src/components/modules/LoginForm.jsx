@@ -9,6 +9,7 @@ import LoadingIndicator from 'app/components/elements/LoadingIndicator'
 import Logo from 'app/components/elements/Logo'
 //import transaction from 'app/redux/Transaction'
 //import g from 'app/redux/GlobalReducer'
+import LoginAppReminder from 'app/components/elements/app/LoginAppReminder'
 import user from 'app/redux/UserReducer'
 import {validate_account_name} from 'app/utils/ChainValidation';
 import runTests from 'app/utils/BrowserTests';
@@ -246,6 +247,9 @@ class LoginForm extends Component {
                </center>
                <br />
                {form}
+               {(!process.env.MOBILE_APP && !process.env.DESKTOP_APP && !isMemo) && <center>
+                    <LoginAppReminder />
+               </center>}
            </div>
         )
 

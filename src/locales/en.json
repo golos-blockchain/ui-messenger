@@ -135,6 +135,17 @@
     "add_image_from_computer": "Add image from computer",
     "add_image_via_link": "Add image via link"
   },
+  "login_app_reminder": {
+    "or_download_for": "...or download for ",
+    "title": "Click to download"
+  },
+  "app_reminder": {
+    "text": "Install desktop application for Windows or Linux to receive data directly from blockchain"
+  },
+  "app_download": {
+    "title": "Download application",
+    "download_for": "Download for"
+  },
   "app_settings": {
     "shortcut": "Settings",
     "shortcut_desc": "If something broken, changing of node address can solve the problem.",
