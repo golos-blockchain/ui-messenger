@@ -11,6 +11,11 @@ module.exports = function override(config, env) {
         app: path.join(__dirname, 'src'),
     }
 
+    resolve.fallback = {
+        ...resolve.fallback,
+        zlib: require.resolve('browserify-zlib')
+    }
+
     config.module.rules[1].oneOf.unshift({
         test: /\.svg/,
         type: 'asset/source'
