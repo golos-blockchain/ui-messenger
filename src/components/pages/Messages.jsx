@@ -721,7 +721,7 @@ class Messages extends React.Component {
                             <Icon name="new/more" />
                             </div>
                             <div className='TopRightMenu__notificounter'>
-                                <NotifiCounter fields='mention,donate,send,receive,fill_order,delegate_vs,new_sponsor,sponsor_inactive,nft_receive' />
+                                <NotifiCounter fields='mention,donate,send,receive,fill_order,delegate_vs,new_sponsor,sponsor_inactive,nft_receive,referral' />
                             </div>
                         </div>
                     </a>
@@ -802,7 +802,7 @@ class Messages extends React.Component {
         }
 
         let user_menu = [
-            {link: accountLink, extLink: 'blogs', icon: 'new/blogging', value: tt('g.blog') + (isSmall ? (' @' + username) : ''), addon: <NotifiCounter fields='new_sponsor,sponsor_inactive' />},
+            {link: accountLink, extLink: 'blogs', icon: 'new/blogging', value: tt('g.blog') + (isSmall ? (' @' + username) : ''), addon: <NotifiCounter fields='new_sponsor,sponsor_inactive,referral' />},
             {link: mentionsLink, extLink: 'blogs', icon: 'new/mention', value: tt('g.mentions'), addon: <NotifiCounter fields='mention' />},
             {link: donatesLink, extLink: 'wallet', icon: 'editor/coin', value: tt('g.rewards'), addon: <NotifiCounter fields='donate' />},
             {link: walletLink, extLink: 'wallet', icon: 'new/wallet', value: tt('g.wallet'), addon: <NotifiCounter fields='send,receive,fill_order,delegate_vs,nft_receive' />},
@@ -843,7 +843,7 @@ class Messages extends React.Component {
                     <div className='msgs-curruser-notify-sink'>
                         <Userpic account={username} title={isSmall ? username : null} width={40} height={40} />
                         <div className='TopRightMenu__notificounter'>
-                            <NotifiCounter fields='mention,donate,send,receive,fill_order,delegate_vs,new_sponsor,sponsor_inactive,nft_receive' />
+                            <NotifiCounter fields='mention,donate,send,receive,fill_order,delegate_vs,new_sponsor,sponsor_inactive,nft_receive,referral' />
                         </div>
                     </div>
                     {!isSmall ? <div className='msgs-curruser-name'>
