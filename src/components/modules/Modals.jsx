@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import CloseButton from 'react-foundation-components/lib/global/close-button';
 import Reveal from 'react-foundation-components/lib/global/reveal';
 
+import CreateGroup from 'app/components/modules/CreateGroup'
 import Donate from 'app/components/modules/Donate'
 import LoginForm from 'app/components/modules/LoginForm';
 import AppDownload from 'app/components/modules/app/AppDownload'
@@ -17,6 +18,7 @@ class Modals extends React.Component {
     static propTypes = {
         show_login_modal: PropTypes.bool,
         show_donate_modal: PropTypes.bool,
+        show_create_group_modal: PropTypes.bool,
         show_app_download_modal: PropTypes.bool,
         hideDonate: PropTypes.func.isRequired,
         hideAppDownload: PropTypes.func.isRequired,
@@ -34,9 +36,11 @@ class Modals extends React.Component {
         const {
             show_login_modal,
             show_donate_modal,
+            show_create_group_modal,
             show_app_download_modal,
             hideLogin,
             hideDonate,
+            hideCreateGroup,
             hideAppDownload,
             notifications,
             removeNotification,
@@ -60,6 +64,10 @@ class Modals extends React.Component {
                     <CloseButton onClick={hideDonate} />
                     <Donate />
                 </Reveal>}
+                {show_create_group_modal && <Reveal revealStyle={{ overflow: 'hidden' }} onHide={hideCreateGroup} show={show_create_group_modal}>
+                    <CloseButton onClick={hideCreateGroup} />
+                    <CreateGroup />
+                </Reveal>}
                 {show_app_download_modal && <Reveal onHide={hideAppDownload} show={show_app_download_modal}>
                     <CloseButton onClick={hideAppDownload} />
                     <AppDownload />
@@ -81,6 +89,7 @@ export default connect(
         return {
             show_login_modal: state.user.get('show_login_modal'),
             show_donate_modal: state.user.get('show_donate_modal'),
+            show_create_group_modal: state.user.get('show_create_group_modal'),
             show_app_download_modal: state.user.get('show_app_download_modal'),
             loginUnclosable,
             notifications: state.app.get('notifications'),
@@ -94,6 +103,10 @@ export default connect(
         hideDonate: e => {
             if (e) e.preventDefault()
             dispatch(user.actions.hideDonate())
+        },
+        hideCreateGroup: e => {
+            if (e) e.preventDefault()
+            dispatch(user.actions.hideCreateGroup())
         },
         hideAppDownload: e => {
             if (e) e.preventDefault()

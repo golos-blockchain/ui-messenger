@@ -1,0 +1,28 @@
+.Stepper {
+    width: 100%;
+
+    .step {
+        display: inline-block;
+        text-align: center;
+        color: gray;
+        font-size: 90%;
+        .bar {
+            background-color: gray;
+            height: 8px;
+            margin-top: 0.25rem;
+            margin-bottom: 0.25rem;
+        }
+
+        &.left {
+            .bar {
+                background-color: #0078C4;
+            }
+        }
+        &.current {
+            color: #0078C4;
+            .bar {
+                background-color: #0078C4;
+            }
+        }
+    }
+}

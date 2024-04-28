@@ -3,6 +3,7 @@ import Dropzone from 'react-dropzone';
 
 import ConversationList from '../ConversationList';
 import MessageList from '../MessageList';
+import StartPanel from 'app/components/elements/messages/StartPanel'
 import isScreenSmall from 'app/utils/isScreenSmall'
 import './Messenger.css';
 
@@ -83,7 +84,7 @@ export default class Messages extends React.Component {
                             topRight={messagesTopRight}
                             renderEmpty={() => {
                                 if ((localStorage.getItem('msgr_auth') && !account) || process.env.MOBILE_APP) return null
-                                return (<img className='msgs-empty-chat' src='/msg_empty.png' />)
+                                return <StartPanel />
                             }}
                             messages={messages}
                             replyingMessage={replyingMessage}

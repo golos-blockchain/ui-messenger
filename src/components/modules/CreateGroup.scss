@@ -1,0 +1,25 @@
+.CreateGroup {
+	.next-button {
+	    width: 48px;
+	    height: 48px;
+	    padding-left: 13px !important;
+	    color: white;
+	    position: absolute;
+	    bottom: 0.4rem;
+	    right: 0.5rem;
+	    box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.4);
+	}
+	.Stepper {
+		width: 85%;
+		margin-left: 1rem;
+	}
+	.icon-hint {
+		margin-left: 0.25rem;
+	}
+	.column {
+		padding-right: 0.5rem !important;
+	}
+	.error {
+		margin-bottom: 0px !important;
+	}
+}

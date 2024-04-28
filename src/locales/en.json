@@ -76,6 +76,37 @@
     "blocked_BY": "You are blocked by @%(BY)s.",
     "do_not_bother_BY": "@%(BY)s wants to not be bothered by low-reputation users."
   },
+  "msgs_start_panel": {
+    "start_chat": "Start chat",
+    "create_group": "Create group"
+  },
+  "create_group_jsx": {
+    "title": "Title",
+    "name": "Link chat.golos.app/",
+    "logo": "Logo",
+    "admin": "Admin",
+    "encrypted": "Encrypt messages in group",
+    "encrypted_hint": "Шифрование позволяет сделать сообщения доступными только тем, кто имеет доступ к группе.",
+    "encrypted_dis": " (required for privacy)",
+    "access": "Access to group for...",
+    "access_hint": "Можно сделать группу открытой, или доступной только тем, чьи заявки на вступление в группу одобрит администрация.",
+    "access_all": "Everyone",
+    "all_read_only": "Everyone, but posting only for members",
+    "access_private": "Only members",
+    "next": "Next",
+    "back": "Back",
+    "submit": "Create",
+    "step_name": "Name",
+    "step_logo": "Logo",
+    "step_admin": "Administrator",
+    "step_create": "Create!",
+    "group_already_exists": "Group already exists.",
+    "group_min_length": "Min is 3 symbols.",
+    "golos_power_too_low": "To create group you should have Golos Power at least ",
+    "golos_power_too_low2": "That is not enough ",
+    "golos_power_too_low3": "Your Golos Power is ",
+    "deposit_gp": "Increase Golos Power"
+  },
   "emoji_i18n": {
     "categoriesLabel": "Категории",
     "emojiUnsupportedMessage": "Ваш браузер не поддерживает эмодзи.",
