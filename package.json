@@ -32,7 +32,7 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-dom-confetti": "^0.2.0",
-    "react-dropzone": "^12.0.4",
+    "react-dropzone": "^14.2.3",
     "react-foundation-components": "git+https://github.com/golos-blockchain/react-foundation-components.git#6606fd5529f1ccbc77cd8d33a8ce139fdf8f9a11",
     "react-intl": "^5.24.6",
     "react-notification": "^6.8.5",

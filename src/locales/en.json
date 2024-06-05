@@ -105,7 +105,10 @@
     "golos_power_too_low": "To create group you should have Golos Power at least ",
     "golos_power_too_low2": "That is not enough ",
     "golos_power_too_low3": "Your Golos Power is ",
-    "deposit_gp": "Increase Golos Power"
+    "deposit_gp": "Increase Golos Power",
+    "logo_desc": "The group logo is like a user’s avatar...",
+    "logo_upload": "Upload logo",
+    "logo_link": "Add logo from the URL"
   },
   "emoji_i18n": {
     "categoriesLabel": "Категории",
