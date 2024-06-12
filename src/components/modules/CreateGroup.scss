@@ -24,5 +24,17 @@
 	}
 	.error {
 		margin-bottom: 0px !important;
+		margin-top: 0.5rem;
 	}
+
+	.image-loader {
+		margin-top: 14px;
+	}
+
+    .image-preview {
+        max-width: 75px;
+        max-height: 75px;
+        margin-top: 0.75rem;
+        border: none;
+    }
 }

@@ -15,13 +15,15 @@ import LoadingIndicator from 'app/components/elements/LoadingIndicator'
 import FormikAgent from 'app/components/elements/donate/FormikUtils'
 import Stepper from 'app/components/elements/messages/Stepper'
 import GroupName, { validateNameStep } from 'app/components/modules/groups/GroupName'
-import GroupLogo from 'app/components/modules/groups/GroupLogo'
+import GroupLogo, { validateLogoStep } from 'app/components/modules/groups/GroupLogo'
+import GroupAdmin, { validateAdminStep } from 'app/components/modules/groups/GroupAdmin'
+import GroupFinal from 'app/components/modules/groups/GroupFinal'
 
 const STEPS = () => { return {
     name: tt('create_group_jsx.step_name'),
     logo: tt('create_group_jsx.step_logo'),
     admin: tt('create_group_jsx.step_admin'),
-    create: tt('create_group_jsx.step_create')
+    final: tt('create_group_jsx.step_create')
 } }
 
 class CreateGroup extends React.Component {
@@ -29,6 +31,7 @@ class CreateGroup extends React.Component {
         super(props)
         this.state = {
             step: 'name',
+            validators: 0,
             initialValues: {
                 title: '',
                 name: '',
@@ -36,6 +39,8 @@ class CreateGroup extends React.Component {
                 privacy: 'public_group',
 
                 logo: '',
+
+                admin: '',
             }
         }
         this.stepperRef = React.createRef()
@@ -81,12 +86,24 @@ class CreateGroup extends React.Component {
         }
     }
 
+    setValidating = (validating) => {
+        this.setState({
+            validators: this.state.validators + (validating ? 1 : -1),
+        })
+    }
+
     validate = async (values) => {
         const errors = {}
         const { step } = this.state
+        this.setValidating(true)
         if (step === 'name') {
-            await validateNameStep(values, errors, (validating) => this.setState({ validating }))
+            await validateNameStep(values, errors)
+        } else if (step === 'logo') {
+            await validateLogoStep(values, errors)
+        } else if (step === 'admin') {
+            await validateAdminStep(values, errors)
         }
+        this.setValidating(false)
         return errors
     }
 
@@ -96,13 +113,16 @@ class CreateGroup extends React.Component {
     goNext = (e, setFieldValue) => {
         e.preventDefault()
         const step = this.stepperRef.current.nextStep()
+    }
+
+    onStep = ({ step }) => {
         this.setState({
             step
         })
     }
 
     render() {
-        const { step, loaded, createError, validating } = this.state
+        const { step, loaded, createError, validators } = this.state
 
         let form
         if (!loaded) {
@@ -134,20 +154,23 @@ class CreateGroup extends React.Component {
             onSubmit={this._onSubmit}
         >
         {({
-            handleSubmit, isSubmitting, isValid, values, setFieldValue, setFieldTouched, handleChange,
+            handleSubmit, isSubmitting, isValid, values, errors, setFieldValue, applyFieldValue, setFieldTouched, handleChange,
         }) => {
-            const disabled = !isValid || validating
+            const disabled = !isValid || !!validators
             return (
         <Form>
 
-            {step === 'name' ? <GroupName values={values} setFieldValue={setFieldValue} setFieldTouched={setFieldTouched} /> :
-            step === 'logo' ? <GroupLogo values={values} setFieldValue={setFieldValue} setFieldTouched={setFieldTouched} /> :
+            {step === 'name' ? <GroupName values={values} applyFieldValue={applyFieldValue} /> :
+            step === 'logo' ? <GroupLogo isValidating={!!validators} values={values} errors={errors} applyFieldValue={applyFieldValue} /> :
+            step === 'admin' ? <GroupAdmin values={values} applyFieldValue={applyFieldValue} /> :
+            step === 'final' ? <GroupFinal /> :
             <React.Fragment></React.Fragment>}
 
-            <Stepper ref={this.stepperRef} steps={STEPS()} startStep='name' />
+            <Stepper ref={this.stepperRef} steps={STEPS()} startStep='name'
+                onStep={this.onStep} />
             {isSubmitting ? <span><LoadingIndicator type='circle' /><br /></span>
             : <span>
-                <button onClick={this.goNext} disabled={disabled} className='button small next-button' title={validating ?
+                <button onClick={this.goNext} disabled={disabled} className='button small next-button' title={validators ?
                     tt('create_group_jsx.validating') : tt('create_group_jsx.submit')}>
                     <Icon name='chevron-right' size='1_25x' />
                 </button>

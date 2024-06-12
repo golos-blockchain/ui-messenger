@@ -12,6 +12,17 @@ class Stepper extends React.Component {
         }
     }
 
+    _goToStep = (step) => { // TODO: private, if make public - check step exists
+        this.setState({
+            currentStep: step
+        }, () => {
+            const { onStep } = this.props
+            if (onStep) {
+                onStep({ step })
+            }
+        })
+    }
+
     nextStep = () => {
         const { steps } = this.props
         const entr = Object.entries(steps)
@@ -19,9 +30,7 @@ class Stepper extends React.Component {
         let found
         for (const [key, content] of entr) {
             if (found) {
-                this.setState({
-                    currentStep: key
-                })
+                this._goToStep(key)
                 return key
             }
             found = key === currentStep
@@ -42,7 +51,14 @@ class Stepper extends React.Component {
             const isCurrent = key === currentStep
             foundCurrent = foundCurrent || isCurrent
             const cn = foundCurrent ? (isCurrent ? 'current' : '') : 'left' 
-            stepObjs.push(<div className={'step ' + cn} style={{ minWidth: width + '%' }}>
+            let onClick
+            if (!foundCurrent) {
+                onClick = (e) => {
+                    e.preventDefault()
+                    this._goToStep(key)
+                }
+            }
+            stepObjs.push(<div className={'step ' + cn} style={{ minWidth: width + '%' }} onClick={onClick}>
                     <div className={'bar'}></div>
                     {content}
                 </div>)

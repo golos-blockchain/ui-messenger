@@ -17,6 +17,10 @@
             .bar {
                 background-color: #0078C4;
             }
+            cursor: pointer;
+            &:hover {
+                color: #0078C4;
+            }
         }
         &.current {
             color: #0078C4;

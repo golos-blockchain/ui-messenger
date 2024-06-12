@@ -7,6 +7,60 @@ import tt from 'counterpart'
 import Input from 'app/components/elements/common/Input';
 import PictureSvg from 'app/assets/icons/editor-toolbar/picture.svg';
 import DialogManager from 'app/components/elements/common/DialogManager'
+import LoadingIndicator from 'app/components/elements/LoadingIndicator'
+import { delay } from 'app/utils/misc'
+import { proxifyImageUrlWithStrip } from 'app/utils/ProxifyUrl';
+
+export async function validateLogoStep(values, errors) {
+    if (values.logo) {
+        try {
+            let previewRes
+            const img = document.createElement('img')
+            const uniq =  Math.random()
+            window._logoValidator = uniq
+
+            img.onload = () => {
+                console.log('img onload')
+                previewRes = { ok: true }
+            }
+            img.onerror = () => {
+                console.log('img onerror')
+                previewRes = { err: 'wrong' }
+            }
+            img.src = values.logo
+
+            const started = Date.now()
+            const checkTimeout = 7000
+            while (true) {
+                const elapsed = Date.now() - started
+
+                if (window._logoValidator !== uniq) { // Another loop started
+                    console.log('ret', uniq)
+                    return
+                }
+
+                if (!previewRes && elapsed > checkTimeout) {
+                    errors.logo = tt('create_group_jsx.image_timeout')
+                    return
+                }
+
+                if (previewRes) {
+                    if (previewRes.err) {
+                        errors.logo = tt('create_group_jsx.image_wrong')
+                        return
+                    } else {
+                        return
+                    }
+                }
+
+                await delay(100)
+            }
+        } catch (err) {
+            console.error(err)
+            errors.logo = 'Unknown validation error'
+        }
+    }
+}
 
 class GroupLogo extends React.Component {
     state = {}
@@ -15,13 +69,12 @@ class GroupLogo extends React.Component {
         super(props)
     }
 
-    uploadLogo = (file, name, setFieldValue) => {
-        const { notify } = this.props
-        const { uploadImage } = this.props
+    uploadLogo = (file, name) => {
+        const { notify, uploadImage, applyFieldValue } = this.props
         this.setState({ uploading: true })
         uploadImage(file, progress => {
             if (progress.url) {
-                alert(progress.url)
+                applyFieldValue('logo', progress.url)
             }
             if (progress.error) {
                 const { error } = progress;
@@ -31,7 +84,7 @@ class GroupLogo extends React.Component {
         })
     }
 
-    _onDrop = (acceptedFiles, rejectedFiles, setFieldValue) => {
+    onDrop = (acceptedFiles, rejectedFiles) => {
         const file = acceptedFiles[0]
 
         if (!file) {
@@ -43,10 +96,10 @@ class GroupLogo extends React.Component {
             return
         }
 
-        this.uploadLogo(file, file.name, setFieldValue)
+        this.uploadLogo(file, file.name)
     };
 
-    _onInputKeyDown = e => {
+    onInputKeyDown = e => {
         if (e.which === keyCodes.ENTER) {
             e.preventDefault();
             //this.props.onClose({
@@ -55,10 +108,29 @@ class GroupLogo extends React.Component {
         }
     };
 
+    onChange = (e) => {
+        const { applyFieldValue} = this.props
+        applyFieldValue('logo', e.target.value)
+    }
+
+    _renderPreview = () => {
+        const { values, errors, isValidating } = this.props
+        let { logo } = values
+        if (isValidating) {
+            return <div className='image-loader'>
+                <LoadingIndicator type='circle' />
+            </div>
+        } else if (logo && !errors.logo) {
+            const size = '75x75' // main size of Userpic
+            logo = proxifyImageUrlWithStrip(logo, size);
+            return <img src={logo} className='image-preview' />
+        }
+        return null
+    }
 
     render() {
-        const { values, setFieldValue, setFieldTouched } = this.props
-        const { uploading } = this.state
+        const { isValidating } = this.props
+        const { uploading, } = this.state
 
         const selectorStyleCover = uploading ?
             {
@@ -86,36 +158,37 @@ class GroupLogo extends React.Component {
                 <div className='AddImageDialog column small-12' style={{paddingTop: 5}}>
                     <DropZone
                         multiple={false}
-                        accept="image/*"
-                        onDrop={this._onDrop}
+                        accept='image/*'
+                        onDrop={(af, rf) => this.onDrop(af, rf)}
                     >
-                        {({getRootProps, getInputProps}) => (<div className="AddImageDialog__drop-zone" {...getRootProps()}>
+                        {({getRootProps, getInputProps}) => (<div className='AddImageDialog__drop-zone' {...getRootProps()}>
                             <input {...getInputProps()} />
                             <i
-                                className="AddImageDialog__drop-zone-icon"
+                                className='AddImageDialog__drop-zone-icon'
                                 dangerouslySetInnerHTML={{ __html: PictureSvg }}
                             />
-                            <span className="AddImageDialog__drop-zone-text">
+                            <span className='AddImageDialog__drop-zone-text'>
                                 {tt('create_group_jsx.logo_upload')}
                             </span>
                         </div>)}
                     </DropZone>
-                    <div className="AddImageDialog__splitter" />
+                    <div className='AddImageDialog__splitter' />
                     <div>
-                        <div className="AddImageDialog__link-text">
+                        <div className='AddImageDialog__link-text'>
                             {tt('create_group_jsx.logo_link')}:
                         </div>
-                        <Field name='logo' type='text'
+                        <Field name='logo'
+                            block
+                            as={Input}
                             placeholder='https://'
+                            autoFocus
+                            className='AddImageDialog__link-input'
+                            onChange={e => this.onChange(e)}
                         >
-                            {({ field, form }) => <Input
-                                block
-                                className="AddImageDialog__link-input"
-                                autoFocus
-                                onKeyDown={this._onInputKeyDown}
-                            />}
                         </Field>
+                        {!isValidating && <ErrorMessage name='logo' component='div' className='error' />}
                     </div>
+                    {this._renderPreview()}
                 </div>
             </div>
         </React.Fragment>

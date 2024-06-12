@@ -1,4 +1,14 @@
 {
+  "account_name": {
+    "account_name_should_be_shorter": "Имя аккаунта должно быть короче.",
+    "account_name_should_be_longer": "Имя аккаунта должно быть длиннее.",
+    "account_name_should_not_be_empty": "Имя аккаунта не должно быть пустым.",
+    "each_account_segment_should_start_with_a_letter": "Каждый сегмент имени аккаунта должен начинаться с буквы.",
+    "each_account_segment_should_have_only_letters_digits_or_dashes": "Сегмент имени аккаунта может содержать только буквы, цифры и дефисы.",
+    "each_account_segment_should_have_only_one_dash_in_a_row": "Каждый сегмент имени аккаунта может содержать только один дефис.",
+    "each_account_segment_should_end_with_a_letter_or_digit": "Каждый сегмент имени аккаунта должен заканчиваться буквой или цифрой.",
+    "each_account_segment_should_be_longer": "Сегмент имени аккаунта должен быть длиннее."
+  },
   "chainvalidation_js": {
     "account_name_should": "Имя аккаунта должно ",
     "not_be_empty": "не может быть пустым.",
@@ -108,9 +118,13 @@
     "golos_power_too_low2": "Вам не хватает ",
     "golos_power_too_low3": "Ваша Сила Голоса - ",
     "deposit_gp": "Пополнить Силу Голоса",
-    "logo_desc": "Логотип группы - это как аватарка у пользователя...",
+    "logo_desc": "Логотип группы - это как аватарка у пользователя... Необязательно, но \"must have\"...",
     "logo_upload": "Загрузить логотип",
-    "logo_link": "Добавить логотип ссылкой"
+    "logo_link": "Добавить логотип ссылкой",
+    "admin_desc": "Администратором группы будeт...",
+    "final_desc": "Теперь все готово к созданию группы!",
+    "image_wrong": "Не удается загрузить картинку.",
+    "image_timeout": "Не удается загрузить картинку, она загружается слишком долго..."
   },
   "emoji_i18n": {
     "categoriesLabel": "Категории",

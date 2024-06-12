@@ -5,6 +5,9 @@ const renderPart = (part, params) => {
     return part
 }
 
+const delay = (msec) => new Promise(resolve => setTimeout(resolve, msec))
+
 export {
-    renderPart
+    renderPart,
+    delay
 }

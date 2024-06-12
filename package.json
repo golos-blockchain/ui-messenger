@@ -16,7 +16,7 @@
     "connected-react-router": "^6.9.2",
     "counterpart": "^0.18.6",
     "emoji-picker-element": "^1.10.1",
-    "formik": "https://gitpkg.now.sh/golos-blockchain/formik/packages/formik?b697b6ef3f13c795bb862b35589fffde442ab465",
+    "formik": "https://gitpkg.now.sh/golos-blockchain/formik/packages/formik?3b21166c33ade760d562091e1fa0b71d172a7aaf",
     "git-rev-sync": "^3.0.2",
     "golos-lib-js": "^0.9.69",
     "history": "4.10.1",

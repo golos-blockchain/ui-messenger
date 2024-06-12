@@ -6,7 +6,7 @@ import { api } from 'golos-lib-js'
 
 import Icon from 'app/components/elements/Icon'
 
-export async function validateNameStep(values, errors, setValidating) {
+export async function validateNameStep(values, errors) {
     if (!values.title) {
         errors.title = tt('g.required')
     }
@@ -14,7 +14,6 @@ export async function validateNameStep(values, errors, setValidating) {
         if (values.name.length < 3) {
             errors.name = tt('create_group_jsx.group_min_length')
         } else {
-            setValidating(true)
             let group
             for (let i = 0; i < 3; ++i) {
                 try {
@@ -33,7 +32,6 @@ export async function validateNameStep(values, errors, setValidating) {
             if (group && group[0]) {
                 errors.name = tt('create_group_jsx.group_already_exists')
             }
-            setValidating(false)
         }
     }
 }
@@ -45,21 +43,21 @@ export default class GroupName extends React.Component {
         super(props)
     }
 
-    onTitleChange = (e, setFieldValue, setFieldTouched) => {
+    onTitleChange = (e) => {
         const { value } = e.target
         if (value.trimLeft() !== value) {
             return
         }
-        setFieldValue('title', value)
+        const { applyFieldValue } = this.props
+        applyFieldValue('title', value)
         let link = getSlug(value)
-        setFieldValue('name', link)
-        setFieldTouched('name', true)
+        applyFieldValue('name', link)
         this.setState({
             showName: true
         })
     }
 
-    onNameChange = (e, setFieldValue) => {
+    onNameChange = (e) => {
         const { value } = e.target
         for (let i = 0; i < value.length; ++i) {
             const c = value[i]
@@ -73,16 +71,18 @@ export default class GroupName extends React.Component {
                 if (!is_alpha && !is_digit && !is_dash && !is_ul) return;
             }
         }
-        setFieldValue('name', value)
+        const { applyFieldValue } = this.props
+        applyFieldValue('name', value)
     }
 
-    onPrivacyChange = (e, setFieldValue) => {
-        setFieldValue('privacy', e.target.value)
-        setFieldValue('is_encrypted', true)
+    onPrivacyChange = (e) => {
+        const { applyFieldValue } = this.props
+        applyFieldValue('privacy', e.target.value)
+        applyFieldValue('is_encrypted', true)
     }
 
     render() {
-        const { values, setFieldValue, setFieldTouched } = this.props
+        const { values } = this.props
         const { showName } = this.state
         return <React.Fragment>
             <div className='row' style={{ marginTop: '1.0rem', marginBottom: '1.0rem' }}>
@@ -94,7 +94,7 @@ export default class GroupName extends React.Component {
                         type='text'
                         name='title'
                         maxLength='48'
-                        onChange={e => this.onTitleChange(e, setFieldValue, setFieldTouched)}
+                        onChange={e => this.onTitleChange(e)}
                         autoFocus
                     />
                     <ErrorMessage name='title' component='div' className='error' />
@@ -110,7 +110,7 @@ export default class GroupName extends React.Component {
                         type='text'
                         name='name'
                         maxLength='32'
-                        onChange={e => this.onNameChange(e, setFieldValue)}
+                        onChange={e => this.onNameChange(e)}
                     />
                     <ErrorMessage name='name' component='div' className='error' />
                 </div>
@@ -125,7 +125,7 @@ export default class GroupName extends React.Component {
                     <Field
                         as='select'
                         name='privacy'
-                        onChange={e => this.onPrivacyChange(e, setFieldValue)}
+                        onChange={e => this.onPrivacyChange(e)}
                     >
                         <option value='public_group'>{tt('create_group_jsx.access_all')}</option>
                         <option value='public_read_only'>{tt('create_group_jsx.all_read_only')}</option>

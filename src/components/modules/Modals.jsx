@@ -29,8 +29,12 @@ class Modals extends React.Component {
     onLoginBackdropClick = (e) => {
         const { loginUnclosable } = this.props;
         if (loginUnclosable)
-            throw new Error('Closing login modal is forbidden here');
+            this.onUnclosableClick(e)
     };
+
+    onUnclosableClick = (e) => {
+        throw new Error('Closing modal is forbidden here')
+    }
 
     render() {
         const {
@@ -64,7 +68,7 @@ class Modals extends React.Component {
                     <CloseButton onClick={hideDonate} />
                     <Donate />
                 </Reveal>}
-                {show_create_group_modal && <Reveal revealStyle={{ overflow: 'hidden' }} onHide={hideCreateGroup} show={show_create_group_modal}>
+                {show_create_group_modal && <Reveal onBackdropClick={this.onUnclosableClick} revealStyle={{ overflow: 'hidden' }} onHide={hideCreateGroup} show={show_create_group_modal}>
                     <CloseButton onClick={hideCreateGroup} />
                     <CreateGroup />
                 </Reveal>}
