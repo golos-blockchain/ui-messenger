@@ -198,6 +198,9 @@ class GroupLogo extends React.Component {
 export default connect(
     // mapStateToProps
     (state, ownProps) => {
+        return {
+            ...ownProps
+        }
     },
     dispatch => ({
         uploadImage: (file, progress) => {

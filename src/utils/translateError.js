@@ -28,6 +28,14 @@ export function translateError(string) {
         case 'Cannot increase reward of post within the last minute before payout':
             return tt('g.cannot_increase_reward_of_post_within_the_last_minute_before_payout')
         default:
-            return string
+            break
     }
+
+    if (string.includes(
+        'Account exceeded maximum allowed bandwidth per vesting share'
+    )) {
+        string = tt('chain_errors.exceeded_maximum_allowed_bandwidth')
+    }
+
+    return string
 }

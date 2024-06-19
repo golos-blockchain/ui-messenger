@@ -29,7 +29,7 @@ export async function validateNameStep(values, errors) {
                     errors.name = 'Blockchain unavailable :('
                 }
             }
-            if (group && group[0]) {
+            if (group && group[0] && group[0].name === values.name) {
                 errors.name = tt('create_group_jsx.group_already_exists')
             }
         }

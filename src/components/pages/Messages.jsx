@@ -802,7 +802,8 @@ class Messages extends React.Component {
         }
 
         let user_menu = [
-            {link: accountLink, extLink: 'blogs', icon: 'new/blogging', value: tt('g.blog') + (isSmall ? (' @' + username) : ''), addon: <NotifiCounter fields='new_sponsor,sponsor_inactive,referral' />},
+            {link: accountLink, extLink: 'blogs', icon: 'voters', value: tt('g.groups') + (isSmall ? (' @' + username) : ''), addon: <NotifiCounter fields='new_sponsor,sponsor_inactive,referral' />},
+            {link: accountLink, extLink: 'blogs', icon: 'new/blogging', value: tt('g.blog'), addon: <NotifiCounter fields='new_sponsor,sponsor_inactive,referral' />},
             {link: mentionsLink, extLink: 'blogs', icon: 'new/mention', value: tt('g.mentions'), addon: <NotifiCounter fields='mention' />},
             {link: donatesLink, extLink: 'wallet', icon: 'editor/coin', value: tt('g.rewards'), addon: <NotifiCounter fields='donate' />},
             {link: walletLink, extLink: 'wallet', icon: 'new/wallet', value: tt('g.wallet'), addon: <NotifiCounter fields='send,receive,fill_order,delegate_vs,nft_receive,nft_token_sold,nft_buy_offer' />},

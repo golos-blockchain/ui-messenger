@@ -9,6 +9,9 @@
     "each_account_segment_should_end_with_a_letter_or_digit": "Каждый сегмент имени аккаунта должен заканчиваться буквой или цифрой.",
     "each_account_segment_should_be_longer": "Сегмент имени аккаунта должен быть длиннее."
   },
+  "chain_errors": {
+    "exceeded_maximum_allowed_bandwidth": "Недостаточно пропускной способности аккаунта. Пополните Силу Голоса или напишите на info@golos.id"
+  },
   "chainvalidation_js": {
     "account_name_should": "Имя аккаунта должно ",
     "not_be_empty": "не может быть пустым.",
@@ -44,6 +47,8 @@
     "login_to_post": "Авторизуйтесь, чтобы написать пост",
     "login_to_comment": "Пожалуйста, авторизуйтесь для выполнения следующих действий",
     "login_to_message": "Пожалуйста, авторизуйтесь с memo-ключом или паролем",
+    "login_active": "Введите пароль (или активный ключ)",
+    "is_is_for_operation": "Это нужно для отправки операции.",
     "login_with_active_key_USERNAME": "Пожалуйста, авторизуйтесь Вашим активным ключом\n\nИмя:\n%(USERNAME)s\n\nActive-ключ:\n",
     "login_to_your_steem_account": "Войти в свой Голос аккаунт",
     "posting": "Постинг",
@@ -69,6 +74,11 @@
     "free_money": "ЛЕГКИЕ ДЕНЬГИ!",
     "join_our": "Присоединяйтесь к нашему",
     "account_frozen": "Этот аккаунт временно деактивирован из-за неактивности."
+  },
+  "login_dialog_jsx": {
+    "node_failure_NODE_ERROR": "Ошибка ноды. Нода: %(NODE)s Ошибка: %(ERROR)s",
+    "wrong_pass": "Неверный пароль.",
+    "wrong_pass_ROLE": "Неверный пароль. Этот ключ не дает %(ROLE)s-доступа."
   },
   "messages": {
     "last_seen": "был(а) ",
@@ -229,6 +239,7 @@
     "delete": "Удалить",
     "dismiss": "Скрыть",
     "edit": "Редактировать",
+    "groups": "Группы",
     "feed": "Лента",
     "incorrect_password": "Неправильный пароль",
     "posting_not_memo": "Сейчас нужно ввести posting-ключ. Вы ввели memo.",

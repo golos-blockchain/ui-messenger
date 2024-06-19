@@ -26,6 +26,10 @@
 		margin-bottom: 0px !important;
 		margin-top: 0.5rem;
 	}
+	.submit-error {
+		margin-left: 1rem;
+		max-width: 83%;
+	}
 
 	.image-loader {
 		margin-top: 14px;
@@ -36,5 +40,9 @@
         max-height: 75px;
         margin-top: 0.75rem;
         border: none;
+    }
+    .submit-loader {
+	    margin-left: 0.5rem;
+	    margin-top: 0.5rem;
     }
 }

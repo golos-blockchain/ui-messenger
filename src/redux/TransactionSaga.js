@@ -4,6 +4,7 @@ import golos from 'golos-lib-js'
 
 import g from 'app/redux/GlobalReducer'
 import user from 'app/redux/UserReducer'
+import { translateError } from 'app/utils/translateError'
 
 export function* transactionWatches() {
     yield fork(watchForBroadcast)
@@ -114,9 +115,11 @@ function* broadcastOperation(
         return;
     }
 
-    const posting_private = yield select(state => state.user.getIn(['current', 'private_keys', 'posting_private']));
-    if (!posting_private) {
-        alert('Not authorized')
+    if (!password) {
+        password = yield select(state => state.user.getIn(['current', 'private_keys', 'posting_private']));
+        if (!password) {
+            alert('Not authorized')
+        }
     }
 
     let operations = trx || [
@@ -144,11 +147,14 @@ function* broadcastOperation(
     }
     try {
         const res = yield golos.broadcast.sendAsync(
-        tx, [posting_private])
+        tx, [password])
     } catch (err) {
         console.error('Broadcast error', err)
         if (errorCallback) {
-            errorCallback(err)
+            let errStr = err.toString()
+            errStr = translateError(errStr)
+            errStr = errStr.substring(0, 160)
+            errorCallback(err, errStr)
         }
         return
     }

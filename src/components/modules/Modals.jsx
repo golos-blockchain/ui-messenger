@@ -68,7 +68,7 @@ class Modals extends React.Component {
                     <CloseButton onClick={hideDonate} />
                     <Donate />
                 </Reveal>}
-                {show_create_group_modal && <Reveal onBackdropClick={this.onUnclosableClick} revealStyle={{ overflow: 'hidden' }} onHide={hideCreateGroup} show={show_create_group_modal}>
+                {show_create_group_modal && <Reveal enforceFocus={false} onBackdropClick={this.onUnclosableClick} revealStyle={{ overflow: 'hidden' }} onHide={hideCreateGroup} show={show_create_group_modal}>
                     <CloseButton onClick={hideCreateGroup} />
                     <CreateGroup />
                 </Reveal>}

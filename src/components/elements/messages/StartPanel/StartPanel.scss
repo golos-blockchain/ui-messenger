@@ -2,5 +2,13 @@
     .button {
         display: block;
         width: 100%;
+        &.last-button {
+            margin-bottom: 0.15rem;
+        }
+
+        .btn-title {
+            margin-left: 5px;
+            vertical-align: middle;
+        }
     }
 }

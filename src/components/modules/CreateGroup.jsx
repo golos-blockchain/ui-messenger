@@ -18,6 +18,8 @@ import GroupName, { validateNameStep } from 'app/components/modules/groups/Group
 import GroupLogo, { validateLogoStep } from 'app/components/modules/groups/GroupLogo'
 import GroupAdmin, { validateAdminStep } from 'app/components/modules/groups/GroupAdmin'
 import GroupFinal from 'app/components/modules/groups/GroupFinal'
+import DialogManager from 'app/components/elements/common/DialogManager'
+import { showLoginDialog } from 'app/components/dialogs/LoginDialog'
 
 const STEPS = () => { return {
     name: tt('create_group_jsx.step_name'),
@@ -86,16 +88,20 @@ class CreateGroup extends React.Component {
         }
     }
 
-    setValidating = (validating) => {
-        this.setState({
-            validators: this.state.validators + (validating ? 1 : -1),
+    setValidating = async (validating) => {
+        return new Promise(resolve => {
+            this.setState({
+                validators: this.state.validators + (validating ? 1 : -1),
+            }, () => {
+                resolve()
+            })
         })
     }
 
     validate = async (values) => {
         const errors = {}
         const { step } = this.state
-        this.setValidating(true)
+        await this.setValidating(true)
         if (step === 'name') {
             await validateNameStep(values, errors)
         } else if (step === 'logo') {
@@ -103,16 +109,48 @@ class CreateGroup extends React.Component {
         } else if (step === 'admin') {
             await validateAdminStep(values, errors)
         }
-        this.setValidating(false)
+        await this.setValidating(false)
         return errors
     }
 
-    _onSubmit = () => {
+    _onSubmit = (data, actions) => {
+        const { currentUser } = this.props
+        const creator = currentUser.get('username')
+        data.creator = creator
+
+        this.setState({
+            submitError: ''
+        })
+
+        showLoginDialog(creator, (res) => {
+            const password = res && res.password
+            if (!password) {
+                actions.setSubmitting(false)
+                return
+            }
+            this.props.privateGroup({
+                password,
+                ...data,
+                onSuccess: () => {
+                    alert('success')
+                    actions.setSubmitting(false)
+                },
+                onError: (err, errStr) => {
+                    this.setState({ submitError: errStr })
+                    actions.setSubmitting(false)
+                }
+            })
+        }, 'active')
+
     }
 
     goNext = (e, setFieldValue) => {
+        const { step } = this.state
+        if (step === 'final') {
+            return
+        }
         e.preventDefault()
-        const step = this.stepperRef.current.nextStep()
+        this.stepperRef.current.nextStep()
     }
 
     onStep = ({ step }) => {
@@ -122,7 +160,7 @@ class CreateGroup extends React.Component {
     }
 
     render() {
-        const { step, loaded, createError, validators } = this.state
+        const { step, loaded, createError, validators, submitError } = this.state
 
         let form
         if (!loaded) {
@@ -160,15 +198,16 @@ class CreateGroup extends React.Component {
             return (
         <Form>
 
-            {step === 'name' ? <GroupName values={values} applyFieldValue={applyFieldValue} /> :
+            {!isSubmitting ? (step === 'name' ? <GroupName values={values} applyFieldValue={applyFieldValue} /> :
             step === 'logo' ? <GroupLogo isValidating={!!validators} values={values} errors={errors} applyFieldValue={applyFieldValue} /> :
             step === 'admin' ? <GroupAdmin values={values} applyFieldValue={applyFieldValue} /> :
-            step === 'final' ? <GroupFinal /> :
-            <React.Fragment></React.Fragment>}
+            step === 'final' ? <GroupFinal submitError={submitError} /> :
+            <React.Fragment></React.Fragment>) : null}
 
-            <Stepper ref={this.stepperRef} steps={STEPS()} startStep='name'
-                onStep={this.onStep} />
-            {isSubmitting ? <span><LoadingIndicator type='circle' /><br /></span>
+            {!isSubmitting && <Stepper ref={this.stepperRef} steps={STEPS()} startStep={step}
+                onStep={this.onStep} />}
+            {/*submitError && <div className='error submit-error'>{submitError}</div>*/}
+            {isSubmitting ? <span className='submit-loader'><LoadingIndicator type='circle' /><br /></span>
             : <span>
                 <button onClick={this.goNext} disabled={disabled} className='button small next-button' title={validators ?
                     tt('create_group_jsx.validating') : tt('create_group_jsx.submit')}>
@@ -198,5 +237,43 @@ export default connect(
         }
     },
     dispatch => ({
+        privateGroup: ({ password, creator, name, title, logo, admin, is_encrypted, privacy,
+        onSuccess, onError }) => {
+            let json_metadata = {
+                app: 'golos-messenger',
+                version: 1,
+                title,
+                logo
+            }
+            json_metadata = JSON.stringify(json_metadata)
+
+            const opData = {
+                creator,
+                name,
+                json_metadata,
+                admin: admin,
+                is_encrypted,
+                privacy,
+                extensions: [],
+            }
+
+            const json = JSON.stringify(['private_group', opData])
+
+            dispatch(transaction.actions.broadcastOperation({
+                type: 'custom_json',
+                operation: {
+                    id: 'private_message',
+                    required_auths: [creator],
+                    json,
+                },
+                username: creator,
+                password,
+                successCallback: onSuccess,
+                errorCallback: (err, errStr) => {
+                    console.error(err)
+                    if (onError) onError(err, errStr)
+                },
+            }));
+        }
     })
 )(CreateGroup)

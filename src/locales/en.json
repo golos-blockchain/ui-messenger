@@ -9,6 +9,9 @@
     "each_account_segment_should_end_with_a_letter_or_digit": "Each account name segment should end with a letter or digit.",
     "each_account_segment_should_be_longer": "Each account name segment should be longer."
   },
+  "chain_errors": {
+    "exceeded_maximum_allowed_bandwidth": "Insufficient account bandwidth. Replenish the Golos Power or write to info@golos.id"
+  },
   "chainvalidation_js": {
     "account_name_should": "Account name should ",
     "not_be_empty": "not be empty.",
@@ -43,6 +46,8 @@
     "login_to_post": "Login to Post",
     "login_to_comment": "Login to Comment",
     "login_to_message": "Login with Memo Key or Password",
+    "login_active": "Enter password (or active-key)",
+    "is_is_for_operation": "This is to send an operation.",
     "login_to_your_steem_account": "Login to your Steem Account",
     "login_with_active_key_USERNAME": "Login with your Active key, please\n\nUsername:\n%(USERNAME)s\n\nActive-key:\n",
     "posting": "Posting",
@@ -68,6 +73,11 @@
     "free_money": "FREE MONEY!",
     "join_our": "Join our",
     "account_frozen": "This account is temporarily frozen due to inactivity."
+  },
+  "login_dialog_jsx": {
+    "node_failure_NODE_ERROR": "Node failure. Node: %(NODE)s Error: %(ERROR)s",
+    "wrong_pass": "Wrong password.",
+    "wrong_pass_ROLE": "Wrong password. No access to %(ROLE)s permissions."
   },
   "messages": {
     "last_seen": "last seen ",

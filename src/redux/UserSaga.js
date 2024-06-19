@@ -1,7 +1,7 @@
 import { Map, fromJS } from 'immutable'
 import { call, put, select, fork, takeLatest, takeEvery } from 'redux-saga/effects'
 import { auth, api, config } from 'golos-lib-js'
-import { Session, signData } from 'golos-lib-js/lib/auth'
+import { Session, PageSession, signData } from 'golos-lib-js/lib/auth'
 import { PrivateKey, Signature, hash } from 'golos-lib-js/lib/auth/ecc'
 
 import g from 'app/redux/GlobalReducer'
@@ -11,7 +11,8 @@ import uploadImageWatch from 'app/redux/UserSaga_UploadImage'
 import { authApiLogin, authApiLogout } from 'app/utils/AuthApiClient'
 import { notifyApiLogin, notifyApiLogout, notificationUnsubscribe } from 'app/utils/NotifyApiClient'
 
-const session = new Session('msgr_auth')
+export const session = new Session('msgr_auth')
+export const pageSession = new PageSession('msgr_auth')
 
 export function* userWatches() {
     yield fork(loginWatch)

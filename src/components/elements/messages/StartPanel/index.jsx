@@ -2,6 +2,7 @@ import React from 'react'
 import tt from 'counterpart'
 import {connect} from 'react-redux'
 
+import Icon from 'app/components/elements/Icon'
 import user from 'app/redux/UserReducer'
 import './StartPanel.scss'
 
@@ -36,8 +37,14 @@ class StartPanel extends React.Component {
             <div>
                 <img className='msgs-empty-chat' src='/msg_empty.png' />
                 <div className='msgs-start-panel'>
-                    <button className='button' onClick={this.startChat}>{tt('msgs_start_panel.start_chat')}</button>
-                    <button className='button hollow' onClick={this.goCreateGroup}>{tt('msgs_start_panel.create_group')}</button>
+                    <button className='button' onClick={this.startChat}>
+                        <Icon name='pencil' size='1x' />
+                        <span className='btn-title'>{tt('msgs_start_panel.start_chat')}</span>
+                    </button>
+                    <button className='button hollow last-button' onClick={this.goCreateGroup}>
+                        <Icon name='voters' size='1x' />
+                        <span className='btn-title'>{tt('msgs_start_panel.create_group')}</span>
+                    </button>
                 </div>
             </div>
         )
