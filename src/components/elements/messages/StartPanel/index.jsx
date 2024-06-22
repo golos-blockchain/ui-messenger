@@ -57,7 +57,7 @@ export default connect(
     },
     dispatch => ({
         showCreateGroup() {
-            dispatch(user.actions.showCreateGroup())
+            dispatch(user.actions.showCreateGroup({ redirectAfter: true }))
         },
     })
 )(StartPanel)

@@ -8,6 +8,7 @@ export function* fetchDataWatches () {
     yield fork(watchLocationChange)
     yield fork(watchFetchState)
     yield fork(watchFetchUiaBalances)
+    yield fork(watchFetchMyGroups)
 }
 
 export function* watchLocationChange() {
@@ -107,5 +108,27 @@ export function* fetchUiaBalances({ payload: { account } }) {
         }
     } catch (err) {
         console.error('fetchUiaBalances', err)
+    }
+}
+
+export function* watchFetchMyGroups() {
+    yield takeLatest('global/FETCH_MY_GROUPS', fetchMyGroups)
+}
+
+export function* fetchMyGroups({ payload: { account } }) {
+    try {
+        const groups = yield call([api, api.getGroupsAsync], {
+            member: account,
+            member_types: ['pending', 'member', 'moder', 'admin'],
+            start_group: '',
+            limit: 100,
+            with_members: {
+                accounts: [account]
+            }
+        })
+
+        yield put(g.actions.receiveMyGroups({ groups }))
+    } catch (err) {
+        console.error('fetchMyGroups', err)
     }
 }

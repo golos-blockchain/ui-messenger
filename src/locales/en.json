@@ -134,6 +134,12 @@
     "image_wrong": "Cannot load this image.",
     "image_timeout": "Cannot load this image, it is loading too long..."
   },
+  "my_groups_jsx": {
+    "title": "My Groups",
+    "empty": "You have not any groups yet. ",
+    "empty2": "You can ",
+    "create": "create your own group"
+  },
   "emoji_i18n": {
     "categoriesLabel": "Категории",
     "emojiUnsupportedMessage": "Ваш браузер не поддерживает эмодзи.",

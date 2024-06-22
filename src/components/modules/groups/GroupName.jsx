@@ -96,6 +96,7 @@ export default class GroupName extends React.Component {
                         maxLength='48'
                         onChange={e => this.onTitleChange(e)}
                         autoFocus
+                        validateOnBlur={false}
                     />
                     <ErrorMessage name='title' component='div' className='error' />
                 </div>

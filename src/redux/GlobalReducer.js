@@ -264,5 +264,15 @@ export default createModule({
                 return state.set('assets', fromJS(assets))
             },
         },
+        {
+            action: 'FETCH_MY_GROUPS',
+            reducer: state => state
+        },
+        {
+            action: 'RECEIVE_MY_GROUPS',
+            reducer: (state, { payload: { groups } }) => {
+                return state.set('my_groups', fromJS(groups))
+            },
+        },
     ],
 })

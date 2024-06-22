@@ -801,8 +801,13 @@ class Messages extends React.Component {
             this.props.logout(username)
         }
 
+        const openMyGroups = (e) => {
+            e.preventDefault()
+            this.props.showMyGroups()
+        }
+
         let user_menu = [
-            {link: accountLink, extLink: 'blogs', icon: 'voters', value: tt('g.groups') + (isSmall ? (' @' + username) : ''), addon: <NotifiCounter fields='new_sponsor,sponsor_inactive,referral' />},
+            {link: '#', onClick: openMyGroups, icon: 'voters', value: tt('g.groups') + (isSmall ? (' @' + username) : '') },
             {link: accountLink, extLink: 'blogs', icon: 'new/blogging', value: tt('g.blog'), addon: <NotifiCounter fields='new_sponsor,sponsor_inactive,referral' />},
             {link: mentionsLink, extLink: 'blogs', icon: 'new/mention', value: tt('g.mentions'), addon: <NotifiCounter fields='mention' />},
             {link: donatesLink, extLink: 'wallet', icon: 'editor/coin', value: tt('g.rewards'), addon: <NotifiCounter fields='donate' />},
@@ -1023,6 +1028,9 @@ export default withRouter(connect(
             }
             return true;
         },
+
+        showMyGroups: () => dispatch(user.actions.showMyGroups()),
+
         fetchState: (to) => {
             const pathname = '/' + (to ? ('@' + to) : '');
             dispatch({type: 'FETCH_STATE', payload: {

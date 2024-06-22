@@ -1,0 +1,27 @@
+.MyGroups {
+    .group-logo {
+        width: 67px;
+        img {
+            width: 48px;
+            height: 48px;
+        }
+    }
+    .group-title {
+        font-weight: bold;
+        font-size: 110%;
+        @include themify($themes) {
+            color: themed('textColorPrimary');
+        }
+    }
+    .group-buttons {
+        float: right;
+        padding-top: 0.8rem;
+        .button {
+            vertical-align: middle;
+            margin-bottom: 0px;
+        }
+        .DropdownMenu.show > .VerticalMenu {
+            transform: translateX(-100%);
+        }
+    }
+}

@@ -114,7 +114,7 @@ class CreateGroup extends React.Component {
     }
 
     _onSubmit = (data, actions) => {
-        const { currentUser } = this.props
+        const { currentUser, redirectAfter } = this.props
         const creator = currentUser.get('username')
         data.creator = creator
 
@@ -132,8 +132,13 @@ class CreateGroup extends React.Component {
                 password,
                 ...data,
                 onSuccess: () => {
-                    alert('success')
                     actions.setSubmitting(false)
+                    const { closeMe } = this.props
+                    if (closeMe) closeMe()
+                    if (redirectAfter) {
+                        window.location.href = '/' + data.name
+                        return
+                    }
                 },
                 onError: (err, errStr) => {
                     this.setState({ submitError: errStr })
@@ -188,6 +193,7 @@ class CreateGroup extends React.Component {
             initialValues={this.state.initialValues}
             enableReinitialize={true}
             validateOnMount={true}
+            validateOnBlur={false}
             validate={this.validate}
             onSubmit={this._onSubmit}
         >
@@ -234,6 +240,7 @@ export default connect(
         return { ...ownProps,
             currentUser,
             currentAccount,
+            redirectAfter: state.user.get('create_group_redirect_after'),
         }
     },
     dispatch => ({

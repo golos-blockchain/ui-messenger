@@ -9,7 +9,7 @@ import Input from 'app/components/elements/common/Input';
 import keyCodes from 'app/utils/keyCodes';
 import { pageSession } from 'app/redux/UserSaga'
 
-export function showLoginDialog(username, onClose, authType = 'active', saveLogin = false) {
+export function showLoginDialog(username, onClose, authType = 'active', saveLogin = false, hint = '') {
     let dm, oldZ = ''
 
     DialogManager.showDialog({
@@ -18,6 +18,7 @@ export function showLoginDialog(username, onClose, authType = 'active', saveLogi
         props: {
             username,
             authType,
+            hint,
         },
         onClose: (data) => {
             if (dm) dm.style.zIndex = oldZ
@@ -44,7 +45,7 @@ export default class LoginDialog extends React.PureComponent {
     }
 
     componentDidMount() {
-        let { saveLogin } = this.props
+        let { saveLogin, hint } = this.props
         const session = pageSession.load()
         if (session) {
             this.setState({
@@ -58,6 +59,11 @@ export default class LoginDialog extends React.PureComponent {
         const linkInput = document.getElementsByClassName('AddImageDialog__link-input')[0];
         if (linkInput)
             linkInput.focus();
+        setTimeout(() => {
+            this.setState({
+                enabled: true
+            })
+        }, hint ? 1500 : 0)
     }
 
     onPasswordChange = (e) => {
@@ -122,7 +128,13 @@ export default class LoginDialog extends React.PureComponent {
     }
 
     render() {
-        const { password, error, saveLogin } = this.state
+        const { password, error, saveLogin, enabled } = this.state
+
+        let hint
+        if (this.props.hint) {
+            hint = <b style={{ color: 'red' }}>&nbsp;{this.props.hint}</b>
+        }
+
         return (
             <DialogFrame
                 className='LoginDialog'
@@ -132,6 +144,8 @@ export default class LoginDialog extends React.PureComponent {
                 <div>
                     <div className="AddImageDialog__link-text">
                         {tt('loginform_jsx.is_is_for_operation')}
+                        {hint}
+                        .
                     </div>
                     <Input
                         block
@@ -159,8 +173,8 @@ export default class LoginDialog extends React.PureComponent {
                 </div>
                 <div style={{ marginTop: '1rem' }}>
                     <center>
-                    <button className='button' onClick={this.onLogin}>
-                        {tt('g.login')}
+                    <button disabled={!enabled} className='button' onClick={this.onLogin}>
+                        {enabled ? tt('g.login') : tt('g.wait')}
                     </button>
                     <button className='button hollow' onClick={this.onCancel}>
                         {tt('g.cancel')}
