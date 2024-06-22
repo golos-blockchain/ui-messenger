@@ -6,6 +6,7 @@ import CloseButton from 'react-foundation-components/lib/global/close-button';
 import Reveal from 'react-foundation-components/lib/global/reveal';
 
 import CreateGroup from 'app/components/modules/CreateGroup'
+import GroupSettings from 'app/components/modules/groups/GroupSettings'
 import MyGroups from 'app/components/modules/groups/MyGroups'
 import Donate from 'app/components/modules/Donate'
 import LoginForm from 'app/components/modules/LoginForm';
@@ -21,6 +22,7 @@ class Modals extends React.Component {
         show_donate_modal: PropTypes.bool,
         show_create_group_modal: PropTypes.bool,
         show_my_groups_modal: PropTypes.bool,
+        show_group_settings_modal: PropTypes.bool,
         show_app_download_modal: PropTypes.bool,
         hideDonate: PropTypes.func.isRequired,
         hideAppDownload: PropTypes.func.isRequired,
@@ -44,11 +46,13 @@ class Modals extends React.Component {
             show_donate_modal,
             show_create_group_modal,
             show_my_groups_modal,
+            show_group_settings_modal,
             show_app_download_modal,
             hideLogin,
             hideDonate,
             hideCreateGroup,
             hideMyGroups,
+            hideGroupSettings,
             hideAppDownload,
             notifications,
             removeNotification,
@@ -80,6 +84,10 @@ class Modals extends React.Component {
                     <CloseButton onClick={hideMyGroups} />
                     <MyGroups />
                 </Reveal>}
+                {show_group_settings_modal && <Reveal enforceFocus={false} revealStyle={{ overflow: 'hidden' }} onHide={hideGroupSettings} show={show_group_settings_modal}>
+                    <CloseButton onClick={hideGroupSettings} />
+                    <GroupSettings closeMe={hideGroupSettings} />
+                </Reveal>}
                 {show_app_download_modal && <Reveal onHide={hideAppDownload} show={show_app_download_modal}>
                     <CloseButton onClick={hideAppDownload} />
                     <AppDownload />
@@ -103,6 +111,7 @@ export default connect(
             show_donate_modal: state.user.get('show_donate_modal'),
             show_create_group_modal: state.user.get('show_create_group_modal'),
             show_my_groups_modal: state.user.get('show_my_groups_modal'),
+            show_group_settings_modal: state.user.get('show_group_settings_modal'),
             show_app_download_modal: state.user.get('show_app_download_modal'),
             loginUnclosable,
             notifications: state.app.get('notifications'),
@@ -124,6 +133,10 @@ export default connect(
         hideMyGroups: e => {
             if (e) e.preventDefault()
             dispatch(user.actions.hideMyGroups())
+        },
+        hideGroupSettings: e => {
+            if (e) e.preventDefault()
+            dispatch(user.actions.hideGroupSettings())
         },
         hideAppDownload: e => {
             if (e) e.preventDefault()

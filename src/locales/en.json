@@ -138,7 +138,17 @@
     "title": "My Groups",
     "empty": "You have not any groups yet. ",
     "empty2": "You can ",
-    "create": "create your own group"
+    "create": "create your own group",
+    "create_more": "+ Create a group",
+    "edit": "Edit",
+    "login_hint_GROUP": "(delete \"%(GROUP)s\" group)",
+    "members": "Members"
+  },
+  "group_settings_jsx": {
+    "title_GROUP": "%(GROUP)s Group",
+    "submit": "Save",
+    "owner": "Owner",
+    "upload": "Upload"
   },
   "emoji_i18n": {
     "categoriesLabel": "Категории",
@@ -243,6 +253,7 @@
     "delete": "Delete",
     "dismiss": "Dismiss",
     "edit": "Edit",
+    "groups": "Groups",
     "feed": "Feed",
     "incorrect_password": "Incorrect password",
     "posting_not_memo": "Use posting key now, not memo",

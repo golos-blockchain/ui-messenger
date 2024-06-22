@@ -9,6 +9,15 @@ const getGroupMeta = (json_metadata) => {
     return meta
 }
 
+const getGroupTitle = (meta, name, maxLength = 20) => {
+    const title = meta.title || name
+    let titleShr = title
+    if (titleShr.length > maxLength) {
+        titleShr = titleShr.substring(0, maxLength - 3) + '...'
+    }
+    return titleShr
+}
+
 const getGroupLogo = (json_metadata) => {
     const meta = getGroupMeta(json_metadata)
 
@@ -24,5 +33,6 @@ const getGroupLogo = (json_metadata) => {
 
 export {
     getGroupMeta,
-    getGroupLogo
+    getGroupTitle,
+    getGroupLogo,
 }

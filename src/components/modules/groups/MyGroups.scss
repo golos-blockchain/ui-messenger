@@ -23,5 +23,9 @@
         .DropdownMenu.show > .VerticalMenu {
             transform: translateX(-100%);
         }
+        .btn-title {
+            margin-left: 5px;
+            vertical-align: middle;
+        }
     }
 }

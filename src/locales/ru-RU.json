@@ -104,6 +104,8 @@
   "create_group_jsx": {
     "title": "Название",
     "name": "Ссылка chat.golos.app/",
+    "name2": "Ссылка",
+    "name3": "chat.golos.app/",
     "logo": "Логотип",
     "admin": "Администратор",
     "encrypted": "Шифровать сообщения в группе",
@@ -141,9 +143,16 @@
     "empty": "У вас пока нет групп. ",
     "empty2": "Вы можете ",
     "create": "создать свою группу",
-    "create_more": "Создать еще группу",
+    "create_more": "+ Создать еще группу",
     "edit": "Изменить",
-    "login_hint_GROUP": "(удаления группы \"%(GROUP)s\")"
+    "login_hint_GROUP": "(удаления группы \"%(GROUP)s\")",
+    "members": "Участники"
+  },
+  "group_settings_jsx": {
+    "title_GROUP": "Группа %(GROUP)s",
+    "submit": "Сохранить",
+    "owner": "Владелец",
+    "upload": "Загрузить"
   },
   "emoji_i18n": {
     "categoriesLabel": "Категории",

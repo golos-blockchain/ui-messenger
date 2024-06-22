@@ -1,9 +1,7 @@
 import React from 'react'
 import {connect} from 'react-redux'
-import { Formik, Form, Field, ErrorMessage, } from 'formik'
 import { Map } from 'immutable'
 import { api, formatter } from 'golos-lib-js'
-import { Asset, Price, AssetEditor } from 'golos-lib-js/lib/utils'
 import tt from 'counterpart'
 
 import g from 'app/redux/GlobalReducer'
@@ -14,7 +12,6 @@ import DropdownMenu from 'app/components/elements/DropdownMenu'
 import ExtLink from 'app/components/elements/ExtLink'
 import Icon from 'app/components/elements/Icon'
 import LoadingIndicator from 'app/components/elements/LoadingIndicator'
-import FormikAgent from 'app/components/elements/donate/FormikUtils'
 import DialogManager from 'app/components/elements/common/DialogManager'
 import { showLoginDialog } from 'app/components/dialogs/LoginDialog'
 import { getGroupLogo, getGroupMeta } from 'app/utils/groups'
@@ -73,6 +70,11 @@ class MyGroups extends React.Component {
         }))
     }
 
+    showGroupSettings = (e, group) => {
+        e.preventDefault()
+        this.props.showGroupSettings({ group })
+    }
+
     _renderGroup = (group) => {
         const { name, json_metadata } = group
 
@@ -99,11 +101,15 @@ class MyGroups extends React.Component {
                 <td className='group-buttons' onClick={(e) => {
                     e.preventDefault()
                 }}>
-                    <button className='button hollow'>
-                        {tt('my_groups_jsx.edit')}
+                    <button className='button'>
+                        <Icon name='voters' size='0_95x' />
+                        <span className='btn-title'>{tt('my_groups_jsx.members')}</span>
                     </button>
-                    <button className='button hollow alert'>
-                        {tt('g.delete')}
+                    <button className='button hollow' onClick={e => {
+                        this.showGroupSettings(e, group)
+                    }}>
+                        <Icon name='pencil' size='0_95x' />
+                        <span className='btn-title'>{tt('my_groups_jsx.edit')}</span>
                     </button>
                     {kebabItems.length ? <DropdownMenu el='div' items={kebabItems}>
                         <Icon name='new/more' size='0_95x' />
@@ -147,7 +153,7 @@ class MyGroups extends React.Component {
 
         let button
         if (hasGroups) {
-            button = <button className='button' onClick={this.createGroup}>
+            button = <button className='button hollow' onClick={this.createGroup}>
                 {tt('my_groups_jsx.create_more')}
             </button>
         }
@@ -182,6 +188,9 @@ export default connect(
         },
         showCreateGroup() {
             dispatch(user.actions.showCreateGroup({ redirectAfter: false }))
+        },
+        showGroupSettings({ group }) {
+            dispatch(user.actions.showGroupSettings({ group }))
         },
         deleteGroup: ({ owner, name, password,
         onSuccess, onError }) => {
