@@ -152,7 +152,14 @@
     "title_GROUP": "Группа %(GROUP)s",
     "submit": "Сохранить",
     "owner": "Владелец",
-    "upload": "Загрузить"
+    "upload": "Загрузить",
+    "name_cannot_change": "Ссылку на группу изменить нельзя.",
+    "preview": "(просмотр)",
+    "login_hint_GROUP": "(изменения группы \"%(GROUP)s\")",
+    "encrypted": "Сообщения в группе ",
+    "encrypted2": " шифруются.",
+    "encrypted3": " не шифруются.",
+    "encrypted_hint": "Изменить это нельзя."
   },
   "emoji_i18n": {
     "categoriesLabel": "Категории",

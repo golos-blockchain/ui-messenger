@@ -126,6 +126,7 @@ export function* fetchMyGroups({ payload: { account } }) {
                 accounts: [account]
             }
         })
+        console.log('LOO', groups)
 
         yield put(g.actions.receiveMyGroups({ groups }))
     } catch (err) {

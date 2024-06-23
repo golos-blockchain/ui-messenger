@@ -146,7 +146,6 @@ class CreateGroup extends React.Component {
                 }
             })
         }, 'active')
-
     }
 
     goNext = (e, setFieldValue) => {
