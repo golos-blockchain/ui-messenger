@@ -9,8 +9,16 @@
     "each_account_segment_should_end_with_a_letter_or_digit": "Каждый сегмент имени аккаунта должен заканчиваться буквой или цифрой.",
     "each_account_segment_should_be_longer": "Сегмент имени аккаунта должен быть длиннее."
   },
+  "account_name_jsx": {
+    "loading": "Загрузка...",
+    "no_options": "Не удается найти..."
+  },
   "chain_errors": {
-    "exceeded_maximum_allowed_bandwidth": "Недостаточно пропускной способности аккаунта. Пополните Силу Голоса или напишите на info@golos.id"
+    "exceeded_maximum_allowed_bandwidth": "Недостаточно пропускной способности аккаунта. Пополните Силу Голоса или напишите на info@golos.id",
+    "insufficient1": "Нужно ",
+    "insufficient2": ", есть ",
+    "insufficient3": ". ",
+    "insufficient_top_up": "Пополнить"
   },
   "chainvalidation_js": {
     "account_name_should": "Имя аккаунта должно ",
@@ -121,7 +129,7 @@
     "submit": "Создать",
     "step_name": "Имя",
     "step_logo": "Логотип",
-    "step_admin": "Администратор",
+    "step_members": "Участники",
     "step_create": "Создать!",
     "group_already_exists": "Такая группа уже существует.",
     "validating": "Проверка существования группы...",
@@ -129,14 +137,18 @@
     "golos_power_too_low": "Для создания группы нужна Сила Голоса не менее ",
     "golos_power_too_low2": "Вам не хватает ",
     "golos_power_too_low3": "Ваша Сила Голоса - ",
+    "gbg_too_low": "Создание группы стоит ",
+    "gbg_too_low2": "Вам не хватает ",
+    "gbg_too_low3": "На вашем балансе - ",
     "deposit_gp": "Пополнить Силу Голоса",
     "logo_desc": "Логотип группы - это как аватарка у пользователя... Необязательно, но \"must have\"...",
     "logo_upload": "Загрузить логотип",
     "logo_link": "Добавить логотип ссылкой",
-    "admin_desc": "Администратором группы будeт...",
+    "members_desc": "Вы можете добавить в группу людей, назначить модераторов...",
     "final_desc": "Теперь все готово к созданию группы!",
     "image_wrong": "Не удается загрузить картинку.",
-    "image_timeout": "Не удается загрузить картинку, она загружается слишком долго..."
+    "image_timeout": "Не удается загрузить картинку, она загружается слишком долго...",
+    "add_member": "+ Добавить участника..."
   },
   "my_groups_jsx": {
     "title": "Мои группы",
@@ -147,6 +159,21 @@
     "edit": "Изменить",
     "login_hint_GROUP": "(удаления группы \"%(GROUP)s\")",
     "members": "Участники"
+  },
+  "group_members_jsx": {
+    "title": "Участники группы ",
+    "title2": "",
+    "check_pending": "Заявки",
+    "check_pending_hint": "Заявки на вступление в группу",
+    "check_banned": "Забаненные",
+    "member": "Обычный участник",
+    "moder": "Модератор",
+    "owner": "Владелец группы",
+    "make_member": "Сделать обычным участником",
+    "make_moder": "Сделать модератором",
+    "ban": "Заблокировать",
+    "unban": "Разблокировать",
+    "banned": "Заблокирован(-а)"
   },
   "group_settings_jsx": {
     "title_GROUP": "Группа %(GROUP)s",
@@ -271,6 +298,7 @@
     "login": "Войти",
     "logout": "Выйти",
     "mentions": "Упоминания",
+    "name": "Имя",
     "night_mode": "Ночной режим",
     "ok": "OK",
     "refresh": "Обновить",

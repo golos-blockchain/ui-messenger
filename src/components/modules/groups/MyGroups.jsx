@@ -75,6 +75,11 @@ class MyGroups extends React.Component {
         this.props.showGroupSettings({ group })
     }
 
+    showGroupMembers = (e, group) => {
+        e.preventDefault()
+        this.props.showGroupMembers({ group })
+    }
+
     _renderGroup = (group) => {
         const { name, json_metadata } = group
 
@@ -101,7 +106,9 @@ class MyGroups extends React.Component {
                 <td className='group-buttons' onClick={(e) => {
                     e.preventDefault()
                 }}>
-                    <button className='button'>
+                    <button className='button' onClick={e => {
+                        this.showGroupMembers(e, group)
+                    }}>
                         <Icon name='voters' size='0_95x' />
                         <span className='btn-title'>{tt('my_groups_jsx.members')}</span>
                     </button>
@@ -191,6 +198,9 @@ export default connect(
         },
         showGroupSettings({ group }) {
             dispatch(user.actions.showGroupSettings({ group }))
+        },
+        showGroupMembers({ group }) {
+            dispatch(user.actions.showGroupMembers({ group }))
         },
         deleteGroup: ({ owner, name, password,
         onSuccess, onError }) => {

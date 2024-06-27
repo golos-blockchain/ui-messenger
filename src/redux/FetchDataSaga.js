@@ -9,6 +9,7 @@ export function* fetchDataWatches () {
     yield fork(watchFetchState)
     yield fork(watchFetchUiaBalances)
     yield fork(watchFetchMyGroups)
+    yield fork(watchFetchGroupMembers)
 }
 
 export function* watchLocationChange() {
@@ -33,6 +34,7 @@ export function* fetchState(location_change_action) {
         state.messages_update = '0';
         state.accounts = {}
         state.assets = {}
+        state.groups = {}
 
         let hasErr = false
 
@@ -117,19 +119,54 @@ export function* watchFetchMyGroups() {
 
 export function* fetchMyGroups({ payload: { account } }) {
     try {
-        const groups = yield call([api, api.getGroupsAsync], {
+        const groupsOwn = yield call([api, api.getGroupsAsync], {
             member: account,
-            member_types: ['pending', 'member', 'moder', 'admin'],
+            member_types: [],
             start_group: '',
             limit: 100,
             with_members: {
                 accounts: [account]
             }
         })
-        console.log('LOO', groups)
+        let groups = yield call([api, api.getGroupsAsync], {
+            member: account,
+            member_types: ['pending', 'member', 'moder'],
+            start_group: '',
+            limit: 100,
+            with_members: {
+                accounts: [account]
+            }
+        })
+        groups = [...groupsOwn, ...groups]
 
         yield put(g.actions.receiveMyGroups({ groups }))
     } catch (err) {
         console.error('fetchMyGroups', err)
+    }
+}
+
+export function* watchFetchGroupMembers() {
+    yield takeLatest('global/FETCH_GROUP_MEMBERS', fetchGroupMembers)
+}
+
+export function* fetchGroupMembers({ payload: { group, creatingNew } }) {
+    try {
+        if (creatingNew) {
+            yield put(g.actions.receiveGroupMembers({ group, members: [], append: true }))
+            return
+        }
+
+        yield put(g.actions.receiveGroupMembers({ group, loading: true }))
+
+        const members = yield call([api, api.getGroupMembersAsync], {
+            group,
+            member_types: ['pending', 'member', 'moder'/*, 'banned'*/],
+            start_member: '',
+            limit: 100,
+        })
+
+        yield put(g.actions.receiveGroupMembers({ group, members }))
+    } catch (err) {
+        console.error('fetchGroupMembers', err)
     }
 }

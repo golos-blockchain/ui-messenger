@@ -274,5 +274,77 @@ export default createModule({
                 return state.set('my_groups', fromJS(groups))
             },
         },
+        {
+            action: 'FETCH_GROUP_MEMBERS',
+            reducer: state => state
+        },
+        {
+            action: 'RECEIVE_GROUP_MEMBERS',
+            reducer: (state, { payload: { group, members, loading, append } }) => {
+                let new_state = state
+                new_state = state.updateIn(['groups', group],
+                Map(),
+                gro => {
+                    gro = gro.updateIn(['members'], Map(), mems => {
+                        mems = mems.set('loading', loading || false)
+                        if (append) {
+                            // Immutable's: update do not wants to add notSet, if array is empty...
+                            if (!mems.has('data')) {
+                                mems = mems.set('data', List())
+                            }
+                            mems = mems.update('data', List(), data => {
+                                for (const item of (members || [])) {
+                                    data = data.push(fromJS(item))
+                                }
+                                return data
+                            })
+                        } else {
+                            mems = mems.set('data', fromJS(members || []))
+                        }
+                        return mems
+                    })
+                    return gro
+                })
+                return new_state
+            },
+        },
+        {
+            action: 'UPDATE_GROUP_MEMBER',
+            reducer: (state, { payload: { group, member, member_type } }) => {
+                const now = new Date().toISOString().split('.')[0]
+                let new_state = state
+                new_state = state.updateIn(['groups', group],
+                Map(),
+                gro => {
+                    gro = gro.updateIn(['members', 'data'], List(), mems => {
+                        const retiring = member_type === 'retired'
+                        const idx = mems.findIndex(i => i.get('account') === member)
+                        if (idx !== -1) {
+                            if (retiring) {
+                                mems = mems.remove(idx)
+                            } else {
+                                mems = mems.update(idx, mem => {
+                                    mem = mem.set('member_type', member_type)
+                                    return mem
+                                })
+                            }
+                        } else if (!retiring) {
+                            mems = mems.insert(0, fromJS({
+                                group,
+                                account: member,
+                                json_metadata: '{}',
+                                member_type,
+                                invited: member,
+                                joined: now,
+                                updated: now,
+                            }))
+                        }
+                        return mems
+                    })
+                    return gro
+                })
+                return new_state
+            },
+        },
     ],
 })

@@ -3,11 +3,27 @@ import { connect } from 'react-redux'
 import { Field, ErrorMessage, } from 'formik'
 import tt from 'counterpart'
 
+import ExtLink from 'app/components/elements/ExtLink'
+
 class GroupFinal extends React.Component {
     state = {}
 
     constructor(props) {
         super(props)
+    }
+
+    decorateSubmitError = (error) => {
+        if (error && error.startsWith && error.startsWith(tt('donate_jsx.insufficient_funds'))) {
+            const { username } = this.props
+            return <React.Fragment>
+                {error}
+                <ExtLink service='wallet' href={'/@' + username} target='_blank' rel='noopener noreferrer'>
+                    <button type='button' style={{ marginLeft: '0.5rem', marginTop: '0rem', marginBottom: '0rem'}}
+                        className='button small'>{tt('chain_errors.insufficient_top_up')}</button>
+                </ExtLink>
+            </React.Fragment>
+        }
+        return error
     }
 
     render() {
@@ -19,7 +35,7 @@ class GroupFinal extends React.Component {
                         {tt('create_group_jsx.final_desc')}
                     </span>
                     {submitError ? <div className='error' style={{ marginTop: '0.5rem' }}>
-                        {submitError}
+                        {this.decorateSubmitError(submitError)}
                         </div> : null}
                 </div>
             </div>
@@ -30,8 +46,12 @@ class GroupFinal extends React.Component {
 export default connect(
     // mapStateToProps
     (state, ownProps) => {
+        const currentUser = state.user.getIn(['current'])
+        const username = currentUser && currentUser.get('username')
+
         return {
-            ...ownProps
+            ...ownProps,
+            username,
         }
     },
     dispatch => ({

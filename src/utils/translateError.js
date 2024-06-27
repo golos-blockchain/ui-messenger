@@ -1,6 +1,40 @@
 import tt from 'counterpart'
+import { Asset } from 'golos-lib-js/lib/utils'
 
-export function translateError(string) {
+const getErrorData = (errPayload, errName, depth = 0) => {
+    //console.error('getErrorData', errPayload)
+    if (depth > 50) {
+        throw new Error('getErrorData - infinity loop detected...')
+    }
+    if (errPayload === null) {
+        return null
+    }
+    if (errPayload.name === errName) {
+        let { stack } = errPayload
+        stack = stack && stack[0]
+        return stack ? stack.data : null
+    }
+    const { error, data } = errPayload
+    if (error) {
+        return getErrorData(error, errName, ++depth)
+    }
+    if (data) {
+        if (data.error) {
+            return getErrorData(data.error, errName, ++depth)
+        }
+        if (Array.isArray(data.stack)) {
+            for (const s of data.stack) {
+                const res = getErrorData(s, errName, ++depth)
+                if (res) {
+                    return res
+                }
+            }
+        }
+    }
+    return null
+}
+
+export function translateError(string, errPayload) {
     if (typeof(string) != 'string') return string
     switch (string) {
         case 'Account not found':
@@ -35,6 +69,32 @@ export function translateError(string) {
         'Account exceeded maximum allowed bandwidth per vesting share'
     )) {
         string = tt('chain_errors.exceeded_maximum_allowed_bandwidth')
+    }
+
+    if (string.includes(
+        'Account does not have sufficient funds'
+    )) {
+        string = tt('donate_jsx.insufficient_funds') + '.'
+
+        let errData
+        try {
+            errData = getErrorData(errPayload, 'insufficient_funds')
+            if (errData && errData.required) {
+                let { required, exist } = errData
+                string += ' ' + tt('chain_errors.insufficient1')
+                string += Asset(required).floatString
+                exist = Asset(exist)
+                if (exist.gt(0)) {
+                    string += tt('chain_errors.insufficient2')
+                    string += exist.floatString
+                    string += tt('chain_errors.insufficient3')
+                } else {
+                    string += '.'
+                }
+            }
+        } catch (err) {
+            console.error('getErrorData', err)
+        }
     }
 
     return string

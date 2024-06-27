@@ -52,9 +52,6 @@ export default class GroupName extends React.Component {
         applyFieldValue('title', value)
         let link = getSlug(value)
         applyFieldValue('name', link)
-        this.setState({
-            showName: true
-        })
     }
 
     onNameChange = (e) => {
@@ -83,7 +80,6 @@ export default class GroupName extends React.Component {
 
     render() {
         const { values } = this.props
-        const { showName } = this.state
         return <React.Fragment>
             <div className='row' style={{ marginTop: '1.0rem', marginBottom: '1.0rem' }}>
                 <div className='column small-5' style={{paddingTop: 5}}>
@@ -102,7 +98,7 @@ export default class GroupName extends React.Component {
                 </div>
             </div>
 
-            {showName ? <div className='row' style={{ marginTop: '1.0rem', marginBottom: '1.0rem' }}>
+            {(values.title || values.name) ? <div className='row' style={{ marginTop: '1.0rem', marginBottom: '1.0rem' }}>
                 <div className='column small-5' style={{paddingTop: 5}}>
                     {tt('create_group_jsx.name')}
                 </div>

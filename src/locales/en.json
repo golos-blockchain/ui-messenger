@@ -9,8 +9,16 @@
     "each_account_segment_should_end_with_a_letter_or_digit": "Each account name segment should end with a letter or digit.",
     "each_account_segment_should_be_longer": "Each account name segment should be longer."
   },
+  "account_name_jsx": {
+    "loading": "Loading...",
+    "no_options": "Cannot search..."
+  },
   "chain_errors": {
-    "exceeded_maximum_allowed_bandwidth": "Insufficient account bandwidth. Replenish the Golos Power or write to info@golos.id"
+    "exceeded_maximum_allowed_bandwidth": "Insufficient account bandwidth. Replenish the Golos Power or write to info@golos.id",
+    "insufficient1": "It costs ",
+    "insufficient2": ", but you have just ",
+    "insufficient3": ". ",
+    "insufficient_top_up": "Top Up"
   },
   "chainvalidation_js": {
     "account_name_should": "Account name should ",
@@ -118,18 +126,21 @@
     "submit": "Create",
     "step_name": "Name",
     "step_logo": "Logo",
-    "step_admin": "Administrator",
+    "step_members": "Members",
     "step_create": "Create!",
     "group_already_exists": "Group already exists.",
     "group_min_length": "Min is 3 symbols.",
     "golos_power_too_low": "To create group you should have Golos Power at least ",
     "golos_power_too_low2": "That is not enough ",
     "golos_power_too_low3": "Your Golos Power is ",
+    "gbg_too_low": "Group creation costs ",
+    "gbg_too_low2": "That is not enough ",
+    "gbg_too_low3": "Your GBG balance is ",
     "deposit_gp": "Increase Golos Power",
     "logo_desc": "The group logo is like a user’s avatar... Not required, but \"must have\"...",
     "logo_upload": "Upload logo",
     "logo_link": "Add logo from the URL",
-    "admin_desc": "Admin of group will be...",
+    "members_desc": "Add people, set moderators of the group...",
     "final_desc": "Now we are ready to create the group!",
     "image_wrong": "Cannot load this image.",
     "image_timeout": "Cannot load this image, it is loading too long..."
@@ -260,6 +271,7 @@
     "login": "Login",
     "logout": "Logout",
     "mentions": "Mentions",
+    "name": "Name",
     "night_mode": "Night Mode",
     "ok": "OK",
     "refresh": "Refresh",

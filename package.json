@@ -38,6 +38,7 @@
     "react-notification": "^6.8.5",
     "react-redux": "^7.2.6",
     "react-router-dom": "^5.3.0",
+    "react-select": "^5.8.0",
     "react-textarea-autosize": "^8.3.3",
     "redux": "^4.1.2",
     "redux-logger": "^3.0.6",

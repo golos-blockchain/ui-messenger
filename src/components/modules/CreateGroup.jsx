@@ -2,7 +2,7 @@ import React from 'react'
 import {connect} from 'react-redux'
 import { Formik, Form, Field, ErrorMessage, } from 'formik'
 import { Map } from 'immutable'
-import { api, formatter } from 'golos-lib-js'
+import { api } from 'golos-lib-js'
 import { Asset, Price, AssetEditor } from 'golos-lib-js/lib/utils'
 import tt from 'counterpart'
 
@@ -16,7 +16,7 @@ import FormikAgent from 'app/components/elements/donate/FormikUtils'
 import Stepper from 'app/components/elements/messages/Stepper'
 import GroupName, { validateNameStep } from 'app/components/modules/groups/GroupName'
 import GroupLogo, { validateLogoStep } from 'app/components/modules/groups/GroupLogo'
-import GroupAdmin, { validateAdminStep } from 'app/components/modules/groups/GroupAdmin'
+import GroupMembers, { validateMembersStep } from 'app/components/modules/groups/GroupMembers'
 import GroupFinal from 'app/components/modules/groups/GroupFinal'
 import DialogManager from 'app/components/elements/common/DialogManager'
 import { showLoginDialog } from 'app/components/dialogs/LoginDialog'
@@ -24,9 +24,26 @@ import { showLoginDialog } from 'app/components/dialogs/LoginDialog'
 const STEPS = () => { return {
     name: tt('create_group_jsx.step_name'),
     logo: tt('create_group_jsx.step_logo'),
-    admin: tt('create_group_jsx.step_admin'),
+    members: tt('create_group_jsx.step_members'),
     final: tt('create_group_jsx.step_create')
 } }
+
+class ActionOnUnmount extends React.Component {
+    componentWillUnmount() {
+        const { values, stripGroupMembers } = this.props
+        if (!values || !stripGroupMembers) {
+            console.warn('ActionOnUnmount rendered without req props')
+            return
+        }
+        const { name } = values
+        if (name) {
+            this.props.stripGroupMembers(name)
+        }
+    }
+    render () {
+        return null
+    }
+}
 
 class CreateGroup extends React.Component {
     constructor(props) {
@@ -35,14 +52,14 @@ class CreateGroup extends React.Component {
             step: 'name',
             validators: 0,
             initialValues: {
+                creatingNew: true,
+
                 title: '',
                 name: '',
                 is_encrypted: true,
                 privacy: 'public_group',
 
                 logo: '',
-
-                admin: '',
             }
         }
         this.stepperRef = React.createRef()
@@ -50,29 +67,27 @@ class CreateGroup extends React.Component {
 
     componentDidMount = async () => {
         try {
-            const dgp = await api.getDynamicGlobalProperties()
-            const { min_golos_power_to_emission } = dgp
-            const minVS = await Asset(min_golos_power_to_emission[0])
+            const dgp = await api.getChainPropertiesAsync()
+            const { private_group_cost } = dgp
+            const cost = await Asset(private_group_cost)
 
-            const acc = this.props.currentAccount.toJS()
-            let { vesting_shares } = acc
-            vesting_shares = Asset(vesting_shares)
-
-            if (vesting_shares.gte(minVS)) {
+            let acc = await api.getAccountsAsync([this.props.currentAccount.get('name')])
+            acc = acc[0]
+            const { sbd_balance } = acc
+            const gbgBalance = Asset(sbd_balance)
+            if (gbgBalance.gte(cost)) {
                 this.setState({
                     loaded: true
                 })
                 return
             }
 
-            const minGolos = await Asset(min_golos_power_to_emission[1])
-            const vsGolos = formatter.vestToGolos(vesting_shares, dgp.total_vesting_shares, dgp.total_vesting_fund_steem)
-            const delta = minGolos.minus(vsGolos)
+            const delta = cost.minus(gbgBalance)
             this.setState({
                 loaded: true,
                 createError: {
-                    minGolos,
-                    vsGolos,
+                    cost,
+                    gbgBalance,
                     delta,
                     accName: acc.name
                 }
@@ -106,8 +121,8 @@ class CreateGroup extends React.Component {
             await validateNameStep(values, errors)
         } else if (step === 'logo') {
             await validateLogoStep(values, errors)
-        } else if (step === 'admin') {
-            await validateAdminStep(values, errors)
+        } else if (step === 'members') {
+            await validateMembersStep(values, errors)
         }
         await this.setValidating(false)
         return errors
@@ -172,18 +187,18 @@ class CreateGroup extends React.Component {
                 <LoadingIndicator type='circle' />
             </center>
         } else if (createError) {
-            const { message, minGolos, delta, vsGolos, accName } = createError
+            const { message, cost, gbgBalance, delta, accName } = createError
             if (message) {
                 form = <div className='callout alert'>
                     {message}
                 </div>
             } else {
-                form = <div className='callout alert' title={tt('create_group_jsx.golos_power_too_low3') + vsGolos.floatString}>
-                    {tt('create_group_jsx.golos_power_too_low') + minGolos.floatString + '. '}<br/>
-                    {tt('create_group_jsx.golos_power_too_low2')}
+                form = <div className='callout alert' title={tt('create_group_jsx.gbg_too_low3') + gbgBalance.floatString}>
+                    {tt('create_group_jsx.gbg_too_low') + cost.floatString + '. '}<br/>
+                    {tt('create_group_jsx.gbg_too_low2')}
                     <b>{delta.floatString}</b>.<br/>
                     <ExtLink service='wallet' href={'/@' + accName} target='_blank' rel='noopener noreferrer'>
-                        <button style={{marginTop: '1rem'}} className='button small'>{tt('create_group_jsx.deposit_gp')}</button>
+                        <button style={{marginTop: '1rem'}} className='button small'>{tt('chain_errors.insufficient_top_up')}</button>
                     </ExtLink>
                 </div>
             }
@@ -199,13 +214,13 @@ class CreateGroup extends React.Component {
         {({
             handleSubmit, isSubmitting, isValid, values, errors, setFieldValue, applyFieldValue, setFieldTouched, handleChange,
         }) => {
-            const disabled = !isValid || !!validators
+            const disabled = !isValid || !!validators || !values.name
             return (
         <Form>
 
             {!isSubmitting ? (step === 'name' ? <GroupName values={values} applyFieldValue={applyFieldValue} /> :
             step === 'logo' ? <GroupLogo isValidating={!!validators} values={values} errors={errors} applyFieldValue={applyFieldValue} /> :
-            step === 'admin' ? <GroupAdmin values={values} applyFieldValue={applyFieldValue} /> :
+            step === 'members' ? <GroupMembers newGroup={values} applyFieldValue={applyFieldValue} /> :
             step === 'final' ? <GroupFinal submitError={submitError} /> :
             <React.Fragment></React.Fragment>) : null}
 
@@ -215,18 +230,20 @@ class CreateGroup extends React.Component {
             {isSubmitting ? <span className='submit-loader'><LoadingIndicator type='circle' /><br /></span>
             : <span>
                 <button onClick={this.goNext} disabled={disabled} className='button small next-button' title={validators ?
-                    tt('create_group_jsx.validating') : tt('create_group_jsx.submit')}>
+                    tt('create_group_jsx.validating') :
+                    step === 'final' ? tt('create_group_jsx.submit') : tt('create_group_jsx.next')}>
                     <Icon name='chevron-right' size='1_25x' />
                 </button>
             </span>}
+            <ActionOnUnmount values={values} stripGroupMembers={this.props.stripGroupMembers} />
         </Form>
         )}}</Formik>)
 
         return <div className='CreateGroup'>
-               <div className='row'>
-                   <h3>{tt('msgs_start_panel.create_group')}</h3>
-               </div>
-               {form}
+                <div className='row'>
+                    <h3>{tt('msgs_start_panel.create_group')}</h3>
+                </div>
+                {form}
         </div>
     }
 }
@@ -243,7 +260,11 @@ export default connect(
         }
     },
     dispatch => ({
-        privateGroup: ({ password, creator, name, title, logo, admin, is_encrypted, privacy,
+        stripGroupMembers: (group) => {
+            dispatch(g.actions.receiveGroupMembers({
+                group, members: [], append: false }))
+        },
+        privateGroup: ({ password, creator, name, title, logo, moders, is_encrypted, privacy,
         onSuccess, onError }) => {
             let json_metadata = {
                 app: 'golos-messenger',
@@ -257,7 +278,6 @@ export default connect(
                 creator,
                 name,
                 json_metadata,
-                admin: admin,
                 is_encrypted,
                 privacy,
                 extensions: [],

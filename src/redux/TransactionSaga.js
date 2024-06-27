@@ -209,7 +209,7 @@ function* broadcastOperation(
         console.error('Broadcast error', err)
         if (errorCallback) {
             let errStr = err.toString()
-            errStr = translateError(errStr)
+            errStr = translateError(errStr, err.payload)
             errStr = errStr.substring(0, 160)
             errorCallback(err, errStr)
         }

@@ -17,7 +17,6 @@ import LoadingIndicator from 'app/components/elements/LoadingIndicator'
 import DialogManager from 'app/components/elements/common/DialogManager'
 import { showLoginDialog } from 'app/components/dialogs/LoginDialog'
 import { validateLogoStep } from 'app/components/modules/groups/GroupLogo'
-import { validateAdminStep } from 'app/components/modules/groups/GroupAdmin'
 import { getGroupLogo, getGroupMeta, getGroupTitle } from 'app/utils/groups'
 import { proxifyImageUrlWithStrip } from 'app/utils/ProxifyUrl'
 
@@ -32,20 +31,12 @@ class GroupSettings extends React.Component {
     componentDidMount() {
         const { currentGroup } = this.props
         const group = currentGroup.toJS()
-        const { name, member_list, privacy, json_metadata, is_encrypted } = group
+        const { name, privacy, json_metadata, is_encrypted } = group
         const meta = getGroupMeta(json_metadata)
-        let admin
-        for (const mem of member_list) {
-            if (mem.member_type === 'admin') {
-                admin = mem.account
-            }
-            break
-        }
         const initialValues = {
             name,
             title: meta.title,
             logo: meta.logo,
-            admin,
             privacy,
             is_encrypted,
         }
@@ -65,11 +56,6 @@ class GroupSettings extends React.Component {
     onLogoChange = (e, { applyFieldValue }) => {
         const { value } = e.target
         applyFieldValue('logo', value)
-    }
-
-    onAdminChange = (e, { applyFieldValue }) => {
-        const { value } = e.target
-        applyFieldValue('admin', value)
     }
 
     uploadLogo = (file, name, { applyFieldValue }) => {
@@ -114,7 +100,6 @@ class GroupSettings extends React.Component {
             errors.title = tt('create_group_jsx.group_min_length')
         }
         await validateLogoStep(values, errors)
-        await validateAdminStep(values, errors)
         return errors
     }
 
@@ -241,19 +226,6 @@ class GroupSettings extends React.Component {
                         <ErrorMessage name='logo' component='div' className='error' />
                     </div>
                 </div>
-                <div className='row' style={{ marginTop: '1rem' }}>
-                    <div className='column small-12'>
-                        {tt('create_group_jsx.admin')}
-                        <Field
-                            type='text'
-                            name='admin'
-                            maxLength='16'
-                            onChange={e => this.onAdminChange(e, { applyFieldValue })}
-                            validateOnBlur={false}
-                        />
-                        <ErrorMessage name='admin' component='div' className='error' />
-                    </div>
-                </div>
 
                 <div className='row' style={{ marginTop: '1.0rem', }}>
                     <div className='column small-12'>
@@ -321,7 +293,7 @@ export default connect(
                 payload: {file, progress},
             })
         },
-        privateGroup: ({ password, creator, name, title, logo, admin, is_encrypted, privacy,
+        privateGroup: ({ password, creator, name, title, logo, is_encrypted, privacy,
         onSuccess, onError }) => {
             let json_metadata = {
                 app: 'golos-messenger',
@@ -335,7 +307,6 @@ export default connect(
                 creator,
                 name,
                 json_metadata,
-                admin: admin,
                 is_encrypted,
                 privacy,
                 extensions: [],

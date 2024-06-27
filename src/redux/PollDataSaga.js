@@ -11,6 +11,10 @@ const wait = ms => (
 let webpush_params = null;
 
 export default function* pollData() {
+    if (process.env.NO_NOTIFY) { // config-overrides.js, yarn run dev
+        console.warn('Notifications disabled in environment variables')
+        return
+    }
     while(true) {
         if (document.visibilityState !== 'hidden') {
             const username = yield select(state => state.user.getIn(['current', 'username']));

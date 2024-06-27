@@ -164,6 +164,9 @@ class Messages extends React.Component {
     }
 
     async setCallback(username, removeTaskIds) {
+        if (process.env.NO_NOTIFY) { // config-overrides.js, yarn run dev
+            return
+        }
         if (this.checkLoggedOut(username)) return
         if (this.paused) {
             setTimeout(() => {
