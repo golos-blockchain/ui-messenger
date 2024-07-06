@@ -77,6 +77,7 @@ class CreateGroup extends React.Component {
             const gbgBalance = Asset(sbd_balance)
             if (gbgBalance.gte(cost)) {
                 this.setState({
+                    cost,
                     loaded: true
                 })
                 return
@@ -179,7 +180,7 @@ class CreateGroup extends React.Component {
     }
 
     render() {
-        const { step, loaded, createError, validators, submitError } = this.state
+        const { step, loaded, createError, validators, submitError, cost } = this.state
 
         let form
         if (!loaded) {
@@ -218,7 +219,7 @@ class CreateGroup extends React.Component {
             return (
         <Form>
 
-            {!isSubmitting ? (step === 'name' ? <GroupName values={values} applyFieldValue={applyFieldValue} /> :
+            {!isSubmitting ? (step === 'name' ? <GroupName values={values} applyFieldValue={applyFieldValue} cost={cost} /> :
             step === 'logo' ? <GroupLogo isValidating={!!validators} values={values} errors={errors} applyFieldValue={applyFieldValue} /> :
             step === 'members' ? <GroupMembers newGroup={values} applyFieldValue={applyFieldValue} /> :
             step === 'final' ? <GroupFinal submitError={submitError} /> :

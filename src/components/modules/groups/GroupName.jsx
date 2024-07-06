@@ -79,7 +79,7 @@ export default class GroupName extends React.Component {
     }
 
     render() {
-        const { values } = this.props
+        const { values, cost } = this.props
         return <React.Fragment>
             <div className='row' style={{ marginTop: '1.0rem', marginBottom: '1.0rem' }}>
                 <div className='column small-5' style={{paddingTop: 5}}>
@@ -147,6 +147,18 @@ export default class GroupName extends React.Component {
                     <ErrorMessage name='is_encrypted' component='div' className='error' />
                 </div>
             </div>
+
+            {cost ? <div className='row' style={{ marginTop: '1.0rem', marginBottom: '1.0rem' }}>
+                <div className='column small-12'>
+                    <b style={{ fontSize: '100%' }}>
+                        <Icon name='editor/coin' size='1x' />
+                        <span style={{ marginLeft: '0.35rem', verticalAlign: 'middle' }}>
+                            {tt('create_group_jsx.gbg_too_low')}
+                            <span style={{ color: '#0078C4' }}>{cost.floatString}</span>.
+                        </span>
+                    </b>
+                </div>
+            </div> : null}
         </React.Fragment>
     }
 }
