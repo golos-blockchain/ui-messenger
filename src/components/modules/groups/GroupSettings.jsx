@@ -322,7 +322,7 @@ export default connect(
                     json,
                 },
                 username: creator,
-                password,
+                keys: [password],
                 successCallback: onSuccess,
                 errorCallback: (err, errStr) => {
                     console.error(err)

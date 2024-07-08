@@ -138,16 +138,28 @@ class CreateGroup extends React.Component {
             submitError: ''
         })
 
+        let members = []
+        const { name } = data
+        let { groups } = this.props
+        if (groups) {
+            groups = groups.toJS()
+            const group = groups[name]
+            if (group) {
+                let mems = group.members
+                if (mems) {
+                    members = mems.data
+                }
+            }
+        }
+
         showLoginDialog(creator, (res) => {
             const password = res && res.password
             if (!password) {
                 actions.setSubmitting(false)
                 return
             }
-            this.props.privateGroup({
-                password,
-                ...data,
-                onSuccess: () => {
+            try {
+                const finalSuccess = () => {
                     actions.setSubmitting(false)
                     const { closeMe } = this.props
                     if (closeMe) closeMe()
@@ -155,12 +167,45 @@ class CreateGroup extends React.Component {
                         window.location.href = '/' + data.name
                         return
                     }
-                },
-                onError: (err, errStr) => {
-                    this.setState({ submitError: errStr })
-                    actions.setSubmitting(false)
                 }
-            })
+                this.props.privateGroup({
+                    password,
+                    ...data,
+                    onSuccess: () => {
+                        try {
+                            if (!members.length) {
+                                finalSuccess()
+                                return
+                            }
+
+                            this.props.groupMembers({
+                                requester: data.creator,
+                                name: data.name,
+                                members,
+                                onSuccess: () => {
+                                    finalSuccess()
+                                },
+                                onError: (err, errStr) => {
+                                    this.setState({ submitError: {
+                                        type: 'members', err: errStr } })
+                                    actions.setSubmitting(false)
+                                }
+                            })
+                        } catch (err) {
+                            this.setState({ submitError: {
+                                type: 'members', err: err.toString() } })
+                            actions.setSubmitting(false)
+                        }
+                    },
+                    onError: (err, errStr) => {
+                        this.setState({ submitError: errStr })
+                        actions.setSubmitting(false)
+                    }
+                })
+            } catch (err) {
+                this.setState({ submitError: err.toString() })
+                actions.setSubmitting(false)
+            }
         }, 'active')
     }
 
@@ -215,14 +260,17 @@ class CreateGroup extends React.Component {
         {({
             handleSubmit, isSubmitting, isValid, values, errors, setFieldValue, applyFieldValue, setFieldTouched, handleChange,
         }) => {
-            const disabled = !isValid || !!validators || !values.name
+            let disabled = !isValid || !!validators || !values.name
+            if (submitError && submitError.type === 'members') {
+                disabled = true
+            }
             return (
         <Form>
 
             {!isSubmitting ? (step === 'name' ? <GroupName values={values} applyFieldValue={applyFieldValue} cost={cost} /> :
             step === 'logo' ? <GroupLogo isValidating={!!validators} values={values} errors={errors} applyFieldValue={applyFieldValue} /> :
             step === 'members' ? <GroupMembers newGroup={values} applyFieldValue={applyFieldValue} /> :
-            step === 'final' ? <GroupFinal submitError={submitError} /> :
+            step === 'final' ? <GroupFinal newGroup={values} submitError={submitError} cost={cost} /> :
             <React.Fragment></React.Fragment>) : null}
 
             {!isSubmitting && <Stepper ref={this.stepperRef} steps={STEPS()} startStep={step}
@@ -254,9 +302,12 @@ export default connect(
         const currentUser = state.user.getIn(['current'])
         const currentAccount = currentUser && state.global.getIn(['accounts', currentUser.get('username')])
 
+        const groups = state.global.get('groups')
+
         return { ...ownProps,
             currentUser,
             currentAccount,
+            groups,
             redirectAfter: state.user.get('create_group_redirect_after'),
         }
     },
@@ -265,17 +316,19 @@ export default connect(
             dispatch(g.actions.receiveGroupMembers({
                 group, members: [], append: false }))
         },
-        privateGroup: ({ password, creator, name, title, logo, moders, is_encrypted, privacy,
+        privateGroup: ({ password, creator, name, title, logo, is_encrypted, privacy,
         onSuccess, onError }) => {
-            let json_metadata = {
+            const trx = []
+            let json_metadata, opData, json
+
+            json_metadata = {
                 app: 'golos-messenger',
                 version: 1,
                 title,
                 logo
             }
             json_metadata = JSON.stringify(json_metadata)
-
-            const opData = {
+            opData = {
                 creator,
                 name,
                 json_metadata,
@@ -283,24 +336,58 @@ export default connect(
                 privacy,
                 extensions: [],
             }
-
-            const json = JSON.stringify(['private_group', opData])
+            json = JSON.stringify(['private_group', opData])
+            trx.push(['custom_json', {
+                id: 'private_message',
+                required_auths: [creator],
+                json,
+            }])
 
             dispatch(transaction.actions.broadcastOperation({
                 type: 'custom_json',
-                operation: {
-                    id: 'private_message',
-                    required_auths: [creator],
-                    json,
-                },
+                trx,
                 username: creator,
-                password,
+                keys: [password],
                 successCallback: onSuccess,
                 errorCallback: (err, errStr) => {
                     console.error(err)
                     if (onError) onError(err, errStr)
                 },
             }));
-        }
+        },
+        groupMembers: ({ requester, name, members,
+        onSuccess, onError }) => {
+            const trx = []
+            let opData, json
+
+            for (const mem of members) {
+                const { account, member_type, json_metadata } = mem
+                opData = {
+                    requester,
+                    name,
+                    member: account,
+                    member_type,
+                    json_metadata: '{}',
+                    extensions: [],
+                }
+                json = JSON.stringify(['private_group_member', opData])
+                trx.push(['custom_json', {
+                    id: 'private_message',
+                    required_posting_auths: [requester],
+                    json,
+                }])
+            }
+
+            dispatch(transaction.actions.broadcastOperation({
+                type: 'custom_json',
+                trx,
+                username: requester,
+                successCallback: onSuccess,
+                errorCallback: (err, errStr) => {
+                    console.error(err)
+                    if (onError) onError(err, errStr)
+                },
+            }));
+        },
     })
 )(CreateGroup)

@@ -220,7 +220,7 @@ export default connect(
                     json,
                 },
                 username: owner,
-                password,
+                keys: [password],
                 successCallback: onSuccess,
                 errorCallback: (err, errStr) => {
                     console.error(err)

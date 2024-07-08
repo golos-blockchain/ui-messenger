@@ -2,7 +2,6 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { Field, ErrorMessage, } from 'formik'
 import tt from 'counterpart'
-import { api } from 'golos-lib-js'
 import { validateAccountName } from 'golos-lib-js/lib/utils'
 
 import g from 'app/redux/GlobalReducer'
@@ -14,25 +13,7 @@ import LoadingIndicator from 'app/components/elements/LoadingIndicator'
 import { getGroupMeta, getGroupTitle } from 'app/utils/groups'
 
 export async function validateMembersStep(values, errors) {
-    /*if (!values.admin) {
-        errors.admin = tt('g.required')
-    } else {
-        const nameError = validateAccountName(values.admin)
-        if (nameError.error) {
-            errors.admin = tt('account_name.' + nameError.error)
-        } else {
-            try {
-                let accs = await api.getAccountsAsync([values.admin])
-                accs = accs[0]
-                if (!accs) {
-                    errors.admin = tt('g.username_does_not_exist')
-                }
-            } catch (err) {
-                console.error(err)
-                errors.admin = 'Blockchain unavailable :('
-            }
-        }
-    }*/
+    // nothing yet...
 }
 
 class GroupMembers extends React.Component {

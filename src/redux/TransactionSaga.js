@@ -163,11 +163,15 @@ function* broadcastOperation(
         return;
     }
 
-    if (!password) {
-        password = yield select(state => state.user.getIn(['current', 'private_keys', 'posting_private']));
-        if (!password) {
+    if (!keys) keys = ['posting']
+    keys = [...new Set(keys)] // remove duplicate
+    const idxP = keys.indexOf('posting')
+    if (idxP !== -1) {
+        const posting = yield select(state => state.user.getIn(['current', 'private_keys', 'posting_private']));
+        if (!posting) {
             alert('Not authorized')
         }
+        keys[idxP] = posting
     }
 
     let operations = trx || [
@@ -195,7 +199,7 @@ function* broadcastOperation(
     }
     try {
         const res = yield golos.broadcast.sendAsync(
-        tx, [password])
+        tx, keys)
         for (const [type, operation] of operations) {
             if (hook['accepted_' + type]) {
                 try {

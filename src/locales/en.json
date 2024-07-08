@@ -136,14 +136,19 @@
     "gbg_too_low": "Group creation costs ",
     "gbg_too_low2": "That is not enough ",
     "gbg_too_low3": "Your GBG balance is ",
+    "create_of_group_is": "Creating of group is ",
+    "free": "free",
     "deposit_gp": "Increase Golos Power",
     "logo_desc": "The group logo is like a user’s avatar... Not required, but \"must have\"...",
     "logo_upload": "Upload logo",
     "logo_link": "Add logo from the URL",
     "members_desc": "Add people, set moderators of the group...",
     "final_desc": "Now we are ready to create the group!",
+    "moders_list": "Moderators:",
+    "members_list": "Members:",
     "image_wrong": "Cannot load this image.",
-    "image_timeout": "Cannot load this image, it is loading too long..."
+    "image_timeout": "Cannot load this image, it is loading too long...",
+    "add_member": "+ Add Member..."
   },
   "my_groups_jsx": {
     "title": "My Groups",
@@ -154,6 +159,21 @@
     "edit": "Edit",
     "login_hint_GROUP": "(delete \"%(GROUP)s\" group)",
     "members": "Members"
+  },
+  "group_members_jsx": {
+    "title": "Members Of ",
+    "title2": " Group",
+    "check_pending": "Join Requests",
+    "check_pending_hint": "Pending Group Join Requests",
+    "check_banned": "Blocked",
+    "member": "Member",
+    "moder": "Moderator",
+    "owner": "Group Owner",
+    "make_member": "Make Simple Member",
+    "make_moder": "Make Moderator",
+    "ban": "Ban",
+    "unban": "Unban",
+    "banned": "Banned"
   },
   "group_settings_jsx": {
     "title_GROUP": "%(GROUP)s Group",
