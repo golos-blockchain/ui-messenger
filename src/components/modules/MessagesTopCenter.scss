@@ -1,0 +1,26 @@
+.MessagesTopCenter {
+    .avatar-items {
+        display: inline-block;
+        vertical-align: top;
+        margin-top: 5px;
+        margin-right: 7px;
+
+        .group-logo {
+            cursor: pointer;
+            img {
+                width: 32px;
+                height: 32px;
+            }
+        }
+    }
+    .main-items {
+        display: inline-block;
+        .to-group {
+            cursor: pointer;
+            color: #0078C4;
+        }
+        .group-stats {
+            cursor: pointer;
+        }
+    }
+}

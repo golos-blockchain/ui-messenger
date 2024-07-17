@@ -10,22 +10,23 @@ import debounce from 'lodash/debounce';
 
 import BackButtonController from 'app/components/elements/app/BackButtonController'
 import AppUpdateChecker from 'app/components/elements/app/AppUpdateChecker'
-import ExtLink from 'app/components/elements/ExtLink'
 import Icon from 'app/components/elements/Icon'
 import Logo from 'app/components/elements/Logo'
 import MarkNotificationRead from 'app/components/elements/MarkNotificationRead'
 import NotifiCounter from 'app/components/elements/NotifiCounter'
 import DialogManager from 'app/components/elements/common/DialogManager'
 import AddImageDialog from 'app/components/dialogs/AddImageDialog'
+import ChatError from 'app/components/elements/messages/ChatError'
 import PageFocus from 'app/components/elements/messages/PageFocus'
 import TimeAgoWrapper from 'app/components/elements/TimeAgoWrapper'
 import Userpic from 'app/components/elements/Userpic'
 import VerticalMenu from 'app/components/elements/VerticalMenu'
 import Messenger from 'app/components/modules/messages/Messenger'
+import MessagesTopCenter from 'app/components/modules/MessagesTopCenter'
 import g from 'app/redux/GlobalReducer'
 import transaction from 'app/redux/TransactionReducer'
 import user from 'app/redux/UserReducer'
-import { getProfileImage, getLastSeen } from 'app/utils/NormalizeProfile';
+import { getProfileImage, } from 'app/utils/NormalizeProfile';
 import { normalizeContacts, normalizeMessages } from 'app/utils/Normalizators';
 import { fitToPreview } from 'app/utils/ImageUtils';
 import { notificationSubscribe, notificationShallowUnsubscribe, notificationTake, sendOffchainMessage } from 'app/utils/NotifyApiClient';
@@ -56,11 +57,18 @@ class Messages extends React.Component {
         this.composeRef = React.createRef()
     }
 
+    getToAcc = () => {
+        let { to } = this.props
+        if (to) to = to.replace('@', '')
+        return to
+    }
+
     markMessages() {
         const { messages } = this.state;
         if (!messages.length) return;
 
-        const { account, accounts, to } = this.props;
+        const { account, accounts, } = this.props;
+        const to = this.getToAcc()
 
         let OPERATIONS = golos.messages.makeDatedGroups(messages, (message_object, idx) => {
             return message_object.toMark && !message_object._offchain;
@@ -390,7 +398,8 @@ class Messages extends React.Component {
 
     onSendMessage = (message, event) => {
         if (!message.length) return;
-        const { to, account, accounts, currentUser, messages } = this.props;
+        const { account, accounts, currentUser, messages } = this.props;
+        const to = this.getToAcc()
         const private_key = currentUser.getIn(['private_keys', 'memo_private']);
 
         let editInfo;
@@ -480,7 +489,8 @@ class Messages extends React.Component {
     onPanelDeleteClick = (event) => {
         const { messages } = this.state;
 
-        const { account, accounts, to } = this.props;
+        const { account, accounts, } = this.props;
+        const to = this.getToAcc()
 
         // TODO: works wrong if few messages have same create_time
         /*let OPERATIONS = golos.messages.makeDatedGroups(messages, (message_object, idx) => {
@@ -597,7 +607,8 @@ class Messages extends React.Component {
             if (!url)
                 return;
 
-            const { to, account, accounts, currentUser, messages } = this.props;
+            const { account, accounts, currentUser, messages } = this.props;
+            const to = this.getToAcc()
             const private_key = currentUser.getIn(['private_keys', 'memo_private']);
             this.props.sendMessage({
                 senderAcc: account, memoKey: private_key, toAcc: accounts[to],
@@ -745,46 +756,16 @@ class Messages extends React.Component {
     };
 
     _renderMessagesTopCenter = ({ isSmall }) => {
-        let messagesTopCenter = [];
-        const { to, accounts } = this.props;
-        if (accounts[to]) {
-            let checkmark
-            if (to === 'notify') {
-                checkmark = <span className='msgs-checkmark'>
-                    <Icon name='ionicons/checkmark-circle' size='0_95x' title={tt('messages.verified_golos_account')} />
-                </span>
-            }
-            messagesTopCenter.push(<div key='to-link' style={{fontSize: '15px', width: '100%', textAlign: 'center'}}>
-                <ExtLink href={'/@' + to}>{to}{checkmark}</ExtLink>
-            </div>);
-            const { notifyErrors } = this.state;
-            if (notifyErrors >= 30) {
-                messagesTopCenter.push(<div key='to-last-seen' style={{fontSize: '13px', fontWeight: 'normal', color: 'red'}}>
-                    {isSmall ?
-                        <span>
-                            {tt('messages.sync_error_short')}
-                            <a href='#' onClick={e => { e.preventDefault(); this.props.fetchState(this.props.to) }}>
-                                {tt('g.refresh').toLowerCase()}.
-                            </a>
-                        </span> :
-                        <span>{tt('messages.sync_error')}</span>
-                    }
-                </div>);
-            } else {
-                let lastSeen = getLastSeen(accounts[to]);
-                if (lastSeen) {
-                    messagesTopCenter.push(<div key='to-last-seen' style={{fontSize: '13px', fontWeight: 'normal'}}>
-                        {
-                            <span>
-                                {tt('messages.last_seen')}
-                                <TimeAgoWrapper date={`${lastSeen}`} />
-                            </span>
-                        }
-                    </div>);
-                }
-            }
-        }
-        return messagesTopCenter;
+        const { to } = this.props
+        const toAcc = this.getToAcc()
+        const { notifyErrors } = this.state
+
+        return <MessagesTopCenter 
+            isSmall={isSmall}
+            to={to}
+            toAcc={toAcc}
+            notifyErrors={notifyErrors}
+        />
     };
 
     _renderMenuItems = (isSmall) => {
@@ -862,6 +843,21 @@ class Messages extends React.Component {
             </LinkWithDropdown>);
     };
 
+    _renderMessages = ({ }) => {
+        const { to, the_group, accounts } = this.props
+
+        if (to) {
+            const isGroup = !to.startsWith('@')
+            if (isGroup && the_group === null) {
+                return <ChatError isGroup={isGroup} />
+            } else if (!isGroup && !accounts[this.getToAcc()]) {
+                return <ChatError isGroup={isGroup} />
+            }
+        }
+
+        return false
+    }
+
     handleFocusChange = isFocused => {
         this.windowFocused = isFocused;
         if (!isFocused) {
@@ -934,6 +930,8 @@ class Messages extends React.Component {
                     conversationTopLeft={this._renderConversationTopLeft}
                     />
             </div>);
+        const toAcc = this.getToAcc()
+
         return (
             <div>
                 {bbc}
@@ -946,7 +944,7 @@ class Messages extends React.Component {
                 </PageFocus>
                 {Messenger ? (<Messenger
                     account={this.props.account}
-                    to={to}
+                    to={toAcc}
                     contacts={this.state.searchContacts || this.state.contacts}
                     conversationTopLeft={this._renderConversationTopLeft}
                     conversationTopRight={this._renderConversationTopRight}
@@ -956,6 +954,7 @@ class Messages extends React.Component {
                     messagesTopLeft={this._renderMessagesTopLeft()}
                     messagesTopCenter={this._renderMessagesTopCenter}
                     messagesTopRight={this._renderMessagesTopRight}
+                    renderMessages={this._renderMessages}
                     replyingMessage={this.state.replyingMessage}
                     onCancelReply={this.onCancelReply}
                     onSendMessage={this.onSendMessage}
@@ -987,7 +986,6 @@ export default withRouter(connect(
         const username = state.user.getIn(['current', 'username'])
 
         let to = ownProps.match.params.to
-        if (to) to = to.replace('@', '')
 
         let memo_private = null
         if (currentUser) {
@@ -996,11 +994,15 @@ export default withRouter(connect(
 
         const locale = state.user.get('locale')
 
+        let the_group = state.global.get('the_group')
+        if (the_group && the_group.toJS) the_group = the_group.toJS()
+
         return {
             to,
             contacts: contacts,
             messages: messages,
             messages_update,
+            the_group,
             account: currentUser && accounts && accounts.toJS()[currentUser.get('username')],
             currentUser,
             memo_private,
@@ -1035,7 +1037,7 @@ export default withRouter(connect(
         showMyGroups: () => dispatch(user.actions.showMyGroups()),
 
         fetchState: (to) => {
-            const pathname = '/' + (to ? ('@' + to) : '');
+            const pathname = '/' + (to || '')
             dispatch({type: 'FETCH_STATE', payload: {
                 location: {
                     pathname

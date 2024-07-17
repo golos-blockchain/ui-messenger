@@ -96,7 +96,7 @@ class Modals extends React.Component {
                 {show_my_groups_modal && <Reveal enforceFocus={false} revealStyle={{ ...modalStyle, }}
                     onHide={hideMyGroups} show={show_my_groups_modal}>
                     <CloseButton onClick={hideMyGroups} />
-                    <MyGroups />
+                    <MyGroups closeMe={hideMyGroups} />
                 </Reveal>}
                 {show_group_settings_modal && <Reveal enforceFocus={false} revealStyle={{ ...modalStyle, }}
                     onHide={hideGroupSettings} show={show_group_settings_modal}>

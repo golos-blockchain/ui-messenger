@@ -61,15 +61,33 @@ export function* fetchState(location_change_action) {
                 state.contacts = yield callSafe(state, [], 'getContactsAsync', [api, api.getContactsAsync], account, 'unknown', 100, 0)
                 if (hasErr) return
 
-                if (parts[1]) {
-                    const to = parts[1].replace('@', '');
-                    accounts.add(to);
+                const path = parts[1]
+                if (path) {
+                    if (path.startsWith('@')) {
+                        const to = path.replace('@', '');
+                        accounts.add(to);
 
-                    state.messages = yield callSafe(state, [], 'getThreadAsync', [api, api.getThreadAsync], account, to, {});
-                    if (hasErr) return
+                        state.messages = yield callSafe(state, [], 'getThreadAsync', [api, api.getThreadAsync], account, to, {});
+                        if (hasErr) return
 
-                    if (state.messages.length) {
-                        state.messages_update = state.messages[state.messages.length - 1].nonce;
+                        if (state.messages.length) {
+                            state.messages_update = state.messages[state.messages.length - 1].nonce;
+                        }
+                    } else {
+                        let the_group = yield callSafe(state, [], 'getGroupsAsync', [api, api.getGroupsAsync], {
+                            start_group: path,
+                            limit: 1,
+                            with_members: {
+                                accounts: [account]
+                            }
+                        })
+                        if (hasErr) return 
+                        if (the_group[0] && the_group[0].name === path) {
+                            the_group = the_group[0]
+                        } else {
+                            the_group = null
+                        }
+                        state.the_group = the_group
                     }
                 }
                 for (let contact of state.contacts) {

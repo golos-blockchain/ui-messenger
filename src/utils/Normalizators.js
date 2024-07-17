@@ -68,6 +68,8 @@ export function normalizeContacts(contacts, accounts, currentUser, preDecoded, c
 }
 
 export function normalizeMessages(messages, accounts, currentUser, to, preDecoded) {
+    if (to) to = to.replace('@', '')
+
     if (!to || !accounts[to]) {
         return [];
     }

@@ -24,7 +24,7 @@ const icons = new Map([
     // ['clock', require('app/assets/icons/clock.svg')],
     // ['copy', require('app/assets/icons/copy.svg')],
     // ['extlink', require('app/assets/icons/extlink.svg')],
-    // ['golos', require('app/assets/icons/golos.svg')],
+    ['golos', require('app/assets/icons/golos.svg')],
     ['dropdown-arrow', require('app/assets/icons/dropdown-arrow.svg')],
     // ['printer', require('app/assets/icons/printer.svg')],
     // ['search', require('app/assets/icons/search.svg')],

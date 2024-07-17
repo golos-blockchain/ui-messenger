@@ -79,7 +79,15 @@ export default class MessageList extends React.Component {
     }
 
     renderMessages = () => {
-        const { to, renderEmpty, messages, selectedMessages, onMessageSelect } = this.props;
+        const { to, renderEmpty, renderMessages, messages, selectedMessages, onMessageSelect } = this.props;
+
+        let renderRes = false
+        if (renderMessages) {
+            renderRes = renderMessages({})
+        }
+        if (renderRes !== false) {
+            return renderRes
+        }
 
         if (!to && renderEmpty) {
             return renderEmpty()

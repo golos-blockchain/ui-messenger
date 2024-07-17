@@ -38,10 +38,11 @@ export default class Messages extends React.Component {
     }
 
     render() {
-        const { account, to,
+        const { account, to, toNew,
             contacts, conversationTopLeft, conversationTopRight, conversationLinkPattern,
             onConversationSearch, onConversationSelect,
-            messagesTopLeft, messagesTopCenter, messagesTopRight, messages, replyingMessage, onCancelReply, onSendMessage,
+            messagesTopLeft, messagesTopCenter, messagesTopRight, messages, renderMessages,
+            replyingMessage, onCancelReply, onSendMessage,
             onButtonImageClicked, onImagePasted,
             selectedMessages, onMessageSelect, onPanelDeleteClick, onPanelReplyClick, onPanelEditClick, onPanelCloseClick,
             composeRef
@@ -86,6 +87,7 @@ export default class Messages extends React.Component {
                                 if ((localStorage.getItem('msgr_auth') && !account) || process.env.MOBILE_APP) return null
                                 return <StartPanel />
                             }}
+                            renderMessages={renderMessages}
                             messages={messages}
                             replyingMessage={replyingMessage}
                             onCancelReply={onCancelReply}

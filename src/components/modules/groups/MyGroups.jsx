@@ -1,5 +1,6 @@
 import React from 'react'
 import {connect} from 'react-redux'
+import { Link } from 'react-router-dom'
 import { Map } from 'immutable'
 import { api, formatter } from 'golos-lib-js'
 import tt from 'counterpart'
@@ -9,7 +10,6 @@ import transaction from 'app/redux/TransactionReducer'
 import user from 'app/redux/UserReducer'
 import { session } from 'app/redux/UserSaga'
 import DropdownMenu from 'app/components/elements/DropdownMenu'
-import ExtLink from 'app/components/elements/ExtLink'
 import Icon from 'app/components/elements/Icon'
 import LoadingIndicator from 'app/components/elements/LoadingIndicator'
 import DialogManager from 'app/components/elements/common/DialogManager'
@@ -80,6 +80,11 @@ class MyGroups extends React.Component {
         this.props.showGroupMembers({ group })
     }
 
+    onGoGroup = (e) => {
+        const { closeMe } = this.props
+        if (closeMe) closeMe()
+    }
+
     _renderGroup = (group) => {
         const { name, json_metadata } = group
 
@@ -98,7 +103,7 @@ class MyGroups extends React.Component {
         }, value: tt('g.delete') })
 
         return <tr key={name}>
-            <a href={'/' + name} target='_blank' rel='noreferrer nofollow'>
+            <Link to={'/' + name} onClick={this.onGoGroup}>
                 {this._renderGroupLogo(group, meta)}
                 <td title={title} className='group-title'>
                     {titleShr}
@@ -122,7 +127,7 @@ class MyGroups extends React.Component {
                         <Icon name='new/more' size='0_95x' />
                     </DropdownMenu> : null}
                 </td>
-            </a>
+            </Link>
         </tr>
     }
 
