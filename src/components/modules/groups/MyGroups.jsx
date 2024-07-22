@@ -12,7 +12,6 @@ import { session } from 'app/redux/UserSaga'
 import DropdownMenu from 'app/components/elements/DropdownMenu'
 import Icon from 'app/components/elements/Icon'
 import LoadingIndicator from 'app/components/elements/LoadingIndicator'
-import DialogManager from 'app/components/elements/common/DialogManager'
 import { showLoginDialog } from 'app/components/dialogs/LoginDialog'
 import { getGroupLogo, getGroupMeta } from 'app/utils/groups'
 

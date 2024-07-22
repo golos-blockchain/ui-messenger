@@ -1,14 +1,19 @@
 import React from 'react'
 import {connect} from 'react-redux'
+import { withRouter } from 'react-router'
 import { Link } from 'react-router-dom'
 import { LinkWithDropdown } from 'react-foundation-components/lib/global/dropdown'
 import tt from 'counterpart'
+import cn from 'classnames'
 
+import { showLoginDialog } from 'app/components/dialogs/LoginDialog'
+import DropdownMenu from 'app/components/elements/DropdownMenu'
 import ExtLink from 'app/components/elements/ExtLink'
 import Icon from 'app/components/elements/Icon'
 import TimeAgoWrapper from 'app/components/elements/TimeAgoWrapper'
+import transaction from 'app/redux/TransactionReducer'
 import user from 'app/redux/UserReducer'
-import { getGroupLogo, } from 'app/utils/groups'
+import { getGroupLogo, getGroupMeta, getGroupTitle, } from 'app/utils/groups'
 import { getLastSeen } from 'app/utils/NormalizeProfile'
 
 class MessagesTopCenter extends React.Component {
@@ -31,15 +36,149 @@ class MessagesTopCenter extends React.Component {
         this.props.showGroupMembers({ group: the_group })
     }
 
+    editGroup = (e) => {
+        e.preventDefault()
+        const { the_group } = this.props
+        if (!the_group) return
+        this.props.showGroupSettings({ group: the_group })
+    }
+
+    deleteGroup = (e, title) => {
+        e.preventDefault()
+        const { history, the_group } = this.props
+        if (!the_group) return
+        showLoginDialog(the_group.owner, (res) => {
+            const password = res && res.password
+            if (!password) {
+                return
+            }
+            this.props.deleteGroup({
+                owner: the_group.owner,
+                name: the_group.name,
+                password,
+                onSuccess: () => {
+                    if (!history || !history.push) {
+                        console.error('No react-router history', history)
+                        return
+                    }
+                    history.push('/')
+                },
+                onError: (err, errStr) => {
+                    alert(errStr)
+                }
+            })
+        }, 'active', false, tt('my_groups_jsx.login_hint_GROUP', {
+            GROUP: title
+        }))
+    }
+
     _renderGroupDropdown = () => {
-        return <div>
-            Test
+        const { the_group, username } = this.props
+        if (!the_group) {
+            return null
+        }
+
+        const { name, json_metadata, privacy, is_encrypted,
+            owner, member_list, members, moders } = the_group
+        const logo = getGroupLogo(json_metadata)
+
+        const meta = getGroupMeta(json_metadata)
+        const title = getGroupTitle(meta, name)
+
+        const totalMembers = members + moders
+
+        let groupType
+        if (privacy === 'public_group') {
+            groupType = tt('msgs_group_dropdown.public')
+        } else if (privacy === 'public_read_only') {
+            groupType = tt('msgs_group_dropdown.read_only')
+        } else {
+            groupType = tt('msgs_group_dropdown.private')
+        }
+        const lock = <Icon size='0_5x'
+            title={is_encrypted ? tt('msgs_group_dropdown.encrypted') : tt('msgs_group_dropdown.not_encrypted')}
+            name={is_encrypted ? 'ionicons/lock-closed-outline' : 'ionicons/lock-open-outline'} />
+        groupType = <div className='group-type'>{groupType}&nbsp;{lock}</div>
+
+        let myStatus = null
+        let btnType
+        let showKebab, isOwner, banned
+        if (owner === username) {
+            myStatus = tt('msgs_group_dropdown.owner')
+            showKebab = true
+        } else {
+            const mem = member_list.find(pgm => pgm.account === username)
+            const { member_type } = (mem || {})
+
+            const isMember = member_type === 'member'
+            const isModer = member_type === 'moder'
+
+            if (!member_type) {
+                btnType = 'join'
+            } else if (isModer) {
+                myStatus = tt('msgs_group_dropdown.moder')
+                btnType = 'retire'
+            } else if (isMember) {
+                btnType = 'retire'
+            } else if (member_type === 'banned') {
+                myStatus = tt('msgs_group_dropdown.banned')
+                banned = true
+                btnType = 'disabled'
+            } else if (member_type === 'pending') {
+                myStatus = tt('msgs_group_dropdown.pending')
+                btnType = 'cancel'
+            }
+        }
+        if (myStatus) {
+            myStatus = <div className='group-type'>{myStatus}</div>
+        }
+
+        let btn
+        if (btnType) {
+            if (btnType === 'join') {
+                btn = <button className='button small'>
+                    {tt('msgs_group_dropdown.join')}
+                </button>
+            } else {
+                let btnTitle = tt('msgs_group_dropdown.retire')
+                if (btnType === 'cancel') {
+                    btnTitle = tt('msgs_group_dropdown.cancel')
+                }
+                btn = <button className='button small hollow alert float-right' disabled={btnType === 'disabled'}>
+                    {btnTitle}
+                </button>
+            }
+        }
+
+        let kebabItems = [
+            { link: '#', value: tt('g.edit'), onClick: this.editGroup },
+            { link: '#', value: tt('g.delete'), onClick: e => this.deleteGroup(e, title) },
+        ]
+
+        return <div className='msgs-group-dropdown'>
+            <img className='logo' src={logo} />
+            <div className='title'>
+                <b>{title}</b>
+            </div>
+            {groupType}
+            {myStatus}
+            <div className='buttons'>
+                {showKebab ? <DropdownMenu className='float-right' el='div' items={kebabItems}>
+                    <Icon name='new/more' size='0_95x' />
+                </DropdownMenu> : null}
+                <button className='button small hollow float-right' onClick={e => {
+                    this.openDropdown(e) // hides
+                    this.showGroupMembers(e)
+                }}>{tt('my_groups_jsx.members') + ' (' + totalMembers + ')'}</button>
+                {btn}
+            </div>
         </div>
     }
 
     render() {
         let avatar = []
         let items = []
+        let clickable = false
 
         const { to, toAcc, isSmall, notifyErrors, the_group } = this.props
 
@@ -56,7 +195,7 @@ class MessagesTopCenter extends React.Component {
             if (the_group) {
                 const { json_metadata } = the_group
                 const logo = getGroupLogo(json_metadata)
-                avatar.push(<div className='group-logo' onClick={this.openDropdown}>
+                avatar.push(<div className='group-logo'>
                     <img src={logo} />
                 </div>)
             }
@@ -71,6 +210,7 @@ class MessagesTopCenter extends React.Component {
                 </LinkWithDropdown>
                 {checkmark}
             </div>)
+            clickable = true
         } else {
             items.push(<div key='to-link' style={{fontSize: '15px', width: '100%', textAlign: 'center'}}>
                 <ExtLink href={to}>{to}{checkmark}</ExtLink>
@@ -110,7 +250,7 @@ class MessagesTopCenter extends React.Component {
                 if (the_group) {
                     const totalMembers = the_group.members + the_group.moders
                     items.push(<div key='group-stats' className='group-stats'
-                            style={secondStyle} onClick={this.showGroupMembers}>
+                            style={secondStyle}>
                         {tt('plurals.member_count', {
                             count: totalMembers
                         })}
@@ -119,14 +259,16 @@ class MessagesTopCenter extends React.Component {
             }
         }
 
-        return <div className='MessagesTopCenter'>
+        return <div className={cn('MessagesTopCenter', {
+            clickable
+        })} onClick={clickable ? this.openDropdown : null}>
             <div className='avatar-items'>{avatar}</div>
             <div className='main-items'>{items}</div>
         </div>
     }
 }
 
-export default connect(
+export default withRouter(connect(
     (state, ownProps) => {
         const currentUser = state.user.get('current')
         const accounts = state.global.get('accounts')
@@ -148,5 +290,34 @@ export default connect(
         showGroupMembers({ group }) {
             dispatch(user.actions.showGroupMembers({ group }))
         },
+        showGroupSettings({ group }) {
+            dispatch(user.actions.showGroupSettings({ group }))
+        },
+        deleteGroup: ({ owner, name, password,
+        onSuccess, onError }) => {
+            const opData = {
+                owner,
+                name,
+                extensions: [],
+            }
+
+            const json = JSON.stringify(['private_group_delete', opData])
+
+            dispatch(transaction.actions.broadcastOperation({
+                type: 'custom_json',
+                operation: {
+                    id: 'private_message',
+                    required_auths: [owner],
+                    json,
+                },
+                username: owner,
+                keys: [password],
+                successCallback: onSuccess,
+                errorCallback: (err, errStr) => {
+                    console.error(err)
+                    if (onError) onError(err, errStr)
+                },
+            }));
+        }
     }),
-)(MessagesTopCenter)
+)(MessagesTopCenter))

@@ -75,8 +75,10 @@ export default class GroupName extends React.Component {
 
     onPrivacyChange = (e) => {
         const { applyFieldValue } = this.props
-        applyFieldValue('privacy', e.target.value)
-        applyFieldValue('is_encrypted', true)
+        const { value } = e.target
+        applyFieldValue('privacy', value)
+        if (value === 'private_group')
+            applyFieldValue('is_encrypted', true)
     }
 
     render() {
