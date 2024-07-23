@@ -10,7 +10,7 @@ import AccountName from 'app/components/elements/common/AccountName'
 import Input from 'app/components/elements/common/Input';
 import GroupMember from 'app/components/elements/groups/GroupMember'
 import LoadingIndicator from 'app/components/elements/LoadingIndicator'
-import { getGroupMeta, getGroupTitle } from 'app/utils/groups'
+import { getMemberType, getGroupMeta, getGroupTitle } from 'app/utils/groups'
 
 export async function validateMembersStep(values, errors) {
     // nothing yet...
@@ -120,6 +120,11 @@ class GroupMembers extends React.Component {
             for (const m of members) {
                 filterAccs.add(m.account)
             }
+
+            // TODO: but we should check it in diff cases
+            const { owner, member_list } = currentGroup
+            const amOwner = currentGroup.owner === username
+            const amModer = amOwner || (member_list && getMemberType(member_list, username) === 'moder')
 
             mems = <div>
                 <div className='row' style={{ marginTop: '0.5rem', }}>

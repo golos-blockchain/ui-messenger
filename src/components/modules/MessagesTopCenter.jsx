@@ -2,6 +2,7 @@ import React from 'react'
 import {connect} from 'react-redux'
 import { withRouter } from 'react-router'
 import { Link } from 'react-router-dom'
+import { Fade } from 'react-foundation-components/lib/global/fade'
 import { LinkWithDropdown } from 'react-foundation-components/lib/global/dropdown'
 import tt from 'counterpart'
 import cn from 'classnames'
@@ -13,7 +14,7 @@ import Icon from 'app/components/elements/Icon'
 import TimeAgoWrapper from 'app/components/elements/TimeAgoWrapper'
 import transaction from 'app/redux/TransactionReducer'
 import user from 'app/redux/UserReducer'
-import { getGroupLogo, getGroupMeta, getGroupTitle, } from 'app/utils/groups'
+import { getMemberType, getGroupLogo, getGroupMeta, getGroupTitle, } from 'app/utils/groups'
 import { getLastSeen } from 'app/utils/NormalizeProfile'
 
 class MessagesTopCenter extends React.Component {
@@ -107,8 +108,7 @@ class MessagesTopCenter extends React.Component {
             myStatus = tt('msgs_group_dropdown.owner')
             showKebab = true
         } else {
-            const mem = member_list.find(pgm => pgm.account === username)
-            const { member_type } = (mem || {})
+            const member_type = getMemberType(member_list, username)
 
             const isMember = member_type === 'member'
             const isModer = member_type === 'moder'
@@ -135,8 +135,12 @@ class MessagesTopCenter extends React.Component {
 
         let btn
         if (btnType) {
+            const onBtnClick = (e) => {
+                e.preventDefault()
+            }
+
             if (btnType === 'join') {
-                btn = <button className='button small'>
+                btn = <button onClick={onBtnClick} className='button small margin'>
                     {tt('msgs_group_dropdown.join')}
                 </button>
             } else {
@@ -144,7 +148,7 @@ class MessagesTopCenter extends React.Component {
                 if (btnType === 'cancel') {
                     btnTitle = tt('msgs_group_dropdown.cancel')
                 }
-                btn = <button className='button small hollow alert float-right' disabled={btnType === 'disabled'}>
+                btn = <button onClick={onBtnClick} className='button small margin hollow alert float-right' disabled={btnType === 'disabled'}>
                     {btnTitle}
                 </button>
             }
@@ -155,7 +159,9 @@ class MessagesTopCenter extends React.Component {
             { link: '#', value: tt('g.delete'), onClick: e => this.deleteGroup(e, title) },
         ]
 
-        return <div className='msgs-group-dropdown'>
+        return <div className='msgs-group-dropdown' onClick={e => {
+            e.stopPropagation()
+        }}>
             <img className='logo' src={logo} />
             <div className='title'>
                 <b>{title}</b>
@@ -203,8 +209,9 @@ class MessagesTopCenter extends React.Component {
                 <LinkWithDropdown
                     closeOnClickOutside
                     dropdownPosition="bottom"
-                    dropdownAlignment="right"
+                    dropdownAlignment="center"
                     dropdownContent={this._renderGroupDropdown()}
+                    transition={Fade}
                 >
                     <span className='to-group' ref={this.dropdown}>{to}</span>
                 </LinkWithDropdown>
@@ -287,6 +294,35 @@ export default withRouter(connect(
         }
     },
     dispatch => ({
+        groupMember: ({ requester, group, member, member_type,
+        onSuccess, onError }) => {
+            const opData = {
+                requester,
+                name: group,
+                member,
+                member_type,
+                json_metadata: '{}',
+                extensions: [],
+            }
+
+            const plugin = 'private_message'
+            const json = JSON.stringify(['private_group_member', opData])
+
+            dispatch(transaction.actions.broadcastOperation({
+                type: 'custom_json',
+                operation: {
+                    id: plugin,
+                    required_posting_auths: [requester],
+                    json,
+                },
+                username: requester,
+                successCallback: onSuccess,
+                errorCallback: (err, errStr) => {
+                    console.error(err)
+                    if (onError) onError(err, errStr)
+                },
+            }));
+        },
         showGroupMembers({ group }) {
             dispatch(user.actions.showGroupMembers({ group }))
         },

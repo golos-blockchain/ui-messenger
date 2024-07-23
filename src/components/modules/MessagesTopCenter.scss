@@ -55,7 +55,10 @@
         padding-right: 0.75rem;
         .button {
             margin-right: 0px !important;
-            margin-bottom: 0.55rem;
+            &.margin {
+                margin-right: 7px !important;
+            }
+            margin-bottom: 0.75rem;
         }
         .DropdownMenu {
             margin-left: 0.25rem;
