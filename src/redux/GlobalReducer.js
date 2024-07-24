@@ -346,5 +346,49 @@ export default createModule({
                 return new_state
             },
         },
+        {
+            action: 'UPDATE_MEMBER_LIST',
+            reducer: (state, { payload: { member_list } }) => {
+                let new_state = state
+                const updater = (gro) => {
+                    const mMap = {}
+                    for (const mem of member_list) {
+                        const { account } = mem
+                        mMap[account] = { ...mMap[account], ...mem }
+                    }
+                    if (!gro.has('member_list')) {
+                        gro = gro.set('member_list', List())
+                    }
+                    gro = gro.update('member_list', List(), data => {
+                        let newList = List()
+                        data.forEach((mem, i) => {
+                            const acc = mem.get('account')
+                            if (mMap[acc]) {
+                                if (mMap[acc].member_type !== 'retired') {
+                                    const newMem = mem.mergeDeep(fromJS(mMap[acc]))
+                                    newList = newList.push(newMem)
+                                }
+                                delete mMap[acc]
+                            } else {
+                                newList = newList.push(mem)
+                            }
+                        })
+                        const addVals = Object.values(mMap)
+                        for (const av of addVals) {
+                            if (av.member_type !== 'retired') {
+                                newList = newList.push(fromJS(av))
+                            }
+                        }
+                        return newList
+                    })
+                    return gro
+                }
+                new_state = new_state.update('the_group', Map(), gro => {
+                    gro = updater(gro)
+                    return gro
+                })
+                return new_state
+            },
+        },
     ],
 })

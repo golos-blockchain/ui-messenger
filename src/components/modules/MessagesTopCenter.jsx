@@ -7,11 +7,13 @@ import { LinkWithDropdown } from 'react-foundation-components/lib/global/dropdow
 import tt from 'counterpart'
 import cn from 'classnames'
 
+import DialogManager from 'app/components/elements/common/DialogManager'
 import { showLoginDialog } from 'app/components/dialogs/LoginDialog'
 import DropdownMenu from 'app/components/elements/DropdownMenu'
 import ExtLink from 'app/components/elements/ExtLink'
 import Icon from 'app/components/elements/Icon'
 import TimeAgoWrapper from 'app/components/elements/TimeAgoWrapper'
+import g from 'app/redux/GlobalReducer'
 import transaction from 'app/redux/TransactionReducer'
 import user from 'app/redux/UserReducer'
 import { getMemberType, getGroupLogo, getGroupMeta, getGroupTitle, } from 'app/utils/groups'
@@ -96,10 +98,7 @@ class MessagesTopCenter extends React.Component {
         } else {
             groupType = tt('msgs_group_dropdown.private')
         }
-        const lock = <Icon size='0_5x'
-            title={is_encrypted ? tt('msgs_group_dropdown.encrypted') : tt('msgs_group_dropdown.not_encrypted')}
-            name={is_encrypted ? 'ionicons/lock-closed-outline' : 'ionicons/lock-open-outline'} />
-        groupType = <div className='group-type'>{groupType}&nbsp;{lock}</div>
+        groupType = <div className='group-type'>{groupType}</div>
 
         let myStatus = null
         let btnType
@@ -135,12 +134,47 @@ class MessagesTopCenter extends React.Component {
 
         let btn
         if (btnType) {
-            const onBtnClick = (e) => {
+            const onBtnClick = async (e) => {
                 e.preventDefault()
+                this.openDropdown(e)
+
+                if (btnType === 'retire') {
+                    const res = await DialogManager.dangerConfirm(<div>
+                        {tt('msgs_group_dropdown.are_you_sure_retire') + ' ' + title + '?'}</div>,
+                        'GOLOS Messenger')
+                    if (!res) return
+                }
+
+                const member_type = btnType === 'join' ? 'pending' : 'retired'
+                this.props.groupMember({
+                    requester: username, group: name,
+                    member: username,
+                    member_type,
+                    onSuccess: () => {
+                        let ml = []
+                        if (btnType === 'join') {
+                            ml.push({
+                                account: username,
+                                member_type: 'pending'
+                            })
+                        } else {
+                            ml = member_list.map(mem => {
+                                if (mem.account === username) {
+                                    mem.member_type = member_type
+                                }
+                                return mem
+                            })
+                        }
+                        this.props.updateMemberList(ml)
+                    },
+                    onError: (err, errStr) => {
+                        alert(errStr)
+                    }
+                })
             }
 
             if (btnType === 'join') {
-                btn = <button onClick={onBtnClick} className='button small margin'>
+                btn = <button onClick={onBtnClick} className='button small margin float-right'>
                     {tt('msgs_group_dropdown.join')}
                 </button>
             } else {
@@ -159,12 +193,16 @@ class MessagesTopCenter extends React.Component {
             { link: '#', value: tt('g.delete'), onClick: e => this.deleteGroup(e, title) },
         ]
 
+        const lock = <Icon size='0_5x'
+            title={is_encrypted ? tt('msgs_group_dropdown.encrypted') : tt('msgs_group_dropdown.not_encrypted')}
+            name={is_encrypted ? 'ionicons/lock-closed-outline' : 'ionicons/lock-open-outline'} />
+
         return <div className='msgs-group-dropdown' onClick={e => {
             e.stopPropagation()
         }}>
             <img className='logo' src={logo} />
             <div className='title'>
-                <b>{title}</b>
+                <b>{title}</b>&nbsp;{lock}
             </div>
             {groupType}
             {myStatus}
@@ -328,6 +366,9 @@ export default withRouter(connect(
         },
         showGroupSettings({ group }) {
             dispatch(user.actions.showGroupSettings({ group }))
+        },
+        updateMemberList(member_list) {
+            dispatch(g.actions.updateMemberList({ member_list }))
         },
         deleteGroup: ({ owner, name, password,
         onSuccess, onError }) => {
