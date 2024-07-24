@@ -16,7 +16,7 @@
     "connected-react-router": "^6.9.2",
     "counterpart": "^0.18.6",
     "emoji-picker-element": "^1.10.1",
-    "formik": "https://gitpkg.now.sh/golos-blockchain/formik/packages/formik?3b21166c33ade760d562091e1fa0b71d172a7aaf",
+    "formik": "./git-deps/formik/packages/formik",
     "git-rev-sync": "^3.0.2",
     "golos-lib-js": "^0.9.69",
     "history": "4.10.1",
@@ -33,7 +33,7 @@
     "react-dom": "^17.0.2",
     "react-dom-confetti": "^0.2.0",
     "react-dropzone": "^14.2.3",
-    "react-foundation-components": "git+https://github.com/golos-blockchain/react-foundation-components.git#45bcb22dd3e078a515a9f7dfb33f834b31f83a43",
+    "react-foundation-components": "./git-deps/react-foundation-components",
     "react-intl": "^5.24.6",
     "react-notification": "^6.8.5",
     "react-redux": "^7.2.6",
@@ -66,7 +66,12 @@
     "react-app-rewired": "^2.1.11",
     "react-scripts": "^5.0.0"
   },
+  "gitDependencies": {
+    "formik": "https://github.com/golos-blockchain/formik/tree/master/packages/formik#3b21166c33ade760d562091e1fa0b71d172a7aaf",
+    "react-foundation-components": "https://github.com/golos-blockchain/react-foundation-components#45bcb22dd3e078a515a9f7dfb33f834b31f83a43"
+  },
   "scripts": {
+    "preinstall": "node git-install.js",
     "cordova": "cordova",
     "dev": "react-app-rewired start",
     "dev:server": "nodemon server",
