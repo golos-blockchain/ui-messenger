@@ -1,11 +1,5 @@
 import { proxifyImageUrlWithStrip } from 'app/utils/ProxifyUrl'
 
-const getMemberType = (member_list, username) => {
-    const mem = member_list.find(pgm => pgm.account === username)
-    const { member_type } = (mem || {})
-    return member_type
-}
-
 const getGroupMeta = (json_metadata) => {
     let meta
     if (json_metadata) {
@@ -37,9 +31,30 @@ const getGroupLogo = (json_metadata) => {
     return logo
 }
 
+const getMemberType = (member_list, username) => {
+    const mem = member_list.find(pgm => pgm.account === username)
+    const { member_type } = (mem || {})
+    return member_type
+}
+
+const getRoleInGroup = (group, username) => {
+    if (group.toJS) group = group.toJS()
+    const { owner, member_list } = group
+    const memberType = member_list && getMemberType(member_list, username)
+
+    const amOwner = owner === username
+    const amModer = amOwner || memberType === 'moder'
+    const amPending = memberType === 'pending'
+    const amMember = memberType === 'member'
+    const amBanned = memberType === 'banned'
+
+    return { amOwner, amModer, amPending, amMember, amBanned }
+}
+
 export {
-    getMemberType,
     getGroupMeta,
     getGroupTitle,
     getGroupLogo,
+    getMemberType,
+    getRoleInGroup,
 }

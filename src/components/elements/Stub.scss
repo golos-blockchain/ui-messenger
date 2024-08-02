@@ -1,0 +1,14 @@
+.compose-stub {
+    height: 60px !important;
+    padding-top: 0.75rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    padding-bottom: 0.5rem;
+
+    .stub-btn {
+        white-space: nowrap;
+        &.alert {
+            color: red;
+        }
+    }
+}

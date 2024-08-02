@@ -29,6 +29,21 @@ class MessagesTopCenter extends React.Component {
 
     openDropdown = (e) => {
         e.preventDefault()
+        let isInside = false
+        let node = e.target
+        while (node.parentNode) {
+            if (node.className.includes('msgs-group-dropdown')) {
+                isInside = true
+                return
+            }
+            node = node.parentNode
+        }
+        if (isInside) return
+        this.dropdown.current.click()
+    }
+
+    closeDropdown = (e) => {
+        e.preventDefault()
         this.dropdown.current.click()
     }
 
@@ -36,7 +51,8 @@ class MessagesTopCenter extends React.Component {
         e.preventDefault()
         const { the_group } = this.props
         if (!the_group) return
-        this.props.showGroupMembers({ group: the_group })
+        const { name } = the_group
+        this.props.showGroupMembers({ group: name })
     }
 
     editGroup = (e) => {
@@ -136,36 +152,32 @@ class MessagesTopCenter extends React.Component {
         if (btnType) {
             const onBtnClick = async (e) => {
                 e.preventDefault()
-                this.openDropdown(e)
 
                 if (btnType === 'retire') {
+                    this.closeDropdown(e)
+
+                    let retireWarning
+                    if (privacy !== 'public_group') {
+                        retireWarning = <span><br/>{tt('msgs_group_dropdown.joining_back_will_require_approval')}</span>
+                    }
+
                     const res = await DialogManager.dangerConfirm(<div>
-                        {tt('msgs_group_dropdown.are_you_sure_retire') + ' ' + title + '?'}</div>,
+                        {tt('msgs_group_dropdown.are_you_sure_retire') + ' ' + title + '?'}{retireWarning}</div>,
                         'GOLOS Messenger')
                     if (!res) return
+                } else {
+                    setTimeout(() => {
+                        this.closeDropdown(e)
+                    }, 500)
                 }
 
-                const member_type = btnType === 'join' ? 'pending' : 'retired'
+                const groupPublic = privacy === 'public_group'
+                const member_type = btnType === 'join' ? (groupPublic ? 'member' : 'pending') : 'retired'
                 this.props.groupMember({
                     requester: username, group: name,
                     member: username,
                     member_type,
                     onSuccess: () => {
-                        let ml = []
-                        if (btnType === 'join') {
-                            ml.push({
-                                account: username,
-                                member_type: 'pending'
-                            })
-                        } else {
-                            ml = member_list.map(mem => {
-                                if (mem.account === username) {
-                                    mem.member_type = member_type
-                                }
-                                return mem
-                            })
-                        }
-                        this.props.updateMemberList(ml)
                     },
                     onError: (err, errStr) => {
                         alert(errStr)
@@ -197,9 +209,7 @@ class MessagesTopCenter extends React.Component {
             title={is_encrypted ? tt('msgs_group_dropdown.encrypted') : tt('msgs_group_dropdown.not_encrypted')}
             name={is_encrypted ? 'ionicons/lock-closed-outline' : 'ionicons/lock-open-outline'} />
 
-        return <div className='msgs-group-dropdown' onClick={e => {
-            e.stopPropagation()
-        }}>
+        return <div className='msgs-group-dropdown'>
             <img className='logo' src={logo} />
             <div className='title'>
                 <b>{title}</b>&nbsp;{lock}
@@ -211,7 +221,7 @@ class MessagesTopCenter extends React.Component {
                     <Icon name='new/more' size='0_95x' />
                 </DropdownMenu> : null}
                 <button className='button small hollow float-right' onClick={e => {
-                    this.openDropdown(e) // hides
+                    this.closeDropdown(e)
                     this.showGroupMembers(e)
                 }}>{tt('my_groups_jsx.members') + ' (' + totalMembers + ')'}</button>
                 {btn}
@@ -362,13 +372,10 @@ export default withRouter(connect(
             }));
         },
         showGroupMembers({ group }) {
-            dispatch(user.actions.showGroupMembers({ group }))
+            dispatch(user.actions.showGroupMembers({ group: ['the_group', group] }))
         },
         showGroupSettings({ group }) {
             dispatch(user.actions.showGroupSettings({ group }))
-        },
-        updateMemberList(member_list) {
-            dispatch(g.actions.updateMemberList({ member_list }))
         },
         deleteGroup: ({ owner, name, password,
         onSuccess, onError }) => {

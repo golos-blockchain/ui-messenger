@@ -18,7 +18,7 @@ import DialogManager from 'app/components/elements/common/DialogManager'
 import AddImageDialog from 'app/components/dialogs/AddImageDialog'
 import ChatError from 'app/components/elements/messages/ChatError'
 import PageFocus from 'app/components/elements/messages/PageFocus'
-import TimeAgoWrapper from 'app/components/elements/TimeAgoWrapper'
+import { renderStubs } from 'app/components/elements/Stub'
 import Userpic from 'app/components/elements/Userpic'
 import VerticalMenu from 'app/components/elements/VerticalMenu'
 import Messenger from 'app/components/modules/messages/Messenger'
@@ -843,7 +843,7 @@ class Messages extends React.Component {
             </LinkWithDropdown>);
     };
 
-    _renderMessages = ({ }) => {
+    _renderMessages = (messagesStub, { }) => {
         const { to, the_group, accounts } = this.props
 
         if (to) {
@@ -853,6 +853,10 @@ class Messages extends React.Component {
             } else if (!isGroup && !accounts[this.getToAcc()]) {
                 return <ChatError isGroup={isGroup} />
             }
+        }
+
+        if (messagesStub && messagesStub.ui) {
+            return messagesStub.ui
         }
 
         return false
@@ -932,6 +936,9 @@ class Messages extends React.Component {
             </div>);
         const toAcc = this.getToAcc()
 
+        const { username, the_group } = this.props
+        const { composeStub, msgsStub } = renderStubs(the_group, to, username)
+
         return (
             <div>
                 {bbc}
@@ -954,7 +961,7 @@ class Messages extends React.Component {
                     messagesTopLeft={this._renderMessagesTopLeft()}
                     messagesTopCenter={this._renderMessagesTopCenter}
                     messagesTopRight={this._renderMessagesTopRight}
-                    renderMessages={this._renderMessages}
+                    renderMessages={(...args) => this._renderMessages(msgsStub, ...args)}
                     replyingMessage={this.state.replyingMessage}
                     onCancelReply={this.onCancelReply}
                     onSendMessage={this.onSendMessage}
@@ -968,6 +975,7 @@ class Messages extends React.Component {
                     onImagePasted={this.onImagePasted}
                     onImageDropped={this.onImageDropped}
                     composeRef={this.composeRef}
+                    composeStub={composeStub}
                 />) : null}
             </div>
         )

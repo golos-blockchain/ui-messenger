@@ -1,0 +1,125 @@
+import React from 'react'
+import { connect } from 'react-redux'
+import tt from 'counterpart'
+
+import transaction from 'app/redux/TransactionReducer'
+import { getRoleInGroup } from 'app/utils/groups'
+
+class StubInner extends React.Component {
+    onBtnClick = (e) => {
+        e.preventDefault()
+        const { username, group, pending } = this.props
+        this.props.groupMember({
+            requester: username, group: group.name,
+            member: username,
+            member_type: pending ? 'retired' : 'pending',
+            onSuccess: () => {
+            },
+            onError: (err, errStr) => {
+                alert(errStr)
+            }
+        })
+    }
+
+    render() {
+        const { type, banned, notMember, pending } = this.props
+
+        const isCompose = type === 'compose'
+
+        let text, btn
+        if (banned) {
+            text = tt('stub_jsx.banned')
+        } else if (pending) {
+            text = tt('stub_jsx.pending')
+            text += ' '
+            btn = <a href='#' className='stub-btn alert' onClick={this.onBtnClick}>{tt('msgs_group_dropdown.cancel')}</a>
+        } else if (notMember) {
+            text = isCompose ? tt('stub_jsx.read_only') : tt('stub_jsx.private_group')
+            text += ' '
+            btn = <a href='#' className='stub-btn' onClick={this.onBtnClick}>{tt('stub_jsx.join')}</a>
+        }
+
+        if (isCompose) {
+            return <div className='msgs-compose-input compose-stub'>
+                {text}{btn}
+            </div>
+        } else {
+            return <div className='msgs-stub'>
+                {text}{btn}
+            </div>
+        }
+    }
+}
+
+const Stub = connect(
+    (state, ownProps) => {
+        const currentUser = state.user.get('current')
+
+        const username = state.user.getIn(['current', 'username'])
+
+        let the_group = state.global.get('the_group')
+        if (the_group && the_group.toJS) the_group = the_group.toJS()
+
+        return {
+            the_group,
+            username,
+        }
+    },
+    dispatch => ({
+        groupMember: ({ requester, group, member, member_type,
+        onSuccess, onError }) => {
+            const opData = {
+                requester,
+                name: group,
+                member,
+                member_type,
+                json_metadata: '{}',
+                extensions: [],
+            }
+
+            const plugin = 'private_message'
+            const json = JSON.stringify(['private_group_member', opData])
+
+            dispatch(transaction.actions.broadcastOperation({
+                type: 'custom_json',
+                operation: {
+                    id: plugin,
+                    required_posting_auths: [requester],
+                    json,
+                },
+                username: requester,
+                successCallback: onSuccess,
+                errorCallback: (err, errStr) => {
+                    console.error(err)
+                    if (onError) onError(err, errStr)
+                },
+            }));
+        },
+    }),
+)(StubInner)
+
+export default Stub
+
+export const renderStubs = (the_group, to, username) => {
+    let composeStub, msgsStub
+    if (!the_group || the_group.name !== to) {
+        return { composeStub, msgsStub}
+    }
+
+    const { privacy } = the_group
+    if (privacy !== 'public_group') {
+        const { amBanned, amMember, amModer, amPending } = getRoleInGroup(the_group, username)
+        const notMember = !amModer && !amMember
+        if (amBanned || notMember) {
+            composeStub = { ui: <Stub type='compose' banned={amBanned} notMember={notMember}
+                pending={amPending} group={the_group} /> }
+            if (privacy === 'private_group') {
+                composeStub = { disabled: true }
+                msgsStub = { ui: <Stub type='messages' banned={amBanned} notMember={notMember}
+                    pending={amPending} group={the_group} /> }
+            }
+        }
+    }
+
+    return { composeStub, msgsStub}
+}

@@ -167,7 +167,7 @@ export function* watchFetchGroupMembers() {
     yield takeLatest('global/FETCH_GROUP_MEMBERS', fetchGroupMembers)
 }
 
-export function* fetchGroupMembers({ payload: { group, creatingNew } }) {
+export function* fetchGroupMembers({ payload: { group, creatingNew, memberTypes, sortConditions } }) {
     try {
         if (creatingNew) {
             yield put(g.actions.receiveGroupMembers({ group, members: [], append: true }))
@@ -178,7 +178,8 @@ export function* fetchGroupMembers({ payload: { group, creatingNew } }) {
 
         const members = yield call([api, api.getGroupMembersAsync], {
             group,
-            member_types: ['pending', 'member', 'moder'/*, 'banned'*/],
+            member_types: memberTypes,
+            sort_conditions: sortConditions,
             start_member: '',
             limit: 100,
         })

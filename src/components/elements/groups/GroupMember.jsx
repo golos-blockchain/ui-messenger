@@ -5,7 +5,7 @@ import cn from 'classnames'
 import Icon from 'app/components/elements/Icon'
 import TimeAgoWrapper from 'app/components/elements/TimeAgoWrapper'
 import Userpic from 'app/components/elements/Userpic'
-import { getMemberType } from 'app/utils/groups'
+import { getRoleInGroup } from 'app/utils/groups'
 
 class GroupMember extends React.Component {
     // shouldComponentUpdate(nextProps) {
@@ -54,10 +54,13 @@ class GroupMember extends React.Component {
     render() {
         const { member, username, currentGroup } = this.props
         const { account, member_type, joined } = member
-        const { creatingNew, member_list } = currentGroup
+        const { creatingNew, } = currentGroup
 
-        const amOwner = currentGroup.owner === username
-        const amModer = amOwner || (member_list && getMemberType(member_list, username) === 'moder')
+        let { amOwner, amModer } = getRoleInGroup(currentGroup, username)
+        if (creatingNew) {
+            amOwner = true
+            amModer = true
+        }
 
         const isMe = username === account
         const isOwner = currentGroup.owner === account
@@ -86,7 +89,7 @@ class GroupMember extends React.Component {
             if ((!isMe || isBanned) && amModer) {
                 banBtn = <Icon className={cn('member-btn ban', { selected: isBanned })}
                     title={banTitle} name='ionicons/ban' size='1_25x'
-                    onClick={e => this.groupMember(e, member, 'banned')} />
+                    onClick={e => this.groupMember(e, member, isBanned ? 'member' : 'banned')} />
             }
         } else {
             deleteBtn = <Icon className={'member-btn delete'} title={tt('g.delete')} name='cross' size='1x'
@@ -112,7 +115,7 @@ class GroupMember extends React.Component {
                 {(amOwner || isMember) && <Icon className={cn('member-btn member', { selected: isMember })}
                     title={memberTitle} 
                     name='ionicons/person' size='1_5x' onClick={e => this.groupMember(e, member, 'member')} />}
-                {(amOwner || isModer) && <Icon className={cn('member-btn moder', { selected: isModer })}
+                {(amOwner|| isModer) && <Icon className={cn('member-btn moder', { selected: isModer })}
                     title={moderTitle}
                     name='ionicons/person-add' size='1_5x' onClick={e => this.groupMember(e, member, 'moder')} />}
                 {banBtn}

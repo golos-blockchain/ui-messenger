@@ -23,43 +23,10 @@ function* accepted_custom_json({operation}) {
     const json = JSON.parse(operation.json)
     if (operation.id === 'private_message') {
         if (json[0] === 'private_group') {
-            yield put(g.actions.update({
-                key: ['my_groups'],
-                notSet: List(),
-                updater: groups => {
-                    const idx = groups.findIndex(i => i.get('name') === json[1].name)
-                    if (idx === -1) {
-                        const now =  new Date().toISOString().split('.')[0]
-                        groups = groups.insert(0, fromJS({
-                            owner: json[1].creator,
-                            name: json[1].name,
-                            json_metadata: json[1].json_metadata,
-                            is_encrypted: json[1].is_encrypted,
-                            privacy: json[1].privacy,
-                            created: now,
-                            admins: 0,
-                            moders: 0,
-                            members: 0,
-                            pendings: 0,
-                            member_list: [{
-                                account: json[1].creator,
-                                group: json[1].name,
-                                invited: json[1].creator,
-                                joined: now,
-                                json_metadata: '{}',
-                                member_type: 'admin',
-                                updated: now
-                            }]
-                        }))
-                    } else {
-                        groups = groups.update(idx, g => {
-                            g = g.set('json_metadata', json[1].json_metadata);
-                            return g;
-                        });
-                    }
-                    return groups
-                }
-            }))
+            yield put(g.actions.upsertGroup(json[1]))
+        } else if (json[0] === 'private_group_member') {
+            const { name, member, member_type } = json[1]
+            yield put(g.actions.updateGroupMember({ group: name, member, member_type, }))
         }
     }
     return operation

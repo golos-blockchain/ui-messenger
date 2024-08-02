@@ -104,6 +104,22 @@
     "blocked_BY": "You are blocked by @%(BY)s.",
     "do_not_bother_BY": "@%(BY)s wants to not be bothered by low-reputation users."
   },
+  "msgs_group_dropdown": {
+    "join": "Join",
+    "retire": "Retire",
+    "cancel": "Cancel",
+    "public": "Public group",
+    "read_only": "Public only as read-only",
+    "private": "Private group",
+    "encrypted": "Messages are encrypted",
+    "not_encrypted": "Messages are not encrypted",
+    "banned": "You are banned.",
+    "pending": "You requested membership.",
+    "moder": "You are moderator.",
+    "owner": "You are owner.",
+    "are_you_sure_retire": "Are you sure you want to retire from ",
+    "joining_back_will_require_approval": "Joining it back will require approval."
+  },
   "msgs_start_panel": {
     "start_chat": "Start chat",
     "create_group": "Create group"
@@ -163,9 +179,11 @@
   "group_members_jsx": {
     "title": "Members Of ",
     "title2": " Group",
-    "check_pending": "Join Requests",
+    "check_pending": "Requests",
     "check_pending_hint": "Pending Group Join Requests",
     "check_banned": "Blocked",
+    "all": "All",
+    "moders": "Moderators",
     "member": "Member",
     "moder": "Moderator",
     "owner": "Group Owner",
@@ -214,6 +232,13 @@
       "symbols": "Символы и знаки",
       "flags": "Флаги"
     }
+  },
+  "stub_jsx": {
+    "read_only": "Only members can post messages in this group.",
+    "private_group": "This group is private. To read and write messages, you should be a member.",
+    "pending": "You issued request to join group.",
+    "banned": "You banned in this group.",
+    "join": "Make Request"
   },
   "user_saga_js": {
     "image_upload": {
@@ -276,6 +301,13 @@
     "alert": "Alert",
     "confirm": "Confirmation",
     "prompt": "Enter the data"
+  },
+  "plurals": {
+    "member_count": {
+      "zero": "0 members",
+      "one": "1 member",
+      "other": "%(count)s members"
+    }
   },
   "g": {
     "and": "and",

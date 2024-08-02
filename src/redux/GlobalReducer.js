@@ -4,6 +4,31 @@ import { Asset } from 'golos-lib-js/lib/utils'
 
 import { processDatedGroup } from 'app/utils/MessageUtils'
 
+const updateInMyGroups = (state, group, groupUpdater, groupsUpserter = mg => mg) => {
+    state = state.update('my_groups', null, mg => {
+        if (!mg) return mg
+        const i = mg.findIndex(gro => gro.get('name') === group)
+        if (i === -1) return groupsUpserter(mg)
+        mg = mg.update(i, (gro) => {
+            if (!gro) return
+
+            return groupUpdater(gro)
+        })
+        return mg
+    })
+    return state
+}
+
+const updateTheGroup = (state, group, groupUpdater) => {
+    state = state.update('the_group', null, (gro) => {
+        if (!gro) return
+        if (gro.get('name') !== group) return gro
+
+        return groupUpdater(gro)
+    })
+    return state
+}
+
 export default createModule({
     name: 'global',
     initialState: new Map({
@@ -309,10 +334,44 @@ export default createModule({
             },
         },
         {
+            action: 'UPSERT_GROUP',
+            reducer: (state, { payload }) => {
+                const { creator, name, is_encrypted, privacy, json_metadata } = payload
+                let new_state = state
+                const groupUpdater = gro => {
+                    gro = gro.set('json_metadata', json_metadata)
+                    gro = gro.set('privacy', privacy)
+                    return gro
+                }
+                const groupsUpserter = myGroups => {
+                    const now =  new Date().toISOString().split('.')[0]
+                    myGroups = myGroups.insert(0, fromJS({
+                        owner: creator,
+                        name,
+                        json_metadata,
+                        is_encrypted,
+                        privacy,
+                        created: now,
+                        admins: 0,
+                        moders: 0,
+                        members: 0,
+                        pendings: 0,
+                        banneds: 0,
+                        member_list: []
+                    }))
+                    return myGroups
+                }
+                new_state = updateInMyGroups(new_state, name, groupUpdater, groupsUpserter)
+                new_state = updateTheGroup(new_state, name, groupUpdater)
+                return new_state
+            }
+        },
+        {
             action: 'UPDATE_GROUP_MEMBER',
             reducer: (state, { payload: { group, member, member_type } }) => {
                 const now = new Date().toISOString().split('.')[0]
                 let new_state = state
+                let oldType
                 new_state = state.updateIn(['groups', group],
                 Map(),
                 gro => {
@@ -320,6 +379,7 @@ export default createModule({
                         const retiring = member_type === 'retired'
                         const idx = mems.findIndex(i => i.get('account') === member)
                         if (idx !== -1) {
+                            oldType = mems.get(idx).get('member_type')
                             if (retiring) {
                                 mems = mems.remove(idx)
                             } else {
@@ -343,50 +403,52 @@ export default createModule({
                     })
                     return gro
                 })
-                return new_state
-            },
-        },
-        {
-            action: 'UPDATE_MEMBER_LIST',
-            reducer: (state, { payload: { member_list } }) => {
-                let new_state = state
-                const updater = (gro) => {
-                    const mMap = {}
-                    for (const mem of member_list) {
-                        const { account } = mem
-                        mMap[account] = { ...mMap[account], ...mem }
-                    }
+                const groupUpdater = gro => {
                     if (!gro.has('member_list')) {
                         gro = gro.set('member_list', List())
                     }
                     gro = gro.update('member_list', List(), data => {
                         let newList = List()
+                        let found
                         data.forEach((mem, i) => {
-                            const acc = mem.get('account')
-                            if (mMap[acc]) {
-                                if (mMap[acc].member_type !== 'retired') {
-                                    const newMem = mem.mergeDeep(fromJS(mMap[acc]))
+                            if (mem.get('account') === member) {
+                                found = true
+                                if (!oldType) oldType = mem.get('member_type')
+                                if (member_type !== 'retired') {
+                                    const newMem = mem.set('member_type', member_type)
                                     newList = newList.push(newMem)
                                 }
-                                delete mMap[acc]
                             } else {
                                 newList = newList.push(mem)
                             }
                         })
-                        const addVals = Object.values(mMap)
-                        for (const av of addVals) {
-                            if (av.member_type !== 'retired') {
-                                newList = newList.push(fromJS(av))
-                            }
+                        if (!found) {
+                            newList = newList.push(fromJS({
+                                account: member,
+                                member_type,
+                            }))
                         }
                         return newList
                     })
+
+                    const updateByType = (t, updater) => {
+                        if (t === 'member') {
+                            gro = gro.update('members', updater)
+                        } else if (t === 'moder') {
+                            gro = gro.update('moders', updater)
+                        } else if (t === 'pending') {
+                            gro = gro.update('pendings', updater)
+                        } else if (t === 'banned') {
+                            gro = gro.update('banneds', updater)
+                        }
+                    }
+                    updateByType(oldType, n => --n)
+                    updateByType(member_type, n => ++n)
+
                     return gro
                 }
-                new_state = new_state.update('the_group', Map(), gro => {
-                    gro = updater(gro)
-                    return gro
-                })
+                new_state = updateInMyGroups(new_state, group, groupUpdater)
+                new_state = updateTheGroup(new_state, group, groupUpdater)
                 return new_state
             },
         },

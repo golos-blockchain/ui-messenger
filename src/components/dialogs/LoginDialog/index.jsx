@@ -10,8 +10,6 @@ import keyCodes from 'app/utils/keyCodes';
 import { pageSession } from 'app/redux/UserSaga'
 
 export function showLoginDialog(username, onClose, authType = 'active', saveLogin = false, hint = '') {
-    let dm, oldZ = ''
-
     DialogManager.showDialog({
         component: LoginDialog,
         adaptive: true,
@@ -21,16 +19,9 @@ export function showLoginDialog(username, onClose, authType = 'active', saveLogi
             hint,
         },
         onClose: (data) => {
-            if (dm) dm.style.zIndex = oldZ
             if (onClose) onClose(data)
         },
     });
-
-    setTimeout(() => {
-        dm = document.getElementsByClassName('DialogManager')[0]
-        oldZ = dm ? dm.style.zIndex : ''
-        if (dm) dm.style.zIndex = 1000
-    }, 1)
 }
 
 export default class LoginDialog extends React.PureComponent {

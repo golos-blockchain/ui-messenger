@@ -1,5 +1,6 @@
 import React from 'react';
 import tt from 'counterpart';
+import cn from 'classnames'
 import { Picker } from 'emoji-picker-element';
 import TextareaAutosize from 'react-textarea-autosize';
 
@@ -64,6 +65,10 @@ export default class Compose extends React.Component {
 
     onEmojiClick = (event) => {
         event.stopPropagation();
+
+        const { stub } = this.props
+        if (stub) return
+
         this._tooltip.classList.toggle('shown');
         if (!this._tooltip.classList.contains('shown')) {
             const input = document.getElementsByClassName('msgs-compose-input')[0];
@@ -100,6 +105,7 @@ export default class Compose extends React.Component {
 
     onEmojiSelect = (event) => {
         event.stopPropagation();
+
         this._tooltip.classList.toggle('shown');
 
         const input = document.getElementsByClassName('msgs-compose-input')[0];
@@ -200,7 +206,7 @@ export default class Compose extends React.Component {
     }
 
     render() {
-        const { account, rightItems, replyingMessage } = this.props
+        const { account, rightItems, replyingMessage, stub } = this.props
         const { onPanelDeleteClick, onPanelReplyClick, onPanelEditClick, onPanelCloseClick, onCancelReply } = this;
 
         const selectedMessages = Object.entries(this.props.selectedMessages);
@@ -224,9 +230,11 @@ export default class Compose extends React.Component {
                 </div>);
         }
 
-        const sendButton = selectedMessagesCount ? null :
-            (<button className='button small msgs-compose-send' title={tt('g.submit')}
-                    onClick={this.onSendClick}
+        const sendButton = (selectedMessagesCount && !stub) ? null :
+            (<button className={cn('button small msgs-compose-send', {
+                disabled: !!stub
+            })} title={tt('g.submit')}
+                    onClick={stub ? null : this.onSendClick}
                 >
                 <Icon name='new/envelope' size='1_25x' />
             </button>);
@@ -234,13 +242,14 @@ export default class Compose extends React.Component {
         return (
             <div className='msgs-compose'>
                 {
-                    !selectedMessagesCount ? rightItems : null
+                    (!selectedMessagesCount || stub) ? rightItems : null
                 }
 
-                {!selectedMessagesCount ? (<div className='msgs-compose-input-panel'>
-                    {quote}
-                    <TextareaAutosize
+                {(!selectedMessagesCount || stub) ? (<div className='msgs-compose-input-panel'>
+                    {stub ? null : quote}
+                    {(stub && stub.ui) ? stub.ui : <TextareaAutosize
                         className='msgs-compose-input'
+                        disabled={stub && stub.disabled}
                         placeholder={tt('messages.type_a_message')}
                         onKeyDown={this.onKeyDown}
                         onPaste={this.onPaste}
@@ -248,12 +257,12 @@ export default class Compose extends React.Component {
                         maxRows={14}
                         onHeightChange={this.onHeightChange}
                         onChange={e => this.onChange(e.target.value)}
-                    />
+                    />}
                 </div>) : null}
 
                 {sendButton}
 
-                {selectedMessagesCount ? (<div className='msgs-compose-panel'>
+                {(selectedMessagesCount && !stub) ? (<div className='msgs-compose-panel'>
                     {(selectedMessagesCount === 1) ? (<button className='button small' onClick={onPanelReplyClick}>
                         <Icon name='reply' />
                         <span>{tt('g.reply')}</span>
