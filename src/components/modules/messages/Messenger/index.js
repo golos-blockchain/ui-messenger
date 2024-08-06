@@ -54,6 +54,7 @@ export default class Messages extends React.Component {
             <Dropzone
                 className='messenger-dropzone'
                 noClick
+                noKeyboard
                 multiple={false}
                 accept='image/*'
                 disabled={!to}

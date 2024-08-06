@@ -45,7 +45,9 @@ class StubInner extends React.Component {
             </div>
         } else {
             return <div className='msgs-stub'>
-                {text}{btn}
+                <center>
+                    {text}{btn}
+                </center>
             </div>
         }
     }
@@ -102,7 +104,12 @@ export default Stub
 
 export const renderStubs = (the_group, to, username) => {
     let composeStub, msgsStub
-    if (!the_group || the_group.name !== to) {
+    if (!the_group) {
+        const isGroup = to && !to.startsWith('@')
+        if (isGroup) composeStub = { disabled: true }
+        return { composeStub, msgsStub}
+    }
+    if (the_group.name !== to) {
         return { composeStub, msgsStub}
     }
 
