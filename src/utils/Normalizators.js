@@ -3,6 +3,8 @@ import tt from 'counterpart'
 
 import { getProfileImage } from 'app/utils/NormalizeProfile';
 
+const { decodeMsgs } = golos.messages
+
 function getProfileImageLazy(account, cachedProfileImages) {
     if (!account)
         return getProfileImage(null);
@@ -67,10 +69,14 @@ export function normalizeContacts(contacts, accounts, currentUser, preDecoded, c
     return contactsCopy
 }
 
-export function normalizeMessages(messages, accounts, currentUser, to, preDecoded) {
-    if (to) to = to.replace('@', '')
+export async function normalizeMessages(messages, accounts, currentUser, to, preDecoded) {
+    let isGroup = true
+    if (to) {
+        if (to[0] === '@') isGroup = false
+        to = to.replace('@', '')
+    }
 
-    if (!to || !accounts[to]) {
+    if (!to || (!isGroup && !accounts[to])) {
         return [];
     }
 
@@ -78,13 +84,33 @@ export function normalizeMessages(messages, accounts, currentUser, to, preDecode
 
     let id = 0;
     try {
-        const private_key = currentUser.getIn(['private_keys', 'memo_private']);
-
         let currentAcc = accounts[currentUser.get('username')];
 
         const tt_invalid_message = tt('messages.invalid_message');
 
-        let messagesCopy2 = golos.messages.decode(private_key, accounts[to].memo_key, messagesCopy,
+        if (isGroup) {
+            const decoded = await decodeMsgs({ messages: messagesCopy,
+                for_each: (msg, i) => {
+                    msg.id = ++id;
+                    msg.author = msg.from;
+                    msg.date = new Date(msg.create_date + 'Z');
+                },
+                on_error: (msg, i, err) => {
+                    console.log(err)
+                    msg.message = {body: tt_invalid_message, invalid: true}
+                    msg.id = ++id;
+                    msg.author = msg.from;
+                    msg.date = new Date(msg.create_date + 'Z');
+                },
+                begin_idx: messagesCopy.length - 1,
+                end_idx: -1,
+            })
+            return decoded
+        }
+
+        const privateMemo = currentUser.getIn(['private_keys', 'memo_private']);
+
+        let messagesCopy2 = golos.messages.decode(privateMemo, accounts[to].memo_key, messagesCopy,
             (msg, i, results) => {
                 msg.id = ++id;
                 msg.author = msg.from;

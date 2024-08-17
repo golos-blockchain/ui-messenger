@@ -5,6 +5,7 @@ import { LinkWithDropdown } from 'react-foundation-components/lib/global/dropdow
 import { withRouter } from 'react-router'
 import golos from 'golos-lib-js'
 import { fetchEx } from 'golos-lib-js/lib/utils'
+import { Aes } from 'golos-lib-js/lib/auth/ecc'
 import tt from 'counterpart'
 import debounce from 'lodash/debounce';
 
@@ -61,6 +62,11 @@ class Messages extends React.Component {
         let { to } = this.props
         if (to) to = to.replace('@', '')
         return to
+    }
+
+    getGroupName = () => {
+        const { the_group } = this.props
+        return the_group ? the_group.name : ''
     }
 
     markMessages() {
@@ -272,7 +278,7 @@ class Messages extends React.Component {
         }
     }
 
-    componentDidUpdate(prevProps) {
+    async componentDidUpdate(prevProps) {
         if (this.props.username !== prevProps.username && this.props.username) {
             this.props.fetchState(this.props.to);
             this.setCallback(this.props.username);
@@ -301,10 +307,11 @@ class Messages extends React.Component {
             const newContacts = contacts.size ?
                 normalizeContacts(contacts, accounts, currentUser, this.preDecoded, this.cachedProfileImages) :
                 this.state.contacts
+            const decoded = await normalizeMessages(messages, accounts, currentUser, prevProps.to, this.preDecoded)
             this.setState({
                 to: this.props.to,
                 contacts: newContacts,
-                messages: normalizeMessages(messages, accounts, currentUser, prevProps.to, this.preDecoded),
+                messages: decoded,
                 messagesCount: messages.size,
             }, () => {
                 hideSplash()
@@ -398,7 +405,7 @@ class Messages extends React.Component {
 
     onSendMessage = (message, event) => {
         if (!message.length) return;
-        const { account, accounts, currentUser, messages } = this.props;
+        const { account, accounts, currentUser, messages, the_group } = this.props;
         const to = this.getToAcc()
         const private_key = currentUser.getIn(['private_keys', 'memo_private']);
 
@@ -409,6 +416,7 @@ class Messages extends React.Component {
 
         this.props.sendMessage({
             senderAcc: account, memoKey: private_key, toAcc: accounts[to],
+            group: the_group,
             body: message, editInfo, type: 'text', replyingMessage: this.state.replyingMessage,
             notifyAbort: this.notifyAbort
         })
@@ -607,11 +615,12 @@ class Messages extends React.Component {
             if (!url)
                 return;
 
-            const { account, accounts, currentUser, messages } = this.props;
+            const { account, accounts, the_group, currentUser, messages } = this.props;
             const to = this.getToAcc()
             const private_key = currentUser.getIn(['private_keys', 'memo_private']);
             this.props.sendMessage({
-                senderAcc: account, memoKey: private_key, toAcc: accounts[to],
+                senderAcc: account, memoKey: private_key, toAcc: (!group) && accounts[to],
+                group: the_group,
                 body: url, type: 'image', meta: {width, height}, replyingMessage: this.state.replyingMessage,
                 notifyAbort: this.notifyAbort
             });
@@ -848,10 +857,15 @@ class Messages extends React.Component {
 
         if (to) {
             const isGroup = !to.startsWith('@')
-            if (isGroup && the_group === null) {
-                return <ChatError isGroup={isGroup} />
+            if (isGroup) {
+                const noGroup = the_group === null
+                const groupError = noGroup || (the_group && the_group.error)
+                if (groupError) {
+                    return <ChatError error={noGroup ? 404 : the_group.error}
+                        isGroup={isGroup} />
+                }
             } else if (!isGroup && !accounts[this.getToAcc()]) {
-                return <ChatError isGroup={isGroup} />
+                return <ChatError error={404} isGroup={isGroup} />
             }
         }
 
@@ -955,7 +969,10 @@ class Messages extends React.Component {
                     contacts={this.state.searchContacts || this.state.contacts}
                     conversationTopLeft={this._renderConversationTopLeft}
                     conversationTopRight={this._renderConversationTopRight}
-                    conversationLinkPattern='/@*'
+                    conversationLinkPattern={contact => {
+                        if (contact.kind === 'group') return '/*'
+                        return '/@*'
+                    }}
                     onConversationSearch={this.onConversationSearch}
                     messages={this.state.messages}
                     messagesTopLeft={this._renderMessagesTopLeft()}
@@ -1066,7 +1083,7 @@ export default withRouter(connect(
                 })
             );
         },
-        sendMessage ({ senderAcc, memoKey, toAcc, body, editInfo = undefined, type = 'text', meta = {}, replyingMessage = null, notifyAbort }) {
+        sendMessage: async ({ senderAcc, memoKey, toAcc, group, body, editInfo = undefined, type = 'text', meta = {}, replyingMessage = null, notifyAbort }) => {
             let message = {
                 app: 'golos-messenger',
                 version: 1,
@@ -1084,20 +1101,37 @@ export default withRouter(connect(
                 message = {...message, ...replyingMessage};
             }
 
-            const data = golos.messages.encode(memoKey, toAcc.memo_key, message, editInfo ? editInfo.nonce : undefined);
+            let data
+            if (group) {
+                if (group.is_encrypted) {
+                    alert('enc')
+                }
+                data = await golos.messages.encodeMsg({ group, message })
+                alert(JSON.stringify(data))
+            } else {
+                data = golos.messages.encode(memoKey, toAcc.memo_key, message, editInfo ? editInfo.nonce : undefined);
+            }
+
+            const emptyPubKey = 'GLS1111111111111111111111111111111114T1Anm'
 
             const opData = {
                 from: senderAcc.name,
-                to: toAcc.name,
+                to: toAcc ? toAcc.name : '',
                 nonce: editInfo ? editInfo.nonce : data.nonce,
-                from_memo_key: senderAcc.memo_key,
-                to_memo_key: toAcc.memo_key,
+                from_memo_key: group ? emptyPubKey : senderAcc.memo_key,
+                to_memo_key: group ? emptyPubKey : toAcc.memo_key,
                 checksum: data.checksum,
                 update: editInfo ? true : false,
                 encrypted_message: data.encrypted_message,
             };
 
-            if (!editInfo) {
+            if (group) {
+                opData.extensions = [[0, {
+                    group: group.name
+                }]]
+            }
+
+            if (!editInfo && !group) {
                 sendOffchainMessage(opData).catch(err => {
                     console.error('sendOffchainMessage', err)
                     if (notifyAbort) {

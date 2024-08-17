@@ -1,5 +1,5 @@
 import { call, put, select, fork, cancelled, takeLatest, takeEvery } from 'redux-saga/effects';
-import golos, { api } from 'golos-lib-js'
+import golos, { api, auth } from 'golos-lib-js'
 import tt from 'counterpart'
 
 import g from 'app/redux/GlobalReducer'
@@ -30,6 +30,7 @@ export function* fetchState(location_change_action) {
         const state = {}
         state.nodeError = null
         state.contacts = [];
+        state.the_group = undefined
         state.messages = [];
         state.messages_update = '0';
         state.accounts = {}
@@ -58,7 +59,18 @@ export function* fetchState(location_change_action) {
             if (account) {
                 accounts.add(account);
 
-                state.contacts = yield callSafe(state, [], 'getContactsAsync', [api, api.getContactsAsync], account, 'unknown', 100, 0)
+                const posting = yield select(state => state.user.getIn(['current', 'private_keys', 'posting_private']))
+
+                const con = yield call([auth, 'withNodeLogin'], { account, keys: { posting },
+                    call: async (loginData) => {
+                        return await api.getContactsAsync({
+                            ...loginData,
+                            owner: account, limit: 100,
+                        })
+                    }
+                })
+                alert(JSON.stringify(con))
+                state.contacts = con.contacts
                 if (hasErr) return
 
                 const path = parts[1]
@@ -88,6 +100,32 @@ export function* fetchState(location_change_action) {
                             the_group = null
                         }
                         state.the_group = the_group
+
+                        let query = {
+                            group: path,
+                        }
+                        const getThread = async (loginData) => {
+                            query = {...query, ...loginData}
+                            const th = await api.getThreadAsync(query)
+                            return th
+                        }
+                        let thRes
+                        if (the_group && the_group.is_encrypted) {
+                            thRes = yield call([auth, 'withNodeLogin'], { account, keys: { posting },
+                                call: getThread
+                            })
+                        } else {
+                            thRes = yield call(getThread)
+                        }
+                        if (the_group && thRes.error) {
+                            the_group.error = thRes.error
+                        }
+                        if (thRes.messages) {
+                            state.messages = thRes.messages
+                            if (state.messages.length) {
+                                state.messages_update = state.messages[state.messages.length - 1].nonce;
+                            }
+                        }
                     }
                 }
                 for (let contact of state.contacts) {

@@ -2,6 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import tt from 'counterpart'
 
+import LoadingIndicator from 'app/components/elements/LoadingIndicator'
 import transaction from 'app/redux/TransactionReducer'
 import { getRoleInGroup } from 'app/utils/groups'
 
@@ -22,7 +23,7 @@ class StubInner extends React.Component {
     }
 
     render() {
-        const { type, banned, notMember, pending } = this.props
+        const { type, banned, notMember, pending, loading } = this.props
 
         const isCompose = type === 'compose'
 
@@ -44,6 +45,13 @@ class StubInner extends React.Component {
                 {text}{btn}
             </div>
         } else {
+            if (loading) {
+                return <div className='msgs-stub'>
+                    <center>
+                        <LoadingIndicator type='circle' size='3rem' />
+                    </center>
+                </div>
+            }
             return <div className='msgs-stub'>
                 <center>
                     {text}{btn}
@@ -104,9 +112,14 @@ export default Stub
 
 export const renderStubs = (the_group, to, username) => {
     let composeStub, msgsStub
-    if (!the_group) {
+    if (!the_group || the_group.error) {
         const isGroup = to && !to.startsWith('@')
-        if (isGroup) composeStub = { disabled: true }
+        if (isGroup) {
+            composeStub = { disabled: true }
+            if (the_group !== null) { // if not 404
+                msgsStub = { ui: <Stub type='messages' loading /> }
+            }
+        }
         return { composeStub, msgsStub}
     }
     if (the_group.name !== to) {

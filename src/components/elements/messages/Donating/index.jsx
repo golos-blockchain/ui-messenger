@@ -34,8 +34,8 @@ class Donating extends React.Component {
     onClick = e => {
         const { isMine } = this.props
         if (!isMine) {
-            const { from, to, nonce } = this.props.data
-            this.props.showDonate(from, to, nonce)
+            const { group, from, to, nonce } = this.props.data
+            this.props.showDonate(group || '', from, to, nonce)
         }
     }
 
@@ -72,9 +72,9 @@ export default connect(
         return { ...ownProps }
     },
     dispatch => ({
-        showDonate(from, to, nonce) {
+        showDonate(group, from, to, nonce) {
             dispatch(user.actions.setDonateDefaults({
-                from, to, nonce,
+                group, from, to, nonce,
                 sym: 'GOLOS',
                 precision: 3,
             }))

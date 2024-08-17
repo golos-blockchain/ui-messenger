@@ -34,8 +34,10 @@ export default class ConversationListItem extends React.Component {
     makeLink = () => {
         const { conversationLinkPattern } = this.props;
         if (conversationLinkPattern) {
-            const {  contact } = this.props.data;
-            return conversationLinkPattern.replace('*', contact);
+            const { data } = this.props
+            const { contact } = data
+            const pattern = conversationLinkPattern(data)
+            return pattern.replace('*', contact)
         }
         return null;
     };

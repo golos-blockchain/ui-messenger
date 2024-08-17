@@ -88,13 +88,13 @@ class Donate extends React.Component {
 
     _onSubmit = (values, actions) => {
         const { currentUser, opts, dispatchSubmit } = this.props
-        const { from, to, nonce } = opts
+        const { group, from, to, nonce } = opts
         this.setState({
             activeConfetti: true
         })
         setTimeout(() => {
             dispatchSubmit({
-                message: { from, to, nonce },
+                message: { group, from, to, nonce },
                 amount: values.amount.asset,
                 currentUser,
                 errorCallback: (err) => {
@@ -211,7 +211,7 @@ export default connect(
         dispatchSubmit: ({
             message, amount, currentUser, errorCallback
         }) => {
-            const { from, to, nonce } = message
+            const { group, from, to, nonce } = message
 
             const username = currentUser.get('username')
 
@@ -220,9 +220,9 @@ export default connect(
             }
 
             operation.memo = {
-                app: 'golos-messenger', version: 1, comment: '',
+                app: 'golos-messenger', version: 2, comment: '',
                 target: {
-                    from, to, nonce: nonce.toString()
+                    group, from, to, nonce: nonce.toString()
                 }
             }
 
