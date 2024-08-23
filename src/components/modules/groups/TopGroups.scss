@@ -1,0 +1,30 @@
+.TopGroups {
+    td {
+        @include themify($themes) {
+            color: themed('textColorPrimary');
+        }
+    }
+    .group-title {
+        width: 30%;
+        font-weight: bold;
+        font-size: 110%;
+        vertical-align: middle;
+        padding-right: 0.25rem;
+    }
+    .group-logo {
+        width: 13%;
+        vertical-align: middle;
+    }
+    .group-stats {
+        vertical-align: middle;
+        font-size: 90%;
+    }
+    .group-type {
+        width: 25%;
+        display: inline-block;
+    }
+    .group-privacey {
+        width: 25%;
+        vertical-align: middle;
+    }
+}

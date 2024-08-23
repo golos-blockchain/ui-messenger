@@ -7,6 +7,7 @@ const defaultState = fromJS({
     show_donate_modal: false,
     show_create_group_modal: false,
     show_my_groups_modal: false,
+    show_top_groups_modal: false,
     show_group_settings_modal: false,
     show_group_members_modal: false,
     show_app_download_modal: false,
@@ -140,6 +141,8 @@ export default createModule({
         { action: 'HIDE_CREATE_GROUP', reducer: state => state.set('show_create_group_modal', false) },
         { action: 'SHOW_MY_GROUPS', reducer: state => state.set('show_my_groups_modal', true) },
         { action: 'HIDE_MY_GROUPS', reducer: state => state.set('show_my_groups_modal', false) },
+        { action: 'SHOW_TOP_GROUPS', reducer: state => state.set('show_top_groups_modal', true) },
+        { action: 'HIDE_TOP_GROUPS', reducer: state => state.set('show_top_groups_modal', false) },
         { action: 'SHOW_GROUP_SETTINGS', reducer: (state, { payload: { group }}) => {
             state = state.set('show_group_settings_modal', true)
             state = state.set('current_group', fromJS(group))

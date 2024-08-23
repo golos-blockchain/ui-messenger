@@ -51,7 +51,7 @@ export default class GroupName extends React.Component {
         }
         const { applyFieldValue } = this.props
         applyFieldValue('title', value)
-        let link = getSlug(value)
+        let link = getSlug(value).substring(0, 32)
         applyFieldValue('name', link)
     }
 

@@ -9,6 +9,7 @@ import CreateGroup from 'app/components/modules/CreateGroup'
 import GroupSettings from 'app/components/modules/groups/GroupSettings'
 import GroupMembers from 'app/components/modules/groups/GroupMembers'
 import MyGroups from 'app/components/modules/groups/MyGroups'
+import TopGroups from 'app/components/modules/groups/TopGroups'
 import Donate from 'app/components/modules/Donate'
 import LoginForm from 'app/components/modules/LoginForm';
 import AppDownload from 'app/components/modules/app/AppDownload'
@@ -23,6 +24,7 @@ class Modals extends React.Component {
         show_donate_modal: PropTypes.bool,
         show_create_group_modal: PropTypes.bool,
         show_my_groups_modal: PropTypes.bool,
+        show_top_groups_modal: PropTypes.bool,
         show_group_settings_modal: PropTypes.bool,
         show_group_members_modal: PropTypes.bool,
         show_app_download_modal: PropTypes.bool,
@@ -48,6 +50,7 @@ class Modals extends React.Component {
             show_donate_modal,
             show_create_group_modal,
             show_my_groups_modal,
+            show_top_groups_modal,
             show_group_settings_modal,
             show_group_members_modal,
             show_app_download_modal,
@@ -55,6 +58,7 @@ class Modals extends React.Component {
             hideDonate,
             hideCreateGroup,
             hideMyGroups,
+            hideTopGroups,
             hideGroupSettings,
             hideGroupMembers,
             hideAppDownload,
@@ -98,6 +102,11 @@ class Modals extends React.Component {
                     <CloseButton onClick={hideMyGroups} />
                     <MyGroups closeMe={hideMyGroups} />
                 </Reveal>}
+                {show_top_groups_modal && <Reveal enforceFocus={false} revealStyle={{ ...modalStyle, }}
+                    onHide={hideTopGroups} show={show_top_groups_modal}>
+                    <CloseButton onClick={hideTopGroups} />
+                    <TopGroups closeMe={hideTopGroups} />
+                </Reveal>}
                 {show_group_settings_modal && <Reveal enforceFocus={false} revealStyle={{ ...modalStyle, }}
                     onHide={hideGroupSettings} show={show_group_settings_modal}>
                     <CloseButton onClick={hideGroupSettings} />
@@ -132,6 +141,7 @@ export default connect(
             show_donate_modal: state.user.get('show_donate_modal'),
             show_create_group_modal: state.user.get('show_create_group_modal'),
             show_my_groups_modal: state.user.get('show_my_groups_modal'),
+            show_top_groups_modal: state.user.get('show_top_groups_modal'),
             show_group_settings_modal: state.user.get('show_group_settings_modal'),
             show_group_members_modal: state.user.get('show_group_members_modal'),
             show_app_download_modal: state.user.get('show_app_download_modal'),
@@ -155,6 +165,10 @@ export default connect(
         hideMyGroups: e => {
             if (e) e.preventDefault()
             dispatch(user.actions.hideMyGroups())
+        },
+        hideTopGroups: e => {
+            if (e) e.preventDefault()
+            dispatch(user.actions.hideTopGroups())
         },
         hideGroupSettings: e => {
             if (e) e.preventDefault()

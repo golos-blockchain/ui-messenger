@@ -131,6 +131,13 @@
     "start_chat": "Start chat",
     "create_group": "Create group"
   },
+  "msgs_chat_error": {
+    "404_group": "We have not such group",
+    "404_acc": "No such account",
+    "404_but": "But we have many interesting things...",
+    "500_group": "Error",
+    "500_load_msgs": "Cannot load messages."
+  },
   "create_group_jsx": {
     "title": "Title",
     "name": "Link chat.golos.app/",
@@ -177,11 +184,26 @@
     "title": "My Groups",
     "empty": "You have not any groups yet. ",
     "empty2": "You can ",
-    "create": "create your own group",
+    "find": "find",
+    "find2": "interesting group",
+    "create": "create",
+    "create2": "your own one",
     "create_more": "+ Create a group",
+    "more_groups": "More groups...",
     "edit": "Edit",
     "login_hint_GROUP": "(delete \"%(GROUP)s\" group)",
-    "members": "Members"
+    "members": "Members",
+    "cancel_pending": "Cancel request",
+    "are_you_sure_cancel": "Do you sure you don't want to join"
+  },
+  "top_groups_jsx": {
+    "title": "Popular Groups",
+    "empty": "We have no groups yet. ",
+    "empty2": "Become the first - ",
+    "create": "create your own group!",
+    "public": "Public",
+    "read_only": "Read-only",
+    "private": "Private"
   },
   "group_members_jsx": {
     "title": "Members Of ",
@@ -316,6 +338,11 @@
       "zero": "0 members",
       "one": "1 member",
       "other": "%(count)s members"
+    },
+    "message_count": {
+      "zero": "0 messages",
+      "one": "1 message",
+      "other": "%(count)s messages"
     }
   },
   "g": {

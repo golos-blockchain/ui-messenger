@@ -32,6 +32,12 @@ class MyGroups extends React.Component {
         this.refetch()
     }
 
+    showTopGroups = (e) => {
+        e.preventDefault()
+        const { username } = this.props
+        this.props.showTopGroups(username)
+    }
+
     createGroup = (e) => {
         e.preventDefault()
         this.props.showCreateGroup()
@@ -201,9 +207,15 @@ class MyGroups extends React.Component {
                 groups = <div>
                     {tt('my_groups_jsx.empty')}
                     {tt('my_groups_jsx.empty2')}
-                    <a href='#' onClick={this.createGroup}>
-                        {tt('my_groups_jsx.create')}.
+                    <a href='#' onClick={this.showTopGroups}>
+                        {tt('my_groups_jsx.find')}
                     </a>
+                    {' ' + tt('my_groups_jsx.find2') + ' '}
+                    {tt('g.or') + ' '}
+                    <a href='#' onClick={this.createGroup}>
+                        {tt('my_groups_jsx.create')}
+                    </a>
+                    {' ' + tt('my_groups_jsx.create2')}.
                 </div>
             } else {
                 hasGroups = true
@@ -221,9 +233,15 @@ class MyGroups extends React.Component {
 
         let button
         if (hasGroups) {
-            button = <button className='button hollow' onClick={this.createGroup}>
-                {tt('my_groups_jsx.create_more')}
-            </button>
+            button = <div>
+                <button className='button hollow create-group' onClick={this.createGroup}>
+                    {tt('my_groups_jsx.create_more')}
+                </button>
+                <button className='button hollow more-group' onClick={this.showTopGroups}>
+                    <Icon name='search' />
+                    <span className='btn-title'>{tt('my_groups_jsx.more_groups')}</span>
+                </button>
+            </div>
         }
 
         return <div className='MyGroups'>
@@ -257,6 +275,9 @@ export default connect(
         },
         showCreateGroup() {
             dispatch(user.actions.showCreateGroup({ redirectAfter: false }))
+        },
+        showTopGroups(account) {
+            dispatch(user.actions.showTopGroups({ account }))
         },
         showGroupSettings({ group }) {
             dispatch(user.actions.showGroupSettings({ group }))

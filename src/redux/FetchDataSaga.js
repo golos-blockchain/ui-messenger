@@ -9,6 +9,7 @@ export function* fetchDataWatches () {
     yield fork(watchFetchState)
     yield fork(watchFetchUiaBalances)
     yield fork(watchFetchMyGroups)
+    yield fork(watchFetchTopGroups)
     yield fork(watchFetchGroupMembers)
 }
 
@@ -199,6 +200,49 @@ export function* fetchMyGroups({ payload: { account } }) {
         yield put(g.actions.receiveMyGroups({ groups }))
     } catch (err) {
         console.error('fetchMyGroups', err)
+    }
+}
+
+export function* watchFetchTopGroups() {
+    yield takeLatest('global/FETCH_TOP_GROUPS', fetchTopGroups)
+}
+
+export function* fetchTopGroups({ payload: { account } }) {
+    try {
+        const groupsWithoutMe = []
+        let start_group = ''
+
+        for (let page = 1; page <= 3; ++page) {
+            console.log('FTG')
+            if (page > 1) {
+                groupsWithoutMe.pop()
+            }
+
+            const groups = yield call([api, api.getGroupsAsync], {
+                sort: 'by_popularity',
+                start_group,
+                limit: 100,
+                with_members: {
+                    accounts: [account]
+                }
+            })
+
+            for (const gro of groups) {
+                start_group = gro.name
+                if ((gro.member_list.length && gro.member_list[0].account == account) || gro.owner == account) {
+                    continue
+                }
+                groupsWithoutMe.push(gro)
+            }
+
+            if (groupsWithoutMe.length >= 10 || groups.length < 100) {
+                break
+            }
+        }
+
+        yield put(g.actions.receiveTopGroups({ groups: groupsWithoutMe }))
+    } catch (err) {
+        console.error('fetchTopGroups', err)
     }
 }
 

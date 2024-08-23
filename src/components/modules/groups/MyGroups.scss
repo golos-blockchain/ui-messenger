@@ -13,6 +13,15 @@
             color: themed('textColorPrimary');
         }
     }
+    .create-group {
+        margin-right: 0.5rem !important;
+    }
+    .more-group {
+        float: right;
+        &:not(:hover) {
+            border-color: transparent;
+        }
+    }
     .group-buttons {
         float: right;
         padding-top: 0.8rem;
@@ -24,9 +33,9 @@
         .DropdownMenu.show > .VerticalMenu {
             transform: translateX(-100%);
         }
-        .btn-title {
-            margin-left: 5px;
-            vertical-align: middle;
-        }
+    }
+    .btn-title {
+        margin-left: 5px;
+        vertical-align: middle;
     }
 }

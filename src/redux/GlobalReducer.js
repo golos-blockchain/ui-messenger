@@ -310,6 +310,16 @@ export default createModule({
             },
         },
         {
+            action: 'FETCH_TOP_GROUPS',
+            reducer: state => state
+        },
+        {
+            action: 'RECEIVE_TOP_GROUPS',
+            reducer: (state, { payload: { groups } }) => {
+                return state.set('top_groups', fromJS(groups))
+            },
+        },
+        {
             action: 'FETCH_GROUP_MEMBERS',
             reducer: state => state
         },
