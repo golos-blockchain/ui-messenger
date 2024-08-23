@@ -1083,7 +1083,7 @@ export default withRouter(connect(
                 })
             );
         },
-        sendMessage: async ({ senderAcc, memoKey, toAcc, group, body, editInfo = undefined, type = 'text', meta = {}, replyingMessage = null, notifyAbort }) => {
+        sendMessage: async function({ senderAcc, memoKey, toAcc, group, body, editInfo = undefined, type = 'text', meta = {}, replyingMessage = null, notifyAbort }) {
             let message = {
                 app: 'golos-messenger',
                 version: 1,
@@ -1107,7 +1107,6 @@ export default withRouter(connect(
                     alert('enc')
                 }
                 data = await golos.messages.encodeMsg({ group, message })
-                alert(JSON.stringify(data))
             } else {
                 data = golos.messages.encode(memoKey, toAcc.memo_key, message, editInfo ? editInfo.nonce : undefined);
             }
