@@ -10,9 +10,9 @@ import cn from 'classnames'
 import DialogManager from 'app/components/elements/common/DialogManager'
 import { showLoginDialog } from 'app/components/dialogs/LoginDialog'
 import DropdownMenu from 'app/components/elements/DropdownMenu'
-import ExtLink from 'app/components/elements/ExtLink'
 import Icon from 'app/components/elements/Icon'
 import TimeAgoWrapper from 'app/components/elements/TimeAgoWrapper'
+import AccountDropdown from 'app/components/modules/AccountDropdown'
 import g from 'app/redux/GlobalReducer'
 import transaction from 'app/redux/TransactionReducer'
 import user from 'app/redux/UserReducer'
@@ -28,17 +28,17 @@ class MessagesTopCenter extends React.Component {
     }
 
     openDropdown = (e) => {
-        e.preventDefault()
         let isInside = false
         let node = e.target
         while (node.parentNode) {
-            if (node.className.includes('msgs-group-dropdown')) {
+            if (node.className.includes('msgs-group-dropdown') || node.className.includes('AccountDropdown')) {
                 isInside = true
                 return
             }
             node = node.parentNode
         }
         if (isInside) return
+        e.preventDefault()
         this.dropdown.current.click()
     }
 
@@ -232,7 +232,6 @@ class MessagesTopCenter extends React.Component {
     render() {
         let avatar = []
         let items = []
-        let clickable = false
 
         const { to, toAcc, isSmall, notifyErrors, the_group } = this.props
 
@@ -256,6 +255,7 @@ class MessagesTopCenter extends React.Component {
             items.push(<div key='to-link' style={{fontSize: '15px', width: '100%', }}>
                 <LinkWithDropdown
                     closeOnClickOutside
+                    dropdownClassName="GroupDropdown"
                     dropdownPosition="bottom"
                     dropdownAlignment="center"
                     dropdownContent={this._renderGroupDropdown()}
@@ -265,10 +265,19 @@ class MessagesTopCenter extends React.Component {
                 </LinkWithDropdown>
                 {checkmark}
             </div>)
-            clickable = true
         } else {
             items.push(<div key='to-link' style={{fontSize: '15px', width: '100%', textAlign: 'center'}}>
-                <ExtLink href={to}>{to}{checkmark}</ExtLink>
+                <LinkWithDropdown
+                    dropdownClassName="AccountDropdown"
+                    closeOnClickOutside
+                    dropdownPosition="bottom"
+                    dropdownAlignment="center"
+                    dropdownContent={<AccountDropdown toAcc={toAcc} />}
+                    transition={Fade}
+                >
+                    <span className='to-group' ref={this.dropdown}>{to}</span>
+                </LinkWithDropdown>
+                {checkmark}
             </div>)
         }
 
@@ -288,7 +297,7 @@ class MessagesTopCenter extends React.Component {
             const secondStyle = {fontSize: '13px', fontWeight: 'normal'}
             if (!isGroup) {
                 const { accounts } = this.props
-                const acc =accounts[toAcc]
+                const acc = accounts[toAcc]
                 let lastSeen = acc && getLastSeen(acc)
                 if (lastSeen) {
                     items.push(<div key='to-last-seen' style={secondStyle}>
@@ -314,9 +323,7 @@ class MessagesTopCenter extends React.Component {
             }
         }
 
-        return <div className={cn('MessagesTopCenter', {
-            clickable
-        })} onClick={clickable ? this.openDropdown : null}>
+        return <div className='MessagesTopCenter clickable' onClick={this.openDropdown}>
             <div className='avatar-items'>{avatar}</div>
             <div className='main-items'>{items}</div>
         </div>

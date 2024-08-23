@@ -30,6 +30,21 @@
     }
 }
 
+.GroupDropdown {
+    backdrop-filter: blur(10px) !important;
+    border-radius: 8px !important;
+}
+.theme-light {
+    .GroupDropdown {
+        background-color: rgba(255, 255, 255, 0.7) !important;
+    }
+}
+.theme-dark {
+    .GroupDropdown {
+        background-color: rgba(40, 51, 54, 0.7) !important;
+    }
+}
+
 .msgs-group-dropdown {
     .logo {
         margin-top: 1rem;

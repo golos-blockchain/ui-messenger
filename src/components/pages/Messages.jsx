@@ -929,7 +929,7 @@ class Messages extends React.Component {
     }
 
     render() {
-        const { contacts, account, to, nodeError } = this.props;
+        const { contacts, account, accounts, to, nodeError } = this.props;
         let bbc, auc
         if (process.env.MOBILE_APP) {
             bbc = <BackButtonController goHome={!to} />
@@ -951,7 +951,7 @@ class Messages extends React.Component {
         const toAcc = this.getToAcc()
 
         const { username, the_group } = this.props
-        const { composeStub, msgsStub } = renderStubs(the_group, to, username)
+        const { composeStub, msgsStub } = renderStubs(the_group, to, username, accounts)
 
         return (
             <div>

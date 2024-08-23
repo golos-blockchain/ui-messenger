@@ -69,7 +69,7 @@ export function* fetchState(location_change_action) {
                         })
                     }
                 })
-                alert(JSON.stringify(con))
+                //alert(JSON.stringify(con))
                 state.contacts = con.contacts
                 if (hasErr) return
 
@@ -134,7 +134,8 @@ export function* fetchState(location_change_action) {
             }
 
             if (accounts.size > 0) {
-                let accs = yield callSafe(state, [], 'getAccountsAsync', [api, api.getAccountsAsync], Array.from(accounts))
+                let accs = yield callSafe(state, [], 'getAccountsAsync', [api, api.getAccountsAsync], Array.from(accounts),
+                        { current: account || '' })
                 if (hasErr) return
 
                 for (let i in accs) {

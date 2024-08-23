@@ -5,6 +5,7 @@ import tt from 'counterpart'
 import LoadingIndicator from 'app/components/elements/LoadingIndicator'
 import transaction from 'app/redux/TransactionReducer'
 import { getRoleInGroup } from 'app/utils/groups'
+import { maxDateStr, isBlockedByMe, isBlockingMe } from 'app/utils/misc'
 
 class StubInner extends React.Component {
     onBtnClick = (e) => {
@@ -23,7 +24,7 @@ class StubInner extends React.Component {
     }
 
     render() {
-        const { type, banned, notMember, pending, loading } = this.props
+        const { type, banned, notMember, pending, loading, blocked, blocking } = this.props
 
         const isCompose = type === 'compose'
 
@@ -38,6 +39,10 @@ class StubInner extends React.Component {
             text = isCompose ? tt('stub_jsx.read_only') : tt('stub_jsx.private_group')
             text += ' '
             btn = <a href='#' className='stub-btn' onClick={this.onBtnClick}>{tt('stub_jsx.join')}</a>
+        } else if (blocked) {
+            text = tt('stub_jsx.blocked')
+        } else if (blocking) {
+            text = tt('stub_jsx.blocking')
         }
 
         if (isCompose) {
@@ -110,10 +115,23 @@ const Stub = connect(
 
 export default Stub
 
-export const renderStubs = (the_group, to, username) => {
+export const renderStubs = (the_group, to, username, accounts) => {
     let composeStub, msgsStub
+
+    const isGroup = to && !to.startsWith('@')
+    if (to && !isGroup) {
+        const acc = accounts[to.replace('@', '')]
+        if (isBlockingMe(acc)) {
+            composeStub = { ui: <Stub type='compose' blocked={true} /> }
+            return { composeStub, msgsStub}
+        }
+        if (isBlockedByMe(acc)) {
+            composeStub = { ui: <Stub type='compose' blocking={true} /> }
+            return { composeStub, msgsStub}
+        }
+    }
+
     if (!the_group || the_group.error) {
-        const isGroup = to && !to.startsWith('@')
         if (isGroup) {
             composeStub = { disabled: true }
             if (the_group !== null) { // if not 404

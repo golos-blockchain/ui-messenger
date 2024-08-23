@@ -244,8 +244,9 @@ function* getAccountHandler({ payload: { usernames, resolve, reject }}) {
         usernames = [current.get('username')]
     }
 
+alert('ac')
     const accounts = yield call([api, api.getAccountsAsync], usernames)
-
+alert('ac2')
     for (let account of accounts) {
         yield put(g.actions.receiveAccount({ account }))
     }

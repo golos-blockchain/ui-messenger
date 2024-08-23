@@ -1,4 +1,11 @@
 {
+  "account_dropdown_jsx": {
+    "clear_history": "Clear Hstory",
+    "delete_chat": "Delete Chat",
+    "are_you_sure": "Are you sure you want to clear history?",
+    "are_you_sure_delete": "Are you sure you want to clear history and delete chat?",
+    "are_you_sure_delete_empty": "Are you sure you want to delete chat?"
+  },
   "account_name": {
     "account_name_should_be_shorter": "Account name should be shorter.",
     "account_name_should_be_longer": "Account name should be longer.",
@@ -238,7 +245,9 @@
     "private_group": "This group is private. To read and write messages, you should be a member.",
     "pending": "You issued request to join group.",
     "banned": "You banned in this group.",
-    "join": "Make Request"
+    "join": "Make Request",
+    "blocked": "User blocked you.",
+    "blocking": "You are blocked by user."
   },
   "user_saga_js": {
     "image_upload": {
@@ -311,6 +320,8 @@
   },
   "g": {
     "and": "and",
+    "block": "Block",
+    "blocked": "Blocked",
     "blog": "Blog",
     "cancel": "Cancel",
     "delete": "Delete",
@@ -334,6 +345,7 @@
     "settings": "Settings",
     "sign_up": "Sign Up",
     "submit": "Submit",
+    "unblock": "Unblock",
     "username_does_not_exist": "Username does not exist",
     "wallet": "Wallet"
   }

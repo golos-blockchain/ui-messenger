@@ -2,6 +2,7 @@ import { Map, List, fromJS, fromJSGreedy } from 'immutable';
 import createModule from 'redux-modules'
 import { Asset } from 'golos-lib-js/lib/utils'
 
+import { session } from 'app/redux/UserSaga'
 import { processDatedGroup } from 'app/utils/MessageUtils'
 
 const updateInMyGroups = (state, group, groupUpdater, groupsUpserter = mg => mg) => {
@@ -50,17 +51,26 @@ export default createModule({
             action: 'RECEIVE_STATE',
             reducer: (state, action) => {
                 let payload = fromJS(action.payload);
-                // TODO reserved words used in account names, find correct solution
-                /*if (!Map.isMap(payload.get('accounts'))) {
-                    const accounts = payload.get('accounts');
-                    payload = payload.set(
-                        'accounts',
-                        fromJSGreedy(accounts)
-                    );
-                }*/
+                payload = payload.update('accounts', accs => {
+                    let newMap = Map()
+                    accs.forEach((acc, name) => {
+                        if (!acc.has('relations')) {
+                            acc = acc.set('relations', Map())
+                        }
+                        if (!acc.hasIn(['relations', 'me_to_them'])) {
+                            acc = acc.setIn(['relations', 'me_to_them'], null)
+                        }
+                        if (!acc.hasIn(['relations', 'they_to_me'])) {
+                            acc = acc.setIn(['relations', 'they_to_me'], null)
+                        }
+                        newMap = newMap.set(name, acc)
+                    })
+                    return newMap
+                })
                 let new_state = state.set('messages', List());
                 new_state = new_state.set('contacts', List());
-                return new_state.mergeDeep(payload);
+                new_state = new_state.mergeDeep(payload)
+                return new_state
             },
         },
         {
@@ -449,6 +459,32 @@ export default createModule({
                 }
                 new_state = updateInMyGroups(new_state, group, groupUpdater)
                 new_state = updateTheGroup(new_state, group, groupUpdater)
+                return new_state
+            },
+        },
+        {
+            action: 'UPDATE_BLOCKING',
+            reducer: (state, { payload: { blocker, blocking, block } }) => {
+                let username
+                const sess = session.load()
+                if (sess) username = sess[0]
+                const account = blocker === username ? blocking : blocker
+
+                let new_state = state.updateIn(['accounts', account],
+                Map(),
+                acc => {
+                    if (!acc.has('relations')) {
+                        acc = acc.set('relations', Map())
+                    }
+                    const path = ['relations', blocker === username ? 'me_to_them' : 'they_to_me']
+                    if (block) {
+                        acc = acc.setIn(path, 'blocking')
+                    } else {
+                        acc = acc.deleteIn(path)
+                    }
+                    return acc
+                })
+
                 return new_state
             },
         },
