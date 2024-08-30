@@ -278,7 +278,7 @@ class Messages extends React.Component {
         }
     }
 
-    async componentDidUpdate(prevProps) {
+    componentDidUpdate(prevProps) {
         if (this.props.username !== prevProps.username && this.props.username) {
             this.props.fetchState(this.props.to);
             this.setCallback(this.props.username);
@@ -294,35 +294,38 @@ class Messages extends React.Component {
             || this.props.contacts.size !== prevProps.contacts.size
             || this.props.memo_private !== prevProps.memo_private) {
             const { contacts, messages, accounts, currentUser } = this.props;
+            const anotherChat = this.props.to !== this.state.to;
+            this.setState({
+                to: this.props.to, // protects from infinity loop
+            });
             if (!this.props.checkMemo(currentUser)) {
-                this.setState({
-                    to: this.props.to, // protects from infinity loop
-                });
                 return;
             }
-            const anotherChat = this.props.to !== this.state.to;
             const anotherKey = this.props.memo_private !== prevProps.memo_private;
             const added = this.props.messages.size > this.state.messagesCount;
             let focusTimeout = prevProps.messages.size ? 100 : 1000;
-            const newContacts = contacts.size ?
-                normalizeContacts(contacts, accounts, currentUser, this.preDecoded, this.cachedProfileImages) :
-                this.state.contacts
-            const decoded = await normalizeMessages(messages, accounts, currentUser, prevProps.to, this.preDecoded)
-            this.setState({
-                to: this.props.to,
-                contacts: newContacts,
-                messages: decoded,
-                messagesCount: messages.size,
-            }, () => {
-                hideSplash()
-                if (added)
-                    this.markMessages2();
-                setTimeout(() => {
-                    if (anotherChat || anotherKey) {
-                        this.focusInput();
-                    }
-                }, focusTimeout);
-            })
+
+            const updateData = async () => {
+                const newContacts = contacts.size ?
+                    await normalizeContacts(contacts, accounts, currentUser, this.preDecoded, this.cachedProfileImages) :
+                    this.state.contacts
+                const decoded = await normalizeMessages(messages, accounts, currentUser, prevProps.to, this.preDecoded)
+                this.setState({
+                    contacts: newContacts,
+                    messages: decoded,
+                    messagesCount: messages.size,
+                }, () => {
+                    hideSplash()
+                    if (added)
+                        this.markMessages2();
+                    setTimeout(() => {
+                        if (anotherChat || anotherKey) {
+                            this.focusInput();
+                        }
+                    }, focusTimeout);
+                })
+            }
+            updateData()
         }
     }
     
@@ -416,7 +419,7 @@ class Messages extends React.Component {
 
         this.props.sendMessage({
             senderAcc: account, memoKey: private_key, toAcc: accounts[to],
-            group: the_group,
+            group: this.isGroup() && the_group,
             body: message, editInfo, type: 'text', replyingMessage: this.state.replyingMessage,
             notifyAbort: this.notifyAbort
         })
@@ -619,8 +622,8 @@ class Messages extends React.Component {
             const to = this.getToAcc()
             const private_key = currentUser.getIn(['private_keys', 'memo_private']);
             this.props.sendMessage({
-                senderAcc: account, memoKey: private_key, toAcc: (!group) && accounts[to],
-                group: the_group,
+                senderAcc: account, memoKey: private_key, toAcc: accounts[to],
+                group: this.isGroup() && the_group,
                 body: url, type: 'image', meta: {width, height}, replyingMessage: this.state.replyingMessage,
                 notifyAbort: this.notifyAbort
             });
@@ -852,11 +855,16 @@ class Messages extends React.Component {
             </LinkWithDropdown>);
     };
 
+    isGroup = () => {
+        const { to } = this.props
+        return to && !to.startsWith('@')
+    }
+
     _renderMessages = (messagesStub, { }) => {
         const { to, the_group, accounts } = this.props
 
         if (to) {
-            const isGroup = !to.startsWith('@')
+            const isGroup = this.isGroup()
             if (isGroup) {
                 const noGroup = the_group === null
                 const groupError = noGroup || (the_group && the_group.error)
@@ -1101,28 +1109,30 @@ export default withRouter(connect(
                 message = {...message, ...replyingMessage};
             }
 
-            let data
-            if (group) {
-                if (group.is_encrypted) {
-                    alert('enc')
-                }
-                data = await golos.messages.encodeMsg({ group, message })
-            } else {
-                data = golos.messages.encode(memoKey, toAcc.memo_key, message, editInfo ? editInfo.nonce : undefined);
+            let data = null
+            try {
+                data = await golos.messages.encodeMsg({ group,
+                    private_memo: !group && memoKey,
+                    to_public_memo: !group && toAcc.memo_key,
+                    msg: message,
+                    nonce: editInfo ? editInfo.nonce : undefined,
+                })
+            } catch (err) {
+                console.error(err)
+                this.showError((err && err.message) || err.toString(), 10000)
             }
-
-            const emptyPubKey = 'GLS1111111111111111111111111111111114T1Anm'
 
             const opData = {
                 from: senderAcc.name,
                 to: toAcc ? toAcc.name : '',
-                nonce: editInfo ? editInfo.nonce : data.nonce,
-                from_memo_key: group ? emptyPubKey : senderAcc.memo_key,
-                to_memo_key: group ? emptyPubKey : toAcc.memo_key,
+                nonce: /*editInfo ? editInfo.nonce : */data.nonce,
+                from_memo_key: data.from_memo_key,
+                to_memo_key: data.to_memo_key,
                 checksum: data.checksum,
                 update: editInfo ? true : false,
                 encrypted_message: data.encrypted_message,
-            };
+            }
+            alert(JSON.stringify(data.encrypted_message))
 
             if (group) {
                 opData.extensions = [[0, {
@@ -1153,7 +1163,7 @@ export default withRouter(connect(
                         if (err.message.includes('blocked by')) {
                             this.showError(tt(
                                 'messages.blocked_BY', {
-                                    BY: toAcc.name
+                                    BY: toAcc ? toAcc.name : ''
                                 }
                             ), 10000)
                             return
@@ -1161,7 +1171,7 @@ export default withRouter(connect(
                         if (err.message.includes('do not bother')) {
                             this.showError(tt(
                                 'messages.do_not_bother_BY', {
-                                    BY: toAcc.name
+                                    BY: toAcc ? toAcc.name : ''
                                 }
                             ), 10000)
                             return

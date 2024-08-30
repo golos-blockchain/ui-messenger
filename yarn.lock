@@ -5256,10 +5256,10 @@ globby@^11.0.1, globby@^11.0.4:
 "gls-messenger-native-core@file:native_core":
   version "1.0.0"
 
-golos-lib-js@^0.9.69:
-  version "0.9.69"
-  resolved "https://registry.yarnpkg.com/golos-lib-js/-/golos-lib-js-0.9.69.tgz#d7b9d17fab1d0967b2e99923ef7c85740da7a157"
-  integrity sha512-6kxDJUiSj8itwMAEP8klnJSijxyZ1Xz2RVmGGh7BAMTb1WT+YDUoZJFHFv4Cldt7usHs7OAIFKv4bQQzJCpM1w==
+golos-lib-js@^0.9.74:
+  version "0.9.74"
+  resolved "https://registry.yarnpkg.com/golos-lib-js/-/golos-lib-js-0.9.74.tgz#2be3851f9168bf846453486455e30e882d1f11dd"
+  integrity sha512-+Wa0FULKmOE+OIiQO9bQis4q9ytgl//8F2GzSqzGfxon0IVDGA1Ij7QIkc1nrL36nN0yFTu5tAnXpue7cafECg==
   dependencies:
     abort-controller "^3.0.0"
     assert "^2.0.0"
