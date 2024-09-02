@@ -500,7 +500,7 @@ class Messages extends React.Component {
     onPanelDeleteClick = (event) => {
         const { messages } = this.state;
 
-        const { account, accounts, } = this.props;
+        const { account, accounts, the_group } = this.props;
         const to = this.getToAcc()
 
         // TODO: works wrong if few messages have same create_time
@@ -533,6 +533,14 @@ class Messages extends React.Component {
             if (!this.state.selectedMessages[message_object.nonce]) {
                 continue;
             }
+
+            const extensions = []
+            if (this.isGroup()) {
+                extensions.push([0, {
+                    group: the_group.name
+                }])
+            }
+
             const json = JSON.stringify(['private_delete_message', {
                 requester: account.name,
                 from: message_object.from,
@@ -540,6 +548,7 @@ class Messages extends React.Component {
                 start_date: '1970-01-01T00:00:00',
                 stop_date: '1970-01-01T00:00:00',
                 nonce: message_object.nonce,
+                extensions,
             }]);
             OPERATIONS.push(['custom_json',
                 {
@@ -550,7 +559,9 @@ class Messages extends React.Component {
             ]);
         }
 
-        this.props.sendOperations(account, accounts[to], OPERATIONS);
+        this.props.sendOperations(account, accounts[to], OPERATIONS, (err, errStr) => {
+            this.props.showError(errStr, 10000)
+        })
 
         this.setState({
             selectedMessages: {},
@@ -1078,15 +1089,16 @@ export default withRouter(connect(
                 fake: true
             }});
         },
-        sendOperations: (senderAcc, toAcc, OPERATIONS) => {
+        sendOperations: (senderAcc, toAcc, OPERATIONS, onError = null) => {
             if (!OPERATIONS.length) return;
             dispatch(
                 transaction.actions.broadcastOperation({
                     type: 'custom_json',
                     trx: OPERATIONS,
                     successCallback: null,
-                    errorCallback: (e) => {
-                        console.log(e);
+                    errorCallback: (e, errStr) => {
+                        if (onError) onError(e, errStr)
+                        console.error(e)
                     }
                 })
             );
@@ -1125,14 +1137,14 @@ export default withRouter(connect(
             const opData = {
                 from: senderAcc.name,
                 to: toAcc ? toAcc.name : '',
-                nonce: /*editInfo ? editInfo.nonce : */data.nonce,
+                nonce: editInfo ? editInfo.nonce : data.nonce,
                 from_memo_key: data.from_memo_key,
                 to_memo_key: data.to_memo_key,
                 checksum: data.checksum,
                 update: editInfo ? true : false,
                 encrypted_message: data.encrypted_message,
             }
-            alert(JSON.stringify(data.encrypted_message))
+            //alert(JSON.stringify(data.encrypted_message))
 
             if (group) {
                 opData.extensions = [[0, {
@@ -1158,7 +1170,7 @@ export default withRouter(connect(
                     json,
                 },
                 successCallback: null,
-                errorCallback: (err) => {
+                errorCallback: (err, errStr) => {
                     if (err && err.message) {
                         if (err.message.includes('blocked by')) {
                             this.showError(tt(
@@ -1178,6 +1190,7 @@ export default withRouter(connect(
                         }
                     }
                     console.error(err)
+                    this.showError(errStr, 10000)
                 },
             }));
         },

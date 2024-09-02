@@ -6,9 +6,10 @@ const getErrorData = (errPayload, errName, depth = 0) => {
     if (depth > 50) {
         throw new Error('getErrorData - infinity loop detected...')
     }
-    if (errPayload === null) {
+    if (!errPayload) {
         return null
     }
+    console.error(errPayload.name)
     if (errPayload.name === errName) {
         let { stack } = errPayload
         stack = stack && stack[0]
@@ -69,6 +70,7 @@ export function translateError(string, errPayload) {
         'Account exceeded maximum allowed bandwidth per vesting share'
     )) {
         string = tt('chain_errors.exceeded_maximum_allowed_bandwidth')
+        return string
     }
 
     if (string.includes(
@@ -91,10 +93,33 @@ export function translateError(string, errPayload) {
                 } else {
                     string += '.'
                 }
+                return string
             }
         } catch (err) {
             console.error('getErrorData', err)
         }
+    }
+
+    if (string.includes(
+        'Too low golos power'
+    )) {
+        let errData
+        try {
+            errData = getErrorData(errPayload, 'logic_exception')
+            if (errData && errData.r) {
+                string = tt('messages.too_low_gp')
+                string += Asset(errData.r).floatString
+                string += tt('messages.too_low_gp2')
+                return string
+            }
+        } catch (err) {
+            console.error('getErrorData', err)
+        }
+    }
+
+    if (string.includes('You should be moder')) {
+        string = tt('messages.you_not_moder')
+        return string
     }
 
     return string

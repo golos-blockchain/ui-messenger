@@ -44,10 +44,21 @@ function* preBroadcast_custom_json({operation}) {
                 updater: msgs => {
                     const idx = msgs.findIndex(i => i.get('nonce') === json[1].nonce);
                     if (idx === -1) {
+                        let group = ''
+                        const exts = json[1].extensions || []
+                        for (const [key, val ] of exts) {
+                            if (key === 0) {
+                                group = val.group
+                                break
+                            }
+                        }
                         msgs = msgs.insert(0, fromJS({
                             nonce: json[1].nonce,
                             checksum: json[1].checksum,
                             from: json[1].from,
+                            from_memo_key: json[1].from_memo_key,
+                            to_memo_key: json[1].to_memo_key,
+                            group,
                             read_date: '1970-01-01T00:00:00',
                             create_date: new Date().toISOString().split('.')[0],
                             receive_date: '1970-01-01T00:00:00',

@@ -164,7 +164,7 @@ export async function normalizeMessages(messages, accounts, currentUser, to, pre
                 saveToCache(preDecoded, msg)
             },
             on_error: (msg, i, err) => {
-                console.error(err)
+                console.error(err, msg)
                 msg.message = {body: tt_invalid_message, invalid: true}
             },
             begin_idx: messagesCopy.length - 1,
