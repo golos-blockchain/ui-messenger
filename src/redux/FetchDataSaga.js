@@ -62,6 +62,7 @@ export function* fetchState(location_change_action) {
 
                 const posting = yield select(state => state.user.getIn(['current', 'private_keys', 'posting_private']))
 
+                console.time('prof: getContactsAsync')
                 const con = yield call([auth, 'withNodeLogin'], { account, keys: { posting },
                     call: async (loginData) => {
                         return await api.getContactsAsync({
@@ -73,6 +74,7 @@ export function* fetchState(location_change_action) {
                 //alert(JSON.stringify(con))
                 state.contacts = con.contacts
                 if (hasErr) return
+                console.timeEnd('prof: getContactsAsync')
 
                 const path = parts[1]
                 if (path) {
@@ -87,6 +89,7 @@ export function* fetchState(location_change_action) {
                             state.messages_update = state.messages[state.messages.length - 1].nonce;
                         }
                     } else {
+                        console.time('prof: getGroupsAsync')
                         let the_group = yield callSafe(state, [], 'getGroupsAsync', [api, api.getGroupsAsync], {
                             start_group: path,
                             limit: 1,
@@ -101,7 +104,9 @@ export function* fetchState(location_change_action) {
                             the_group = null
                         }
                         state.the_group = the_group
+                        console.timeEnd('prof: getGroupsAsync')
 
+                        console.time('prof: getThreadAsync')
                         let query = {
                             group: path,
                         }
@@ -127,6 +132,7 @@ export function* fetchState(location_change_action) {
                                 state.messages_update = state.messages[state.messages.length - 1].nonce;
                             }
                         }
+                        console.timeEnd('prof: getThreadAsync')
                     }
                 }
                 for (let contact of state.contacts) {
