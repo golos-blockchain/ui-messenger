@@ -63,24 +63,28 @@ export function* fetchState(location_change_action) {
 
                 const posting = yield select(state => state.user.getIn(['current', 'private_keys', 'posting_private']))
 
-                console.time('prof: getContactsAsync')
-                const conCache = getSpaceInCache(null, 'contacts')
-                const con = yield call([auth, 'withNodeLogin'], { account, keys: { posting },
-                    call: async (loginData) => {
-                        return await api.getContactsAsync({
-                            ...loginData,
-                            owner: account, limit: 100,
-                            cache: Object.keys(conCache),
-                        })
-                    }
-                })
-                //alert(JSON.stringify(con))
-                console.log('procc:' + con._dec_processed)
-                state.contacts = con.contacts
-                if (hasErr) return
-                console.timeEnd('prof: getContactsAsync')
-
                 const path = parts[1]
+
+                const conCache = getSpaceInCache(null, 'contacts')
+
+                if (path.startsWith('@')) {
+                    console.time('prof: getContactsAsync')
+                    const con = yield call([auth, 'withNodeLogin'], { account, keys: { posting },
+                        call: async (loginData) => {
+                            return await api.getContactsAsync({
+                                ...loginData,
+                                owner: account, limit: 100,
+                                cache: Object.keys(conCache),
+                            })
+                        }
+                    })
+                    //alert(JSON.stringify(con))
+                    console.log('procc:' + con._dec_processed)
+                    state.contacts = con.contacts
+                    if (hasErr) return
+                    console.timeEnd('prof: getContactsAsync')
+                }
+
                 if (path) {
                     if (path.startsWith('@')) {
                         const to = path.replace('@', '');
@@ -115,6 +119,10 @@ export function* fetchState(location_change_action) {
                         let query = {
                             group: path,
                             cache: Object.keys(space),
+                            contacts: {
+                                owner: account, limit: 100,
+                                cache: Object.keys(conCache),
+                            },
                         }
                         const getThread = async (loginData) => {
                             query = {...query, ...loginData}
@@ -133,6 +141,7 @@ export function* fetchState(location_change_action) {
                         if (the_group && thRes.error) {
                             the_group.error = thRes.error
                         }
+                        state.contacts = thRes.contacts
                         if (thRes.messages) {
                             state.messages = thRes.messages
                             if (state.messages.length) {
