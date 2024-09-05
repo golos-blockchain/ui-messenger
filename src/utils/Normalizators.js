@@ -16,10 +16,26 @@ function getProfileImageLazy(account, cachedProfileImages) {
     return image;
 }
 
+const getCache = () => {
+    if (!window.preDecoded) window.preDecoded = {}
+    return window.preDecoded
+}
+
+export const getSpaceInCache = (msg, spaceKey = '') => {
+    const preDecoded = getCache()
+    const key = spaceKey || (msg.group ? msg.group : '')
+    if (!preDecoded[key]) preDecoded[key] = {}
+    const space = preDecoded[key]
+    return space
+}
+
+export const getContactsSpace = (msg) => {
+    return getSpaceInCache(msg, 'contacts')
+}
+
 const cacheKey = (msg) => {
     let key = [msg.nonce]
     if (msg.group) {
-        key.push(msg.group)
         key.push(msg.receive_date)
         key.push(msg.from)
         key.push(msg.to)
@@ -30,25 +46,39 @@ const cacheKey = (msg) => {
     return key
 }
 
-const saveToCache = (preDecoded, msg) => {
+export const saveToCache = (msg, contact = false) => {
     if (!msg.message) return false
     if (msg.group && msg.decrypt_date !== msg.receive_date) return false
-    let key = cacheKey(msg)
-    preDecoded[key] = { message: msg.message }
+    const space = getSpaceInCache(msg)
+    const key = cacheKey(msg)
+    space[key] = { message: msg.message }
+    if (contact) {
+        const cont = getContactsSpace(msg)
+        cont[key] = { message: msg.message }
+    }
     return true
 }
 
-const loadFromCache = (preDecoded, msg) => {
-    let key = cacheKey(msg)
-    let pd = preDecoded[key];
+const loadFromCache = (msg, contact = false) => {
+    const space = getSpaceInCache(msg)
+    const key = cacheKey(msg)
+    const pd = space[key]
     if (pd) {
         msg.message = pd.message
         return true
     }
+    if (contact) {
+        const cont = getContactsSpace(msg)
+        const pdc = cont[key]
+        if (pdc) {
+            msg.message = pdc.message
+            return true
+        }
+    }
     return false
 }
 
-export async function normalizeContacts(contacts, accounts, currentUser, preDecoded, cachedProfileImages) {
+export async function normalizeContacts(contacts, accounts, currentUser, cachedProfileImages) {
     if (!currentUser || !accounts)
         return [];
 
@@ -87,13 +117,13 @@ export async function normalizeContacts(contacts, accounts, currentUser, preDeco
                     }
                 }
 
-                if (loadFromCache(preDecoded, msg)) {
+                if (loadFromCache(msg, true)) {
                     return true
                 }
                 return false;
             },
             for_each: (msg) => {
-                saveToCache(preDecoded, msg)
+                saveToCache(msg, true)
             },
             on_error: (msg, idx, exception) => {
                 msg.message = { body: tt_invalid_message, invalid: true, };
@@ -108,7 +138,7 @@ export async function normalizeContacts(contacts, accounts, currentUser, preDeco
     return contactsCopy
 }
 
-export async function normalizeMessages(messages, accounts, currentUser, to, preDecoded) {
+export async function normalizeMessages(messages, accounts, currentUser, to) {
     let isGroup = false
     if (to) {
         if (to[0] !== '@') isGroup = true
@@ -130,7 +160,7 @@ export async function normalizeMessages(messages, accounts, currentUser, to, pre
         const posting = currentUser.getIn(['private_keys', 'posting_private'])
         const privateMemo = currentUser.getIn(['private_keys', 'memo_private']);
 
-        console.time('dddm')
+        console.log('ttt', Date.now())
         const decoded = await decodeMsgs({ msgs: messagesCopy,
             private_memo: !isGroup && privateMemo,
             login: {
@@ -154,14 +184,14 @@ export async function normalizeMessages(messages, accounts, currentUser, to, pre
                 }
                 msg.decrypt_date = null
 
-                if (loadFromCache(preDecoded, msg)) {
+                if (loadFromCache(msg)) {
                     results.push(msg)
                     return true
                 }
                 return false;
             },
             for_each: (msg, i) => {
-                saveToCache(preDecoded, msg)
+                saveToCache(msg)
             },
             on_error: (msg, i, err) => {
                 console.error(err, msg)
@@ -170,7 +200,7 @@ export async function normalizeMessages(messages, accounts, currentUser, to, pre
             begin_idx: messagesCopy.length - 1,
             end_idx: -1,
         })
-        console.timeEnd('dddm')
+        console.log('ttte', Date.now())
         return decoded
     } catch (ex) {
         console.log(ex);

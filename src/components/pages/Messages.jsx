@@ -48,7 +48,6 @@ class Messages extends React.Component {
             searchContacts: null,
             notifyErrors: 0,
         };
-        this.preDecoded = {};
         this.cachedProfileImages = {};
         this.windowFocused = true;
         this.newMessages = 0;
@@ -307,9 +306,9 @@ class Messages extends React.Component {
 
             const updateData = async () => {
                 const newContacts = contacts.size ?
-                    await normalizeContacts(contacts, accounts, currentUser, this.preDecoded, this.cachedProfileImages) :
+                    await normalizeContacts(contacts, accounts, currentUser, this.cachedProfileImages) :
                     this.state.contacts
-                const decoded = await normalizeMessages(messages, accounts, currentUser, prevProps.to, this.preDecoded)
+                const decoded = await normalizeMessages(messages, accounts, currentUser, prevProps.to)
                 this.setState({
                     contacts: newContacts,
                     messages: decoded,

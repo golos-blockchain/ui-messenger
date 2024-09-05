@@ -3,6 +3,7 @@ import golos, { api, auth } from 'golos-lib-js'
 import tt from 'counterpart'
 
 import g from 'app/redux/GlobalReducer'
+import { getSpaceInCache, saveToCache } from 'app/utils/Normalizators'
 
 export function* fetchDataWatches () {
     yield fork(watchLocationChange)
@@ -63,15 +64,18 @@ export function* fetchState(location_change_action) {
                 const posting = yield select(state => state.user.getIn(['current', 'private_keys', 'posting_private']))
 
                 console.time('prof: getContactsAsync')
+                const conCache = getSpaceInCache(null, 'contacts')
                 const con = yield call([auth, 'withNodeLogin'], { account, keys: { posting },
                     call: async (loginData) => {
                         return await api.getContactsAsync({
                             ...loginData,
                             owner: account, limit: 100,
+                            cache: Object.keys(conCache),
                         })
                     }
                 })
                 //alert(JSON.stringify(con))
+                console.log('procc:' + con._dec_processed)
                 state.contacts = con.contacts
                 if (hasErr) return
                 console.timeEnd('prof: getContactsAsync')
@@ -106,9 +110,11 @@ export function* fetchState(location_change_action) {
                         state.the_group = the_group
                         console.timeEnd('prof: getGroupsAsync')
 
+                        const space = getSpaceInCache({ group: the_group.name })
                         console.time('prof: getThreadAsync')
                         let query = {
                             group: path,
+                            cache: Object.keys(space),
                         }
                         const getThread = async (loginData) => {
                             query = {...query, ...loginData}
@@ -123,6 +129,7 @@ export function* fetchState(location_change_action) {
                         } else {
                             thRes = yield call(getThread)
                         }
+                        console.log('proc:' + thRes._dec_processed)
                         if (the_group && thRes.error) {
                             the_group.error = thRes.error
                         }
