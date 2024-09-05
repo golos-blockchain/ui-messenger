@@ -27,6 +27,7 @@ import MessagesTopCenter from 'app/components/modules/MessagesTopCenter'
 import g from 'app/redux/GlobalReducer'
 import transaction from 'app/redux/TransactionReducer'
 import user from 'app/redux/UserReducer'
+import { getRoleInGroup } from 'app/utils/groups'
 import { getProfileImage, } from 'app/utils/NormalizeProfile';
 import { normalizeContacts, normalizeMessages } from 'app/utils/Normalizators';
 import { fitToPreview } from 'app/utils/ImageUtils';
@@ -447,7 +448,20 @@ class Messages extends React.Component {
             let selectedMessages = {...this.state.selectedMessages};
 
             let selectMessage = (msg, idx) => {
-                const isMine = account.name === msg.from;
+                const isMine = account.name === msg.from
+                let canIEdit = isMine
+                let canIDelete = true
+                if (this.isGroup()) {
+                    const { the_group } = this.props
+                    const { amModer, amMember, amBanned } = getRoleInGroup(the_group, account.name)
+                    if (amModer) {
+                        canIEdit = true
+                    } else if (amBanned || (the_group.privacy !== 'public_group' && !amModer && !amMember)) {
+                        canIEdit = false
+                    }
+                    canIDelete = canIEdit
+                }
+
                 let isImage = false;
                 let isInvalid = true;
                 const { message } = msg;
@@ -456,7 +470,9 @@ class Messages extends React.Component {
                     isInvalid = !!message.invalid;
                 }
                 selectedMessages[msg.nonce] = {
-                    editable: isMine && !isImage && !isInvalid, idx };
+                    editable: canIEdit && !isImage && !isInvalid,
+                    deletable: canIDelete,
+                    idx };
             };
 
             if (event.shiftKey) {

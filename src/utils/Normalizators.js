@@ -182,7 +182,7 @@ export async function normalizeMessages(messages, accounts, currentUser, to) {
                         }
                     }
                 }
-                msg.decrypt_date = null
+                //msg.decrypt_date = null
 
                 if (loadFromCache(msg)) {
                     results.push(msg)

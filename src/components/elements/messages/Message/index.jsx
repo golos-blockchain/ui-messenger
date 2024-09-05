@@ -3,6 +3,7 @@ import tt from 'counterpart';
 import { Asset } from 'golos-lib-js/lib/utils'
 
 import Donating from 'app/components/elements/messages/Donating'
+import Userpic from 'app/components/elements/Userpic'
 import { displayQuoteMsg } from 'app/utils/MessageUtils';
 import { proxifyImageUrl } from 'app/utils/ProxifyUrl';
 import './Message.css';
@@ -36,7 +37,7 @@ export default class Message extends React.Component {
 
         const unread = data.unread ? (<div className={'unread' + loading}>●</div>) : null;
 
-        const { message } = data;
+        const { message, group, from} = data;
 
         let content;
         if (message.type === 'image') {
@@ -100,6 +101,16 @@ export default class Message extends React.Component {
             adds.unshift(unread)
         }
 
+        let avatar
+        if (!isMine && group) {
+            if (startsSequence) {
+                avatar = <Userpic account={from} title={'@' + from} width={32} height={32} />
+            }
+            avatar = <div className='avatar'>
+                {avatar} 
+            </div>
+        }
+
         return (
             <div className={[
                 'msgs-message',
@@ -115,6 +126,7 @@ export default class Message extends React.Component {
                 }
 
                 <div className={'bubble-container' + (selected ? ' selected' : '')}>
+                    {avatar}
                     {isMine ? adds : null}
                     <div className={'bubble' + loading} onClick={(event) => this.onMessageSelect(idx, event)} title={friendlyDate + (modified ? tt('g.modified') : '')}>
                         { quoteHeader }

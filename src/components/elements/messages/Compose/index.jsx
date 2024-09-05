@@ -211,11 +211,15 @@ export default class Compose extends React.Component {
 
         const selectedMessages = Object.entries(this.props.selectedMessages);
         let selectedMessagesCount = 0;
-        let selectedEditablesCount = 0;
+        let selectedEditables = 0
+        let selectedDeletables = 0
         for (let [nonce, info] of selectedMessages) {
             selectedMessagesCount++;
             if (info.editable) {
-                selectedEditablesCount++;
+                selectedEditables++;
+            }
+            if (info.deletable) {
+                selectedDeletables++
             }
         }
 
@@ -271,11 +275,11 @@ export default class Compose extends React.Component {
                         <Icon name='cross' />
                         <span>{tt('g.cancel')}</span>
                     </button>
-                    <button className='button hollow small alert delete-button' onClick={onPanelDeleteClick}>
+                    {selectedDeletables === selectedMessagesCount ? <button className='button hollow small alert delete-button' onClick={onPanelDeleteClick}>
                         <Icon name='ionicons/trash-outline' />
                         <span>{tt('g.delete') + ' (' + selectedMessagesCount + ')'}</span>
-                    </button>
-                    {(selectedMessagesCount === 1 && selectedEditablesCount === 1) ? (<button className='button hollow small edit-button' onClick={onPanelEditClick}>
+                    </button> : null}
+                    {(selectedMessagesCount === 1 && selectedEditables === 1) ? (<button className='button hollow small edit-button' onClick={onPanelEditClick}>
                         <Icon name='pencil' />
                         <span>{tt('g.edit')}</span>
                     </button>) : null}

@@ -20,6 +20,11 @@
     display: flex;
 }
 
+.msgs-message .bubble-container .avatar {
+    width: 42px;
+    margin-top: 14px;
+}
+
 .msgs-message .bubble-container a {
     color: #007aff;
     text-decoration: underline;
