@@ -414,7 +414,7 @@ class Messages extends React.Component {
 
         let editInfo;
         if (this.editNonce) {
-            editInfo = { nonce: this.editNonce };
+            editInfo = { from: this.editFrom, nonce: this.editNonce }
         }
 
         this.props.sendMessage({
@@ -616,6 +616,7 @@ class Messages extends React.Component {
             selectedMessages: {},
         }, () => {
             this.editNonce = message[0].nonce;
+            this.editFrom = message[0].from
             if (message[0].message.quote) {
                 this.setState({
                     replyingMessage: {quote: message[0].message.quote},
@@ -1132,7 +1133,12 @@ export default withRouter(connect(
                     throw new Error('Unknown message type: ' + type);
                 }
             }
+            let to = toAcc ? toAcc.name : ''
             if (replyingMessage) {
+                if (group) {
+                    to = replyingMessage.quote.from
+                    if (to === senderAcc.name) to = ''
+                }
                 message = {...message, ...replyingMessage};
             }
 
@@ -1151,7 +1157,7 @@ export default withRouter(connect(
 
             const opData = {
                 from: senderAcc.name,
-                to: toAcc ? toAcc.name : '',
+                to,
                 nonce: editInfo ? editInfo.nonce : data.nonce,
                 from_memo_key: data.from_memo_key,
                 to_memo_key: data.to_memo_key,
@@ -1159,11 +1165,19 @@ export default withRouter(connect(
                 update: editInfo ? true : false,
                 encrypted_message: data.encrypted_message,
             }
-            //alert(JSON.stringify(data.encrypted_message))
+            alert(JSON.stringify(opData))
 
             if (group) {
+                let requester
+
+                if (editInfo && editInfo.from !== senderAcc.name) {
+                    opData.from = editInfo.from
+                    requester = senderAcc.name
+                }
+
                 opData.extensions = [[0, {
-                    group: group.name
+                    group: group.name,
+                    requester
                 }]]
             }
 

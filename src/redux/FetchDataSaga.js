@@ -67,7 +67,7 @@ export function* fetchState(location_change_action) {
 
                 const conCache = getSpaceInCache(null, 'contacts')
 
-                if (path.startsWith('@')) {
+                if (path.startsWith('@') || !path) {
                     console.time('prof: getContactsAsync')
                     const con = yield call([auth, 'withNodeLogin'], { account, keys: { posting },
                         call: async (loginData) => {
@@ -157,17 +157,8 @@ export function* fetchState(location_change_action) {
             }
 
             if (accounts.size > 0) {
-                let accs
-                if (window.accountsCache && window.uac) {
-                    console.log('uac')
-                    accs = window.accountsCache
-                } else {
-                        console.time('prof: getAcc')
-                    accs = yield callSafe(state, [], 'getAccountsAsync', [api, api.getAccountsAsync], Array.from(accounts),
+                let accs = yield callSafe(state, [], 'getAccountsAsync', [api, api.getAccountsAsync], Array.from(accounts),
                         { current: account || '' })
-                        console.timeEnd('prof: getAcc')
-                window.accountsCache = accs
-            }
                 if (hasErr) return
 
                 for (let i in accs) {
