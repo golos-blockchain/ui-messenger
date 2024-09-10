@@ -20,9 +20,16 @@
     display: flex;
 }
 
+.msgs-message .bubble-container .author {
+    font-size: 98%;
+    font-weight: bold;
+    color: #0078C4;
+    padding-bottom: 3px;
+}
 .msgs-message .bubble-container .avatar {
     width: 42px;
     margin-top: 14px;
+    cursor: pointer;
 }
 .msgs-message .bubble-container .avatar .Userpic {
     position: static;

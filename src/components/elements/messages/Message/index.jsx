@@ -1,7 +1,10 @@
 import React from 'react';
+import { Fade } from 'react-foundation-components/lib/global/fade'
+import { LinkWithDropdown } from 'react-foundation-components/lib/global/dropdown'
 import tt from 'counterpart';
 import { Asset } from 'golos-lib-js/lib/utils'
 
+import AuthorDropdown from 'app/components/elements/messages/AuthorDropdown'
 import Donating from 'app/components/elements/messages/Donating'
 import Userpic from 'app/components/elements/Userpic'
 import { displayQuoteMsg } from 'app/utils/MessageUtils';
@@ -101,10 +104,24 @@ export default class Message extends React.Component {
             adds.unshift(unread)
         }
 
+        let author
         let avatar
         if (!isMine && group) {
             if (startsSequence) {
-                avatar = <Userpic account={from} title={'@' + from} width={32} height={32} />
+                author = <div className='author'>
+                    {from}
+                </div>
+
+                avatar = <LinkWithDropdown
+                    closeOnClickOutside
+                    dropdownClassName="GroupDropdown"
+                    dropdownPosition="bottom"
+                    dropdownAlignment="center"
+                    dropdownContent={<AuthorDropdown author={from} />}
+                    transition={Fade}
+                >
+                    <Userpic account={from} title={'@' + from} width={32} height={32} />
+                </LinkWithDropdown>
             }
             avatar = <div className='avatar'>
                 {avatar} 
@@ -129,6 +146,7 @@ export default class Message extends React.Component {
                     {avatar}
                     {isMine ? adds : null}
                     <div className={'bubble' + loading} onClick={(event) => this.onMessageSelect(idx, event)} title={friendlyDate + (modified ? tt('g.modified') : '')}>
+                        {author}
                         { quoteHeader }
                         { content }
                     </div>
