@@ -469,6 +469,12 @@ export default createModule({
                 }
                 new_state = updateInMyGroups(new_state, group, groupUpdater)
                 new_state = updateTheGroup(new_state, group, groupUpdater)
+                new_state = new_state.updateIn(['accounts', member],
+                Map(),
+                acc => {
+                    acc = acc.set('member_type', member_type)
+                    return acc
+                })
                 return new_state
             },
         },

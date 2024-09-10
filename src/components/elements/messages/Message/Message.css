@@ -26,6 +26,10 @@
     color: #0078C4;
     padding-bottom: 3px;
 }
+.msgs-message .bubble-container .author.banned {
+    text-decoration: line-through;
+    color: #999;
+}
 .msgs-message .bubble-container .avatar {
     width: 42px;
     margin-top: 14px;

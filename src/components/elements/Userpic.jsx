@@ -6,10 +6,12 @@ import tt from 'counterpart'
 
 import CircularProgress from './CircularProgress'
 import { proxifyImageUrlWithStrip } from 'app/utils/ProxifyUrl';
+import LetteredAvatar from 'app/components/elements/messages/LetteredAvatar'
 
 class Userpic extends Component {
     static propTypes = {
         account: PropTypes.string,
+        disabled: PropTypes.bool,
         votingPower: PropTypes.number,
         showProgress: PropTypes.bool,
         progressClass: PropTypes.string,
@@ -21,6 +23,7 @@ class Userpic extends Component {
     static defaultProps = {
         width: 48,
         height: 48,
+        disabled: false,
         hideIfDefault: false,
         showProgress: false
     }
@@ -49,6 +52,8 @@ class Userpic extends Component {
             }
         }
 
+        let isDefault = false
+
         if (url && /^(https?:)\/\//.test(url)) {
             const size = width && width > 75 ? '200x200' : '75x75';
             url = proxifyImageUrlWithStrip(url, size);
@@ -57,9 +62,10 @@ class Userpic extends Component {
                 return null;
             }
             url = require('app/assets/images/user.png');
+            isDefault = true
         }
 
-        return url
+        return { url, isDefault }
     }
 
     votingPowerToPercents = power => power / 100
@@ -91,12 +97,20 @@ class Userpic extends Component {
     }
 
     render() {
-        const { title, width, height, votingPower, reputation, hideReputationForSmall, showProgress, onClick } = this.props
+        const { account, disabled, title, width, height, votingPower, reputation, hideReputationForSmall, showProgress, onClick } = this.props
+
+        const { url, isDefault } = this.extractUrl()
 
         const style = {
             width: `${width}px`,
             height: `${height}px`,
-            backgroundImage: `url(${this.extractUrl()})`
+            backgroundImage: `url(${url})`
+        }
+
+        let lettered
+        if (isDefault) {
+            lettered = <LetteredAvatar name={account} size={height}
+                backgroundColor={disabled ? '#999' : undefined} />
         }
 
         if (votingPower) {
@@ -114,7 +128,9 @@ class Userpic extends Component {
                     <div className="Userpic__badge" title={tt('g.reputation')}>{reputation}</div>
                 </div>
        } else {
-            return <div className="Userpic" title={title} style={style} onClick={onClick} />
+            return <div className="Userpic" title={title} style={style} onClick={onClick}>
+                {lettered}
+            </div>
         }
     }
 }

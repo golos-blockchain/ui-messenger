@@ -1,0 +1,28 @@
+.AuthorDropdown {
+    padding: 0.5rem;
+
+    .link {
+        font-weight: bold;
+    }
+
+    .last-seen {
+        font-size: 95%;
+    }
+
+    .btns {
+        min-width: 250px;
+        width: 100%;
+    }
+    .btn {
+        float: right;
+        margin-right: 0.5rem !important;
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+
+        .title {
+            vertical-align: middle;
+            margin-left: 5px;
+        }
+    }
+}

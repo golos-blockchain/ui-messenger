@@ -119,6 +119,7 @@ export function* fetchState(location_change_action) {
                         let query = {
                             group: path,
                             cache: Object.keys(space),
+                            accounts: true,
                             contacts: {
                                 owner: account, limit: 100,
                                 cache: Object.keys(conCache),
@@ -137,6 +138,13 @@ export function* fetchState(location_change_action) {
                         } else {
                             thRes = yield call(getThread)
                         }
+
+                        if (thRes.accounts) {
+                            for (const [n, acc] of Object.entries(thRes.accounts)) {
+                                state.accounts[n] = acc
+                            }
+                        }
+
                         console.log('proc:' + thRes._dec_processed)
                         if (the_group && thRes.error) {
                             the_group.error = thRes.error

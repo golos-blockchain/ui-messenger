@@ -1,7 +1,9 @@
 import React from 'react';
+import {connect} from 'react-redux'
 import { Fade } from 'react-foundation-components/lib/global/fade'
 import { LinkWithDropdown } from 'react-foundation-components/lib/global/dropdown'
 import tt from 'counterpart';
+import cn from 'classnames'
 import { Asset } from 'golos-lib-js/lib/utils'
 
 import AuthorDropdown from 'app/components/elements/messages/AuthorDropdown'
@@ -11,7 +13,7 @@ import { displayQuoteMsg } from 'app/utils/MessageUtils';
 import { proxifyImageUrl } from 'app/utils/ProxifyUrl';
 import './Message.css';
 
-export default class Message extends React.Component {
+class Message extends React.Component {
     onMessageSelect = (idx, event) => {
         if (this.props.onMessageSelect) {
             const { data, selected } = this.props;
@@ -107,23 +109,30 @@ export default class Message extends React.Component {
         let author
         let avatar
         if (!isMine && group) {
+            const { authorAcc } = this.props
+            const isBanned = authorAcc && authorAcc.member_type === 'banned'
+
             if (startsSequence) {
-                author = <div className='author'>
+                author = <div className={cn('author', {
+                    banned: isBanned
+                })}>
                     {from}
                 </div>
 
                 avatar = <LinkWithDropdown
                     closeOnClickOutside
                     dropdownClassName="GroupDropdown"
-                    dropdownPosition="bottom"
-                    dropdownAlignment="center"
                     dropdownContent={<AuthorDropdown author={from} />}
                     transition={Fade}
                 >
-                    <Userpic account={from} title={'@' + from} width={32} height={32} />
+                    <Userpic account={from} title={'@' + from} width={32} height={32}
+                        disabled={isBanned} />
                 </LinkWithDropdown>
             }
-            avatar = <div className='avatar'>
+
+            avatar = <div className={cn('avatar', {
+                banned: isBanned
+            })}>
                 {avatar} 
             </div>
         }
@@ -156,3 +165,18 @@ export default class Message extends React.Component {
         );
     }
 }
+
+export default connect(
+    (state, ownProps) => {
+        const accounts = state.global.get('accounts')
+
+        let authorAcc = ownProps.data && accounts.get(ownProps.data.from)
+        authorAcc = authorAcc ? authorAcc.toJS() : null
+
+        return {
+            authorAcc,
+        }
+    },
+    dispatch => ({
+    }),
+)(Message)
