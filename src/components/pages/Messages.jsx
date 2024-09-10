@@ -27,7 +27,7 @@ import MessagesTopCenter from 'app/components/modules/MessagesTopCenter'
 import g from 'app/redux/GlobalReducer'
 import transaction from 'app/redux/TransactionReducer'
 import user from 'app/redux/UserReducer'
-import { getRoleInGroup } from 'app/utils/groups'
+import { getRoleInGroup, opGroup } from 'app/utils/groups'
 import { getProfileImage, } from 'app/utils/NormalizeProfile';
 import { normalizeContacts, normalizeMessages } from 'app/utils/Normalizators';
 import { fitToPreview } from 'app/utils/ImageUtils';
@@ -208,8 +208,9 @@ class Messages extends React.Component {
             window.notifyAbort = this.notifyAbort
             const takeResult = await notificationTake(username, removeTaskIds, (type, op, timestamp, task_id) => {
                 const isDonate = type === 'donate'
-                let updateMessage = op.from === this.state.to || 
-                    op.to === this.state.to
+                const toAcc = this.getToAcc()
+                let updateMessage = opGroup(op) === this.state.to || (op.from === toAcc || 
+                    op.to === toAcc)
                 const isMine = username === op.from;
                 if (type === 'private_message') {
                     if (op.update) {
@@ -1165,7 +1166,7 @@ export default withRouter(connect(
                 update: editInfo ? true : false,
                 encrypted_message: data.encrypted_message,
             }
-            alert(JSON.stringify(opData))
+            //alert(JSON.stringify(opData))
 
             if (group) {
                 let requester
