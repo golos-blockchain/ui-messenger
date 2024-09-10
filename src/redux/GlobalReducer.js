@@ -3,6 +3,7 @@ import createModule from 'redux-modules'
 import { Asset } from 'golos-lib-js/lib/utils'
 
 import { session } from 'app/redux/UserSaga'
+import { opGroup } from 'app/utils/groups'
 import { processDatedGroup } from 'app/utils/MessageUtils'
 
 const updateInMyGroups = (state, group, groupUpdater, groupsUpserter = mg => mg) => {
@@ -92,6 +93,8 @@ export default createModule({
                     message.donates = '0.000 GOLOS'
                     message.donates_uia = 0
                 }
+                const group = opGroup(message)
+                message.group = group
 
                 let new_state = state;
                 let messages_update = message.nonce;
@@ -112,13 +115,19 @@ export default createModule({
                 new_state = new_state.updateIn(['contacts'],
                     List(),
                     contacts => {
-                        let idx = contacts.findIndex(i =>
-                            i.get('contact') === message.to
-                            || i.get('contact') === message.from);
+                        let idx = contacts.findIndex(i => {
+                            if (group) {
+                                return i.get('kind') === 'group' && i.get('contact') === group
+                            }
+                            return i.get('kind') !== 'group' &&
+                                (i.get('contact') === message.to
+                                || i.get('contact') === message.from)
+                        })
                         if (idx === -1) {
-                            let contact = isMine ? message.to : message.from;
+                            let contact = group || (isMine ? message.to : message.from)
                             contacts = contacts.insert(0, fromJS({
                                 contact,
+                                kind: group ? 'group' : 'account',
                                 last_message: message,
                                 size: {
                                     unread_inbox_messages: !isMine ? 1 : 0,

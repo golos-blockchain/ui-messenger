@@ -5,11 +5,11 @@ import { Link } from 'react-router-dom'
 import tt from 'counterpart'
 import cn from 'classnames'
 
-import ExtLink from 'app/components/elements/ExtLink'
 import Icon from 'app/components/elements/Icon'
 import TimeAgoWrapper from 'app/components/elements/TimeAgoWrapper'
 import transaction from 'app/redux/TransactionReducer'
 import { getRoleInGroup } from 'app/utils/groups'
+import { getLastSeen } from 'app/utils/NormalizeProfile'
 
 import './AuthorDropdown.scss'
 
@@ -48,8 +48,8 @@ class AuthorDropdown extends React.Component {
         const { author, authorAcc, the_group, account } = this.props
 
         let lastSeen
-        if (authorAcc && authorAcc.last_seen) {
-            lastSeen = authorAcc.last_seen
+        if (authorAcc) {
+            lastSeen = getLastSeen(authorAcc)
         }
 
         let isModer
@@ -73,7 +73,7 @@ class AuthorDropdown extends React.Component {
 
         return <div className='AuthorDropdown'>
             <div className='link'>
-                <ExtLink to={'@' + author} service='blogs'>{'@' + author}</ExtLink>
+                <Link to={'/@' + author}>{'@' + author}</Link>
             </div>
             {lastSeen ? <div className='last-seen'>
                 {tt('messages.last_seen')}

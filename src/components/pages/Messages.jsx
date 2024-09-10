@@ -27,11 +27,11 @@ import MessagesTopCenter from 'app/components/modules/MessagesTopCenter'
 import g from 'app/redux/GlobalReducer'
 import transaction from 'app/redux/TransactionReducer'
 import user from 'app/redux/UserReducer'
-import { getRoleInGroup } from 'app/utils/groups'
+import { getRoleInGroup, opGroup } from 'app/utils/groups'
 import { getProfileImage, } from 'app/utils/NormalizeProfile';
 import { normalizeContacts, normalizeMessages } from 'app/utils/Normalizators';
 import { fitToPreview } from 'app/utils/ImageUtils';
-import { notificationSubscribe, notificationShallowUnsubscribe, notificationTake, sendOffchainMessage } from 'app/utils/NotifyApiClient';
+import { notificationSubscribe, notificationShallowUnsubscribe, notificationTake, queueWatch, sendOffchainMessage } from 'app/utils/NotifyApiClient';
 import { flash, unflash } from 'app/components/elements/messages/FlashTitle';
 import { addShortcut } from 'app/utils/app/ShortcutUtils'
 import { hideSplash } from 'app/utils/app/SplashUtils'
@@ -177,6 +177,27 @@ class Messages extends React.Component {
         }, 'CorePlugin', 'stopService', [])
     }
 
+    async watchGroup(to) {
+        if (!to || to.startsWith('@')) {
+            return true
+        }
+
+        const {username} = this.props
+        if (!username) {
+            console.log('watchGroup -', to, ' - no username')
+            return false
+        }
+        try {
+            await queueWatch(username, to)
+            console.log('watchGroup - ', to)
+            return true
+        } catch (err) {
+            console.error('watchGroup - ', to, err)
+            this.notifyErrorsInc(30)
+        }
+        return false
+    }
+
     async setCallback(username, removeTaskIds) {
         if (process.env.NO_NOTIFY) { // config-overrides.js, yarn run dev
             return
@@ -203,13 +224,15 @@ class Messages extends React.Component {
             this.notifyErrorsClear();
         }
         if (this.checkLoggedOut(username)) return
+        const watched = this.watchGroup(this.props.to)
         try {
             this.notifyAbort = new fetchEx.AbortController()
             window.notifyAbort = this.notifyAbort
             const takeResult = await notificationTake(username, removeTaskIds, (type, op, timestamp, task_id) => {
                 const isDonate = type === 'donate'
-                let updateMessage = op.from === this.state.to || 
-                    op.to === this.state.to
+                const toAcc = this.getToAcc()
+                let updateMessage = opGroup(op) === this.state.to || (op.from === toAcc || 
+                    op.to === toAcc)
                 const isMine = username === op.from;
                 if (type === 'private_message') {
                     if (op.update) {
@@ -248,7 +271,7 @@ class Messages extends React.Component {
             }, delay);
             return;
         }
-        this.notifyErrorsClear();
+        if (watched) this.notifyErrorsClear();
     }
 
     componentDidMount() {
@@ -281,8 +304,9 @@ class Messages extends React.Component {
     componentDidUpdate(prevProps) {
         if (this.props.username !== prevProps.username && this.props.username) {
             this.props.fetchState(this.props.to);
-            this.setCallback(this.props.username);
+            this.setCallback(this.props.username)
         } else if (this.props.to !== this.state.to) {
+            this.watchGroup(this.props.to)
             this.props.fetchState(this.props.to)
             if (this.state.to) {
                 this.leaveChat()
@@ -1165,7 +1189,7 @@ export default withRouter(connect(
                 update: editInfo ? true : false,
                 encrypted_message: data.encrypted_message,
             }
-            alert(JSON.stringify(opData))
+            //alert(JSON.stringify(opData))
 
             if (group) {
                 let requester

@@ -51,10 +51,25 @@ const getRoleInGroup = (group, username) => {
     return { amOwner, amModer, amPending, amMember, amBanned }
 }
 
+const opGroup = (op) => {
+    let group = ''
+    if (!op) return group
+    const { extensions } = op
+    if (extensions) {
+        for (const ext of extensions) {
+            if (ext && ext[0] === 0) {
+                group = (ext[1] && ext[1].group) || group
+            }
+        }
+    }
+    return group
+}
+
 export {
     getGroupMeta,
     getGroupTitle,
     getGroupLogo,
     getMemberType,
     getRoleInGroup,
+    opGroup,
 }

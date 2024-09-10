@@ -126,6 +126,7 @@ export async function normalizeContacts(contacts, accounts, currentUser, cachedP
                 saveToCache(msg, true)
             },
             on_error: (msg, idx, exception) => {
+                console.error(exception)
                 msg.message = { body: tt_invalid_message, invalid: true, };
             },
             begin_idx: 0,

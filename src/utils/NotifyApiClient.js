@@ -178,6 +178,30 @@ export async function notificationTake(account, removeTaskIds, forEach, abortCon
     }
 }
 
+export async function queueWatch(account, group, sidKey = '__subscriber_id') {
+    if (!notifyAvailable()) return
+    let url = notifyUrl(`/queues/watch/@${account}/${window[sidKey]}/group?o_scope=*&o=${group}`)
+    let response
+    try {
+        let request = Object.assign({}, request_base, {
+            method: 'get',
+        })
+        setSession(request)
+        response = await fetchEx(url, request)
+        if (response.ok) {
+            saveSession(response)
+        }
+        const result = await response.json()
+        if (result.status === 'ok') {
+            return
+        } else {
+            throw new Error('error: ' + result.error)
+        }
+    } catch (ex) {
+        throw ex
+    }
+}
+
 export async function sendOffchainMessage(op) {
     if (!notifyAvailable()) return;
     let url = notifyUrl(`/msgs/send_offchain`);
@@ -211,4 +235,5 @@ if (process.env.BROWSER) {
     window.notificationUnsubscribe = notificationUnsubscribe;
     window.notificationShallowUnsubscribe = notificationShallowUnsubscribe
     window.notificationTake = notificationTake;
+    window.queueWatch = queueWatch
 }

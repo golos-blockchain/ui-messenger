@@ -32,6 +32,6 @@ export function getLastSeen(account) {
         account.last_bandwidth_update, // all operations
         account.created,
     ];
-    const last = max(dates);
-    return last.startsWith('19') ? null : last;
+    const last = account.last_seen || max(dates);
+    return (!last || last.startsWith('19')) ? null : last;
 }
