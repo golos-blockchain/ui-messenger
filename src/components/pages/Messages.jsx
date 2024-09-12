@@ -31,7 +31,7 @@ import { getRoleInGroup, opGroup } from 'app/utils/groups'
 import { getProfileImage, } from 'app/utils/NormalizeProfile';
 import { normalizeContacts, normalizeMessages } from 'app/utils/Normalizators';
 import { fitToPreview } from 'app/utils/ImageUtils';
-import { notificationSubscribe, notificationShallowUnsubscribe, notificationTake, sendOffchainMessage } from 'app/utils/NotifyApiClient';
+import { notificationSubscribe, notificationShallowUnsubscribe, notificationTake, queueWatch, sendOffchainMessage } from 'app/utils/NotifyApiClient';
 import { flash, unflash } from 'app/components/elements/messages/FlashTitle';
 import { addShortcut } from 'app/utils/app/ShortcutUtils'
 import { hideSplash } from 'app/utils/app/SplashUtils'
@@ -177,6 +177,25 @@ class Messages extends React.Component {
         }, 'CorePlugin', 'stopService', [])
     }
 
+    async watchGroup(to) {
+        if (!to || to.startsWith('@')) {
+            return
+        }
+
+        const {username} = this.props
+        if (!username) {
+            console.log('watchGroup -', to, ' - no username')
+            return
+        }
+        try {
+            await queueWatch(username, to)
+            console.log('watchGroup - ', to)
+        } catch (err) {
+            console.error('watchGroup - ', to, err)
+            this.notifyErrorsInc(30)
+        }
+    }
+
     async setCallback(username, removeTaskIds) {
         if (process.env.NO_NOTIFY) { // config-overrides.js, yarn run dev
             return
@@ -282,8 +301,10 @@ class Messages extends React.Component {
     componentDidUpdate(prevProps) {
         if (this.props.username !== prevProps.username && this.props.username) {
             this.props.fetchState(this.props.to);
-            this.setCallback(this.props.username);
+            this.setCallback(this.props.username)
+            this.watchGroup(this.props.to)
         } else if (this.props.to !== this.state.to) {
+            this.watchGroup(this.props.to)
             this.props.fetchState(this.props.to)
             if (this.state.to) {
                 this.leaveChat()
