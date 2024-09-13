@@ -18,6 +18,7 @@ import NotifiCounter from 'app/components/elements/NotifiCounter'
 import DialogManager from 'app/components/elements/common/DialogManager'
 import AddImageDialog from 'app/components/dialogs/AddImageDialog'
 import ChatError from 'app/components/elements/messages/ChatError'
+import LetteredAvatar from 'app/components/elements/messages/LetteredAvatar'
 import PageFocus from 'app/components/elements/messages/PageFocus'
 import { renderStubs } from 'app/components/elements/Stub'
 import Userpic from 'app/components/elements/Userpic'
@@ -378,7 +379,10 @@ class Messages extends React.Component {
                 continue;
             }
             account.contact = account.name;
-            account.avatar = getProfileImage(account, this.cachedProfileImages);
+            const { url, isDefault } = getProfileImage(account, this.cachedProfileImages)
+            if (!isDefault) {
+                account.avatar = url
+            }
             contacts.push(account);
         }
         if (contacts.length === 0) {
@@ -1032,6 +1036,14 @@ class Messages extends React.Component {
                         if (contact.kind === 'group') return '/*'
                         return '/@*'
                     }}
+                    renderConversationAvatar={(contact, defaultRender) => {
+                        if (contact.avatar) {
+                            return defaultRender(contact.avatar)
+                        }
+                        return <span className='conversation-photo'>
+                            <LetteredAvatar name={contact.contact} size={50} />
+                        </span>
+                    }}
                     onConversationSearch={this.onConversationSearch}
                     messages={this.state.messages}
                     messagesTopLeft={this._renderMessagesTopLeft()}
@@ -1205,7 +1217,7 @@ export default withRouter(connect(
                 }]]
             }
 
-            if (!editInfo && !group) {
+            if (!editInfo) {
                 sendOffchainMessage(opData).catch(err => {
                     console.error('sendOffchainMessage', err)
                     if (notifyAbort) {

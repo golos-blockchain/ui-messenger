@@ -95,7 +95,15 @@ export async function normalizeContacts(contacts, accounts, currentUser, cachedP
     let messages = []
     for (let contact of contactsCopy) {
         let account = accounts && accounts[contact.contact];
-        contact.avatar = getProfileImageLazy(account, cachedProfileImages);
+
+        if (contact.kind === 'group') {
+            contact.avatar = require('app/assets/images/user.png')
+        } else {
+            const { url, isDefault } = getProfileImageLazy(account, cachedProfileImages)
+            if (!isDefault) {
+                contact.avatar = url
+            }
+        }
 
         if (contact.last_message.create_date.startsWith('1970')) {
             contact.last_message.message = { body: '', };

@@ -39,7 +39,7 @@ export default class Messages extends React.Component {
 
     render() {
         const { account, to, toNew,
-            contacts, conversationTopLeft, conversationTopRight, conversationLinkPattern,
+            contacts, conversationTopLeft, conversationTopRight, conversationLinkPattern, renderConversationAvatar,
             onConversationSearch, onConversationSelect,
             messagesTopLeft, messagesTopCenter, messagesTopRight, messages, renderMessages,
             replyingMessage, onCancelReply, onSendMessage,
@@ -71,6 +71,7 @@ export default class Messages extends React.Component {
                             conversations={contacts}
                             conversationSelected={to}
                             conversationLinkPattern={conversationLinkPattern}
+                            renderConversationAvatar={renderConversationAvatar}
                             onConversationSearch={onConversationSearch}
                             onConversationSelect={onConversationSelect}
                             />
