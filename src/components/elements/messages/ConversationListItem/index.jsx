@@ -10,7 +10,8 @@ export default class ConversationListItem extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            avatarSrc: require('app/assets/images/user.png'),
+            //avatarSrc: require('app/assets/images/user.png'),
+            avatarSrc: null,
         };
     }
 
@@ -49,6 +50,17 @@ export default class ConversationListItem extends React.Component {
             onConversationSelect(this.props.data, this.makeLink(), event);
         }
     };
+
+    _renderAvatar = () => {
+        const defaultRender = (src) => {
+            return <img className='conversation-photo' src={src} alt={''} />
+        }
+        const { renderConversationAvatar } = this.props
+        if (!renderConversationAvatar) {
+            return defaultRender(this.state.avatarSrc)
+        }
+        return renderConversationAvatar(this.props.data, defaultRender)
+    }
 
     render() {
         const { selected } = this.props;
@@ -89,7 +101,7 @@ export default class ConversationListItem extends React.Component {
 
         return (
             <Link to={isSystemMessage ? null : link} className={'conversation-list-item' + (selected ? ' selected' : '')}>
-                <img className='conversation-photo' src={this.state.avatarSrc} alt={''} />
+                {this._renderAvatar()}
                 <div className='conversation-info'>
                     <h1 className='conversation-title'>{contact}{checkmark}</h1>
                     <div className='conversation-snippet'>{last_body && truncate(last_body, {length: 30})}

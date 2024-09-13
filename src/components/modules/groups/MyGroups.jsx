@@ -46,7 +46,7 @@ class MyGroups extends React.Component {
     _renderGroupLogo = (group, meta) => {
         const { json_metadata } = group
 
-        const logo = getGroupLogo(json_metadata)
+        const logo = getGroupLogo(json_metadata).url
         return <td className='group-logo'>
             <img src={logo} title={meta.title || name} />
         </td>

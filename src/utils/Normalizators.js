@@ -1,18 +1,22 @@
 import golos from 'golos-lib-js'
 import tt from 'counterpart'
 
+import { getGroupLogo } from 'app/utils/groups'
 import { getProfileImage } from 'app/utils/NormalizeProfile';
 
 const { decodeMsgs } = golos.messages
 
-function getProfileImageLazy(account, cachedProfileImages) {
-    if (!account)
-        return getProfileImage(null);
-    let cached = cachedProfileImages[account.name];
-    if (cached) 
-        return cached;
-    const image = getProfileImage(account);
-    cachedProfileImages[account.name] = image;
+function getProfileImageLazy(contact, account, cachedProfileImages) {
+    if (!contact || !contact.contact)
+        return getProfileImage(null)
+    const now = Date.now()
+    let cached = cachedProfileImages[contact.contact];
+    if (cached && now - cached.time < 60*1000)
+        return cached.image
+    console.log('getProfileImageLazy',  contact.contact)
+    const image = contact.kind === 'group' ?
+        getGroupLogo(contact.object_meta) : getProfileImage(account)
+    cachedProfileImages[contact.contact] = { image, time: now }
     return image;
 }
 
@@ -46,12 +50,14 @@ const cacheKey = (msg) => {
     return key
 }
 
-export const saveToCache = (msg, contact = false) => {
+export const saveToCache = (msg, contact = false, general = true) => {
     if (!msg.message) return false
     if (msg.group && msg.decrypt_date !== msg.receive_date) return false
-    const space = getSpaceInCache(msg)
     const key = cacheKey(msg)
-    space[key] = { message: msg.message }
+    if (general) {
+        const space = getSpaceInCache(msg)
+        space[key] = { message: msg.message }
+    }
     if (contact) {
         const cont = getContactsSpace(msg)
         cont[key] = { message: msg.message }
@@ -95,7 +101,14 @@ export async function normalizeContacts(contacts, accounts, currentUser, cachedP
     let messages = []
     for (let contact of contactsCopy) {
         let account = accounts && accounts[contact.contact];
-        contact.avatar = getProfileImageLazy(account, cachedProfileImages);
+
+        const isGroup = contact.kind === 'group'
+        const { url, isDefault } = getProfileImageLazy(contact,
+            account,
+            cachedProfileImages)
+        if (!isDefault || isGroup) {
+            contact.avatar = url
+        }
 
         if (contact.last_message.create_date.startsWith('1970')) {
             contact.last_message.message = { body: '', };
@@ -128,6 +141,7 @@ export async function normalizeContacts(contacts, accounts, currentUser, cachedP
             on_error: (msg, idx, exception) => {
                 console.error(exception)
                 msg.message = { body: tt_invalid_message, invalid: true, };
+                saveToCache(msg, true, false)
             },
             begin_idx: 0,
             end_idx: messages.length,

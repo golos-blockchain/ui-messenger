@@ -22,13 +22,15 @@ const getGroupLogo = (json_metadata) => {
     const meta = getGroupMeta(json_metadata)
 
     let { logo } = meta
+    let isDefault = false
     if (logo && /^(https?:)\/\//.test(logo)) {
         const size = '75x75'
         logo = proxifyImageUrlWithStrip(logo, size)
     } else {
-        logo = require('app/assets/images/user.png')
+        logo = require('app/assets/images/group.png')
+        isDefault = true
     }
-    return logo
+    return {url: logo, isDefault }
 }
 
 const getMemberType = (member_list, username) => {

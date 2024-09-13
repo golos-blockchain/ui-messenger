@@ -359,6 +359,16 @@ export default createModule({
                     })
                     return gro
                 })
+                for (const mem of (members || [])) {
+                    if (mem.account_data) {
+                        const account = fromJS(mem.account_data)
+                        new_state = new_state.updateIn(
+                            ['accounts', account.get('name')],
+                            Map(),
+                            a => a.mergeDeep(account)
+                        )
+                    }
+                }
                 return new_state
             },
         },

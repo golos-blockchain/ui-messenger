@@ -14,14 +14,14 @@ export function getProfileImage(account, size = 48) {
                 if (url && /^(https?:)\/\//.test(url)) {
                     size = size > 75 ? '200x200' : '75x75';
                     url = proxifyImageUrl(url, size);
-                    return url;
+                    return { url }
                 }
             }
         } catch (e) {
             console.error(e);
         }
     }
-    return require('app/assets/images/user.png');
+    return { url: require('app/assets/images/user.png'), isDefault: true }
 }
 
 /**

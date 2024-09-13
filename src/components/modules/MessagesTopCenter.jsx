@@ -99,7 +99,7 @@ class MessagesTopCenter extends React.Component {
 
         const { name, json_metadata, privacy, is_encrypted,
             owner, member_list, members, moders } = the_group
-        const logo = getGroupLogo(json_metadata)
+        const logo = getGroupLogo(json_metadata).url
 
         const meta = getGroupMeta(json_metadata)
         const title = getGroupTitle(meta, name)
@@ -247,7 +247,7 @@ class MessagesTopCenter extends React.Component {
         if (isGroup) {
             if (the_group) {
                 const { json_metadata } = the_group
-                const logo = getGroupLogo(json_metadata)
+                const logo = getGroupLogo(json_metadata).url
                 avatar.push(<div className='group-logo'>
                     <img src={logo} />
                 </div>)

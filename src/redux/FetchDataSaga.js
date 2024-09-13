@@ -22,22 +22,36 @@ export function* watchFetchState() {
     yield takeLatest('FETCH_STATE', fetchState)
 }
 
+const setMiniAccount = (state, account) => {
+    if (account) {
+        state.accounts[account.name] = account
+    }
+}
+const addMiniAccounts = (state, accounts) => {
+    if (accounts) {
+        for (const [n, acc] of Object.entries(accounts)) {
+            setMiniAccount(state, acc)
+        }
+    }
+}
+
 export function* fetchState(location_change_action) {
     try {
-
         const { pathname } = location_change_action.payload.location
-        const { fake } = location_change_action.payload
+        const { fake, isFirstRendering } = location_change_action.payload
         const parts = pathname.split('/')
 
         const state = {}
         state.nodeError = null
-        state.contacts = [];
-        state.the_group = undefined
-        state.messages = [];
-        state.messages_update = '0';
-        state.accounts = {}
-        state.assets = {}
-        state.groups = {}
+        if (isFirstRendering || fake) {
+            state.contacts = [];
+            state.the_group = undefined
+            state.messages = [];
+            state.messages_update = '0';
+            state.accounts = {}
+            state.assets = {}
+            state.groups = {}
+        }
 
         let hasErr = false
 
@@ -59,8 +73,6 @@ export function* fetchState(location_change_action) {
 
             const account = yield select(state => state.user.getIn(['current', 'username']));
             if (account) {
-                accounts.add(account);
-
                 const posting = yield select(state => state.user.getIn(['current', 'private_keys', 'posting_private']))
 
                 const path = parts[1]
@@ -75,6 +87,8 @@ export function* fetchState(location_change_action) {
                                 ...loginData,
                                 owner: account, limit: 100,
                                 cache: Object.keys(conCache),
+                                accounts: true,
+                                relations: false,
                             })
                         }
                     })
@@ -83,19 +97,28 @@ export function* fetchState(location_change_action) {
                     state.contacts = con.contacts
                     if (hasErr) return
                     console.timeEnd('prof: getContactsAsync')
+
+                    addMiniAccounts(state, con.accounts)
                 }
 
                 if (path) {
                     if (path.startsWith('@')) {
                         const to = path.replace('@', '');
-                        accounts.add(to);
 
-                        state.messages = yield callSafe(state, [], 'getThreadAsync', [api, api.getThreadAsync], account, to, {});
+                        const mess = yield callSafe(state, [], 'getThreadAsync', [api, api.getThreadAsync], {
+                            from: account,
+                            to,
+                            accounts: true
+                        })
                         if (hasErr) return
+
+                        state.messages = mess.messages
 
                         if (state.messages.length) {
                             state.messages_update = state.messages[state.messages.length - 1].nonce;
                         }
+
+                        addMiniAccounts(state, mess.accounts)
                     } else {
                         console.time('prof: getGroupsAsync')
                         let the_group = yield callSafe(state, [], 'getGroupsAsync', [api, api.getGroupsAsync], {
@@ -123,6 +146,7 @@ export function* fetchState(location_change_action) {
                             contacts: {
                                 owner: account, limit: 100,
                                 cache: Object.keys(conCache),
+                                relations: false,
                             },
                         }
                         const getThread = async (loginData) => {
@@ -139,11 +163,7 @@ export function* fetchState(location_change_action) {
                             thRes = yield call(getThread)
                         }
 
-                        if (thRes.accounts) {
-                            for (const [n, acc] of Object.entries(thRes.accounts)) {
-                                state.accounts[n] = acc
-                            }
-                        }
+                        addMiniAccounts(state, thRes.accounts)
 
                         console.log('proc:' + thRes._dec_processed)
                         if (the_group && thRes.error) {
@@ -158,9 +178,6 @@ export function* fetchState(location_change_action) {
                         }
                         console.timeEnd('prof: getThreadAsync')
                     }
-                }
-                for (let contact of state.contacts) {
-                    accounts.add(contact.contact);
                 }
             }
 
@@ -243,7 +260,6 @@ export function* fetchTopGroups({ payload: { account } }) {
         let start_group = ''
 
         for (let page = 1; page <= 3; ++page) {
-            console.log('FTG')
             if (page > 1) {
                 groupsWithoutMe.pop()
             }
@@ -295,6 +311,7 @@ export function* fetchGroupMembers({ payload: { group, creatingNew, memberTypes,
             sort_conditions: sortConditions,
             start_member: '',
             limit: 100,
+            accounts: true,
         })
 
         yield put(g.actions.receiveGroupMembers({ group, members }))

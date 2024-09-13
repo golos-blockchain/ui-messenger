@@ -9,7 +9,7 @@ import './ConversationList.css';
 export default class ConversationList extends React.Component {
     render() {
         const { topLeft, topRight,
-            conversationSelected, conversationLinkPattern, onConversationSearch,
+            conversationSelected, conversationLinkPattern, renderConversationAvatar, onConversationSearch,
             onConversationSelect,
             isSmall } = this.props;
         return (
@@ -26,6 +26,7 @@ export default class ConversationList extends React.Component {
                             data={conversation}
                             selected={conversationSelected === conversation.contact}
                             conversationLinkPattern={conversationLinkPattern}
+                            renderConversationAvatar={renderConversationAvatar}
                             onConversationSelect={onConversationSelect}
                         />
                     )
