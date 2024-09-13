@@ -145,17 +145,15 @@ export const renderStubs = (the_group, to, username, accounts) => {
     }
 
     const { privacy } = the_group
-    if (privacy !== 'public_group') {
-        const { amBanned, amMember, amModer, amPending } = getRoleInGroup(the_group, username)
-        const notMember = !amModer && !amMember
-        if (amBanned || notMember) {
-            composeStub = { ui: <Stub type='compose' banned={amBanned} notMember={notMember}
+    const { amBanned, amMember, amModer, amPending } = getRoleInGroup(the_group, username)
+    const notMember = !amModer && !amMember
+    if (amBanned || (privacy !== 'public_group' && notMember)) {
+        composeStub = { ui: <Stub type='compose' banned={amBanned} notMember={notMember}
+            pending={amPending} group={the_group} /> }
+        if (privacy === 'private_group') {
+            composeStub = { disabled: true }
+            msgsStub = { ui: <Stub type='messages' banned={amBanned} notMember={notMember}
                 pending={amPending} group={the_group} /> }
-            if (privacy === 'private_group') {
-                composeStub = { disabled: true }
-                msgsStub = { ui: <Stub type='messages' banned={amBanned} notMember={notMember}
-                    pending={amPending} group={the_group} /> }
-            }
         }
     }
 

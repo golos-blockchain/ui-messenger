@@ -16,7 +16,7 @@ import LoadingIndicator from 'app/components/elements/LoadingIndicator'
 import DialogManager from 'app/components/elements/common/DialogManager'
 import { showLoginDialog } from 'app/components/dialogs/LoginDialog'
 import { validateLogoStep } from 'app/components/modules/groups/GroupLogo'
-import { getGroupLogo, getGroupMeta, getGroupTitle } from 'app/utils/groups'
+import { getGroupMeta, getGroupTitle } from 'app/utils/groups'
 import { proxifyImageUrlWithStrip } from 'app/utils/ProxifyUrl'
 
 class GroupSettings extends React.Component {

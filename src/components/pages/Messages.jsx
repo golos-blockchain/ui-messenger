@@ -388,6 +388,7 @@ class Messages extends React.Component {
         if (contacts.length === 0) {
             contacts = [{
                 contact: tt('messages.search_not_found'),
+                avatar: require('app/assets/images/user.png'),
                 isSystemMessage: true
             }];
         }
