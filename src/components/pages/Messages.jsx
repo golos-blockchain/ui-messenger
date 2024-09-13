@@ -179,21 +179,23 @@ class Messages extends React.Component {
 
     async watchGroup(to) {
         if (!to || to.startsWith('@')) {
-            return
+            return true
         }
 
         const {username} = this.props
         if (!username) {
             console.log('watchGroup -', to, ' - no username')
-            return
+            return false
         }
         try {
             await queueWatch(username, to)
             console.log('watchGroup - ', to)
+            return true
         } catch (err) {
             console.error('watchGroup - ', to, err)
             this.notifyErrorsInc(30)
         }
+        return false
     }
 
     async setCallback(username, removeTaskIds) {
@@ -222,6 +224,7 @@ class Messages extends React.Component {
             this.notifyErrorsClear();
         }
         if (this.checkLoggedOut(username)) return
+        const watched = this.watchGroup(this.props.to)
         try {
             this.notifyAbort = new fetchEx.AbortController()
             window.notifyAbort = this.notifyAbort
@@ -268,7 +271,7 @@ class Messages extends React.Component {
             }, delay);
             return;
         }
-        this.notifyErrorsClear();
+        if (watched) this.notifyErrorsClear();
     }
 
     componentDidMount() {
@@ -302,7 +305,6 @@ class Messages extends React.Component {
         if (this.props.username !== prevProps.username && this.props.username) {
             this.props.fetchState(this.props.to);
             this.setCallback(this.props.username)
-            this.watchGroup(this.props.to)
         } else if (this.props.to !== this.state.to) {
             this.watchGroup(this.props.to)
             this.props.fetchState(this.props.to)

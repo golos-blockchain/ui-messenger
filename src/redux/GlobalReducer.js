@@ -115,14 +115,19 @@ export default createModule({
                 new_state = new_state.updateIn(['contacts'],
                     List(),
                     contacts => {
-                        let idx = contacts.findIndex(i =>
-                            (group && i.get('contact') === group)
-                            || i.get('contact') === message.to
-                            || i.get('contact') === message.from);
+                        let idx = contacts.findIndex(i => {
+                            if (group) {
+                                return i.get('kind') === 'group' && i.get('contact') === group
+                            }
+                            return i.get('kind') !== 'group' &&
+                                (i.get('contact') === message.to
+                                || i.get('contact') === message.from)
+                        })
                         if (idx === -1) {
-                            let contact = isMine ? message.to : message.from;
+                            let contact = group || (isMine ? message.to : message.from)
                             contacts = contacts.insert(0, fromJS({
                                 contact,
+                                kind: group ? 'group' : 'account',
                                 last_message: message,
                                 size: {
                                     unread_inbox_messages: !isMine ? 1 : 0,
