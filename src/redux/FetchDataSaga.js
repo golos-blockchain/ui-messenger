@@ -37,20 +37,21 @@ const addMiniAccounts = (state, accounts) => {
 
 export function* fetchState(location_change_action) {
     try {
-
         const { pathname } = location_change_action.payload.location
-        const { fake } = location_change_action.payload
+        const { fake, isFirstRendering } = location_change_action.payload
         const parts = pathname.split('/')
 
         const state = {}
         state.nodeError = null
-        state.contacts = [];
-        state.the_group = undefined
-        state.messages = [];
-        state.messages_update = '0';
-        state.accounts = {}
-        state.assets = {}
-        state.groups = {}
+        if (isFirstRendering || fake) {
+            state.contacts = [];
+            state.the_group = undefined
+            state.messages = [];
+            state.messages_update = '0';
+            state.accounts = {}
+            state.assets = {}
+            state.groups = {}
+        }
 
         let hasErr = false
 
@@ -87,6 +88,7 @@ export function* fetchState(location_change_action) {
                                 owner: account, limit: 100,
                                 cache: Object.keys(conCache),
                                 accounts: true,
+                                relations: false,
                             })
                         }
                     })
@@ -144,6 +146,7 @@ export function* fetchState(location_change_action) {
                             contacts: {
                                 owner: account, limit: 100,
                                 cache: Object.keys(conCache),
+                                relations: false,
                             },
                         }
                         const getThread = async (loginData) => {

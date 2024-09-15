@@ -50,12 +50,14 @@ const cacheKey = (msg) => {
     return key
 }
 
-export const saveToCache = (msg, contact = false) => {
+export const saveToCache = (msg, contact = false, general = true) => {
     if (!msg.message) return false
     if (msg.group && msg.decrypt_date !== msg.receive_date) return false
-    const space = getSpaceInCache(msg)
     const key = cacheKey(msg)
-    space[key] = { message: msg.message }
+    if (general) {
+        const space = getSpaceInCache(msg)
+        space[key] = { message: msg.message }
+    }
     if (contact) {
         const cont = getContactsSpace(msg)
         cont[key] = { message: msg.message }
@@ -139,6 +141,7 @@ export async function normalizeContacts(contacts, accounts, currentUser, cachedP
             on_error: (msg, idx, exception) => {
                 console.error(exception)
                 msg.message = { body: tt_invalid_message, invalid: true, };
+                saveToCache(msg, true, false)
             },
             begin_idx: 0,
             end_idx: messages.length,

@@ -15,6 +15,11 @@ class AccountName extends React.Component {
         this.ref = React.createRef()
     }
 
+    onAccountsLoad = (accs) => {
+        const { onAccountsLoad } = this.props
+        onAccountsLoad(accs)
+    }
+
     lookupAccounts = async (value) => {
         try {
             //await new Promise(resolve => setTimeout(resolve, 2000))
@@ -24,6 +29,7 @@ class AccountName extends React.Component {
                 filter_accounts: [...filterAccounts],
             })
             const accs = await api.lookupAccountNamesAsync(accNames)
+            this.onAccountsLoad(accs)
             return accs
         } catch (err) {
             console.error(err)

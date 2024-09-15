@@ -232,8 +232,9 @@ class Messages extends React.Component {
             const takeResult = await notificationTake(username, removeTaskIds, (type, op, timestamp, task_id) => {
                 const isDonate = type === 'donate'
                 const toAcc = this.getToAcc()
-                let updateMessage = opGroup(op) === this.state.to || (op.from === toAcc || 
-                    op.to === toAcc)
+                const group = opGroup(op)
+                let updateMessage = group === this.state.to || (!group && (op.from === toAcc || 
+                    op.to === toAcc))
                 const isMine = username === op.from;
                 if (type === 'private_message') {
                     if (op.update) {

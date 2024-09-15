@@ -199,6 +199,9 @@ class GroupMembers extends React.Component {
                             placeholder={tt('create_group_jsx.add_member')}
                             onChange={this.onAddAccount}
                             filterAccounts={filterAccs}
+                            onAccountsLoad={(accs) => {
+                                this.props.receiveAccounts(accs)
+                            }}
                         />
                     </div>
                 </div> : null}
@@ -299,6 +302,11 @@ export default connect(
         fetchGroupMembers: (group, memberTypes, sortConditions) => {
             dispatch(g.actions.fetchGroupMembers({
                 group: group.name, creatingNew: !!group.creatingNew, memberTypes, sortConditions, }))
+        },
+        receiveAccounts: (accs) => {
+            for (const acc of accs) {
+                dispatch(g.actions.receiveAccount({ account: acc }))
+            }
         },
         updateGroupMember: (group, member, member_type) => {
             dispatch(g.actions.updateGroupMember({
