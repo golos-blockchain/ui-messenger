@@ -73,7 +73,7 @@
   "scripts": {
     "preinstall": "node git-install.js",
     "cordova": "cordova",
-    "dev": "react-app-rewired start",
+    "dev": "cross-env HTTPS=true react-app-rewired start",
     "dev:server": "nodemon server",
     "build": "react-app-rewired build",
     "prod": "NODE_ENV=production node server/index.js",

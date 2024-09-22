@@ -8,6 +8,18 @@ import Icon from 'app/components/elements/Icon';
 import { displayQuoteMsg } from 'app/utils/MessageUtils';
 import './Compose.css';
 
+const fixComposeSize = () => {
+    const sb = document.getElementsByClassName('msgs-sidebar')[0]
+    let cw = '100%'
+    if (sb) {
+        cw = 'calc(100% - ' + sb.offsetWidth + 'px)'
+    }
+    const compose = document.getElementsByClassName('msgs-compose')[0]
+    if (compose) {
+        compose.style.width = cw
+    }
+}
+
 export default class Compose extends React.Component {
     onKeyDown = (e) => {
         if (!window.IS_MOBILE_DEVICE && e.keyCode === 13) {
@@ -57,10 +69,16 @@ export default class Compose extends React.Component {
 
     componentDidMount() {
         this.init();
+        fixComposeSize()
+        window.addEventListener('resize', fixComposeSize)
     }
 
     componentDidUpdate() {
         this.init();
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('resize', fixComposeSize)
     }
 
     onEmojiClick = (event) => {

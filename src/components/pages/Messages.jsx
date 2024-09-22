@@ -32,7 +32,8 @@ import { getRoleInGroup, opGroup } from 'app/utils/groups'
 import { getProfileImage, } from 'app/utils/NormalizeProfile';
 import { normalizeContacts, normalizeMessages } from 'app/utils/Normalizators';
 import { fitToPreview } from 'app/utils/ImageUtils';
-import { notificationSubscribe, notificationShallowUnsubscribe, notificationTake, queueWatch, sendOffchainMessage } from 'app/utils/NotifyApiClient';
+import { notificationSubscribe, notificationSubscribeWs, notifyWsPing,
+    notificationShallowUnsubscribe, notificationTake, queueWatch, sendOffchainMessage } from 'app/utils/NotifyApiClient';
 import { flash, unflash } from 'app/components/elements/messages/FlashTitle';
 import { addShortcut } from 'app/utils/app/ShortcutUtils'
 import { hideSplash } from 'app/utils/app/SplashUtils'
@@ -210,70 +211,69 @@ class Messages extends React.Component {
             }, 250)
             return
         }
-        let subscribed = null;
+        let subscribed = null
         try {
-            subscribed = await notificationSubscribe(username);
-        } catch (ex) {
-            console.error('notificationSubscribe', ex);
-            this.notifyErrorsInc(15);
-            setTimeout(() => {
-                this.setCallback(username, removeTaskIds);
-            }, 5000);
-            return;
-        }
-        if (subscribed) { // if was not already subscribed
-            this.notifyErrorsClear();
-        }
-        if (this.checkLoggedOut(username)) return
-        const watched = this.watchGroup(this.props.to)
-        try {
-            this.notifyAbort = new fetchEx.AbortController()
-            window.notifyAbort = this.notifyAbort
-            const takeResult = await notificationTake(username, removeTaskIds, (type, op, timestamp, task_id) => {
-                const isDonate = type === 'donate'
-                const toAcc = this.getToAcc()
-                const group = opGroup(op)
-                let updateMessage = group === this.state.to || (!group && (op.from === toAcc || 
-                    op.to === toAcc))
-                const isMine = username === op.from;
-                if (type === 'private_message') {
-                    if (op.update) {
-                        this.props.messageEdited(op, timestamp, updateMessage, isMine);
-                    } else if (this.nonce !== op.nonce) {
-                        this.props.messaged(op, timestamp, updateMessage, isMine);
-                        this.nonce = op.nonce
-                        if (!isMine && !this.windowFocused) {
-                            this.flashMessage();
+            subscribed = await notificationSubscribeWs(username, (err, event) => {
+                for (const task of event.tasks) {
+                    const { scope, data, timestamp } = task
+                    const [ type, op ] = data
+                    //alert(scope + ' ' + type + op +' ' + timestamp)
+                    const isDonate = type === 'donate'
+                    const toAcc = this.getToAcc()
+                    const group = opGroup(op)
+                    let updateMessage = group === this.state.to || (!group && (op.from === toAcc || 
+                        op.to === toAcc))
+                    const isMine = username === op.from;
+                    if (type === 'private_message') {
+                        if (op.update) {
+                            this.props.messageEdited(op, timestamp, updateMessage, isMine);
+                        } else if (this.nonce !== op.nonce) {
+                            this.props.messaged(op, timestamp, updateMessage, isMine);
+                            this.nonce = op.nonce
+                            if (!isMine && !this.windowFocused) {
+                                this.flashMessage();
+                            }
                         }
+                    } else if (type === 'private_delete_message') {
+                        this.props.messageDeleted(op, updateMessage, isMine);
+                    } else if (type === 'private_mark_message') {
+                        this.props.messageRead(op, timestamp, updateMessage, isMine);
+                    } else if (isDonate) {
+                        this.props.messageDonated(op, updateMessage, isMine)
                     }
-                } else if (type === 'private_delete_message') {
-                    this.props.messageDeleted(op, updateMessage, isMine);
-                } else if (type === 'private_mark_message') {
-                    this.props.messageRead(op, timestamp, updateMessage, isMine);
-                } else if (isDonate) {
-                    this.props.messageDonated(op, updateMessage, isMine)
                 }
-            }, this.notifyAbort);
-            removeTaskIds = takeResult.removeTaskIds
-            window.__lastTake = takeResult.__lastTake
-            setTimeout(() => {
-                this.setCallback(username, removeTaskIds);
-            }, 250);
+            })
+            console.log('WSS:', subscribed)
         } catch (ex) {
-            console.error('notificationTake', ex);
-            this.notifyErrorsInc(3);
-            let delay = 2000
-            if (ex.message.includes('No such queue')) {
-                console.log('notificationTake: resubscribe forced...')
-                notificationShallowUnsubscribe()
-                delay = 250
-            }
+            console.error('notificationSubscribe', ex)
+            this.notifyErrorsInc(15)
             setTimeout(() => {
-                this.setCallback(username, removeTaskIds)
-            }, delay);
-            return;
+                this.setCallback(username)
+            }, 5000)
+            return
         }
-        if (watched) this.notifyErrorsClear();
+        this.notifyErrorsClear()
+        const ping = async (firstCall = false) => {
+            if (!firstCall) {
+                try {
+                    await notifyWsPing()
+                    if (this.state.notifyErrors) {
+                        // Queue can be cleared by Notify
+                        setTimeout(() => {
+                            this.setCallback(username)
+                        }, 100)
+                        return
+                    }
+                    this.notifyErrorsClear()
+                } catch (err) {
+                    console.error('Notify ping failed', err)
+                    this.notifyErrorsInc(10)
+                }
+            }
+            setTimeout(ping, 10000)
+        }
+        ping(true)
+        this.watchGroup(this.props.to)
     }
 
     componentDidMount() {
@@ -289,12 +289,14 @@ class Messages extends React.Component {
             document.addEventListener('resume', this.onResume)
         }
         this.props.loginUser()
+        this.checkUserAuth(true)
+    }
+
+    checkUserAuth = (initial) => {
         const checkAuth = () => {
-            if (!this.props.username) {
-                this.props.checkMemo(this.props.currentUser);
-            }
+            this.props.checkAuth(this.props.currentUser, this.isChat())
         }
-        if (!localStorage.getItem('msgr_auth')) {
+        if (!initial || !localStorage.getItem('msgr_auth')) {
             checkAuth()
         } else {
             setTimeout(() => {
@@ -304,7 +306,11 @@ class Messages extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (this.props.username !== prevProps.username && this.props.username) {
+        const loggedNow = this.props.username !== prevProps.username && this.props.username
+        if (this.props.to !== prevProps.to || (this.isChat() && loggedNow)) {
+            this.checkUserAuth()
+        }
+        if (loggedNow) {
             this.props.fetchState(this.props.to);
             this.setCallback(this.props.username)
         } else if (this.props.to !== this.state.to) {
@@ -324,9 +330,9 @@ class Messages extends React.Component {
             this.setState({
                 to: this.props.to, // protects from infinity loop
             });
-            if (!this.props.checkMemo(currentUser)) {
+            /*if (!this.props.checkMemo(currentUser)) {
                 return;
-            }
+            }*/
             const anotherKey = this.props.memo_private !== prevProps.memo_private;
             const added = this.props.messages.size > this.state.messagesCount;
             let focusTimeout = prevProps.messages.size ? 100 : 1000;
@@ -345,9 +351,7 @@ class Messages extends React.Component {
                     if (added)
                         this.markMessages2();
                     setTimeout(() => {
-                        if (anotherChat || anotherKey) {
-                            this.focusInput();
-                        }
+                        this.focusInput();
                     }, focusTimeout);
                 })
             }
@@ -912,6 +916,11 @@ class Messages extends React.Component {
             </LinkWithDropdown>);
     };
 
+    isChat = () => {
+        const { to } = this.props
+        return to && to.startsWith('@')
+    }
+
     isGroup = () => {
         const { to } = this.props
         return to && !to.startsWith('@')
@@ -1113,7 +1122,7 @@ export default withRouter(connect(
     dispatch => ({
         loginUser: () => dispatch(user.actions.usernamePasswordLogin()),
 
-        checkMemo: (currentUser) => {
+        checkAuth: (currentUser, memoNeed) => {
             if (!currentUser) {
                 hideSplash()
                 dispatch(user.actions.showLogin({
@@ -1121,13 +1130,15 @@ export default withRouter(connect(
                 }));
                 return false;
             }
-            const private_key = currentUser.getIn(['private_keys', 'memo_private']);
-            if (!private_key) {
-                hideSplash()
-                dispatch(user.actions.showLogin({
-                    loginDefault: { username: currentUser.get('username'), authType: 'memo', unclosable: true }
-                }));
-                return false;
+            if (memoNeed) {
+                const private_key = currentUser.getIn(['private_keys', 'memo_private'])
+                if (!private_key) {
+                    hideSplash()
+                    dispatch(user.actions.showLogin({
+                        loginDefault: { username: currentUser.get('username'), authType: 'memo', }
+                    }));
+                    return false
+                }
             }
             return true;
         },
