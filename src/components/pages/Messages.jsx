@@ -32,7 +32,8 @@ import { getRoleInGroup, opGroup } from 'app/utils/groups'
 import { getProfileImage, } from 'app/utils/NormalizeProfile';
 import { normalizeContacts, normalizeMessages } from 'app/utils/Normalizators';
 import { fitToPreview } from 'app/utils/ImageUtils';
-import { notificationSubscribe, notificationShallowUnsubscribe, notificationTake, queueWatch, sendOffchainMessage } from 'app/utils/NotifyApiClient';
+import { notificationSubscribe, notificationSubscribeWs,
+    notificationShallowUnsubscribe, notificationTake, queueWatch, sendOffchainMessage } from 'app/utils/NotifyApiClient';
 import { flash, unflash } from 'app/components/elements/messages/FlashTitle';
 import { addShortcut } from 'app/utils/app/ShortcutUtils'
 import { hideSplash } from 'app/utils/app/SplashUtils'
@@ -199,7 +200,7 @@ class Messages extends React.Component {
         return false
     }
 
-    async setCallback(username, removeTaskIds) {
+    async setCallback0(username, removeTaskIds) {
         if (process.env.NO_NOTIFY) { // config-overrides.js, yarn run dev
             return
         }
@@ -274,6 +275,60 @@ class Messages extends React.Component {
             return;
         }
         if (watched) this.notifyErrorsClear();
+    }
+
+    async setCallback(username, removeTaskIds) {
+        if (process.env.NO_NOTIFY) { // config-overrides.js, yarn run dev
+            return
+        }
+        if (this.checkLoggedOut(username)) return
+        if (this.paused) {
+            setTimeout(() => {
+                this.setCallback(username, removeTaskIds)
+            }, 250)
+            return
+        }
+        let subscribed = null
+        try {
+            subscribed = await notificationSubscribeWs(username, (err, event) => {
+                for (const task of event.tasks) {
+                    const { scope, data, timestamp } = task
+                    const [ type, op ] = data
+                    //alert(scope + ' ' + type + op +' ' + timestamp)
+                    const isDonate = type === 'donate'
+                    const toAcc = this.getToAcc()
+                    const group = opGroup(op)
+                    let updateMessage = group === this.state.to || (!group && (op.from === toAcc || 
+                        op.to === toAcc))
+                    const isMine = username === op.from;
+                    if (type === 'private_message') {
+                        if (op.update) {
+                            this.props.messageEdited(op, timestamp, updateMessage, isMine);
+                        } else if (this.nonce !== op.nonce) {
+                            this.props.messaged(op, timestamp, updateMessage, isMine);
+                            this.nonce = op.nonce
+                            if (!isMine && !this.windowFocused) {
+                                this.flashMessage();
+                            }
+                        }
+                    } else if (type === 'private_delete_message') {
+                        this.props.messageDeleted(op, updateMessage, isMine);
+                    } else if (type === 'private_mark_message') {
+                        this.props.messageRead(op, timestamp, updateMessage, isMine);
+                    } else if (isDonate) {
+                        this.props.messageDonated(op, updateMessage, isMine)
+                    }
+                }
+            })
+            console.log('WSS:', subscribed)
+        } catch (ex) {
+            console.error('notificationSubscribe', ex)
+            this.notifyErrorsInc(15)
+            setTimeout(() => {
+                this.setCallback(username)
+            }, 5000)
+            return
+        }
     }
 
     componentDidMount() {
