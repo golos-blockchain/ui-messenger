@@ -62,10 +62,19 @@ async function connectNotifyWs() {
             notifyWs.addEventListener('open', () => {
                 notifyWs.isOpen = true
                 clearTimeout(timeout)
+                setInterval(() => {
+                    console.log('NOTW', notifyWs.readyState)
+                    //notifyWs.send('_heartbeat')
+                }, 1000)
                 resolve()
             })
 
+            notifyWs.addEventListener('error', () => {
+                alert('NOTW close')
+            })
+
             notifyWs.addEventListener('сlose', () => {
+                alert('NOTW close')
                 if (!notifyWs.isOpen) {
                     clearTimeout(timeout)
                     const err = new Error('notifyWs - cannot connect')
@@ -200,7 +209,7 @@ export async function notificationSubscribe(account, scopes = 'message,donate_ms
     throw new Error('Cannot subscribe');
 }
 
-export async function notificationSubscribeWs(account, callback, scopes = 'message,donate_msgs') {
+export async function notificationSubscribeWs(account, callback, scopes = 'message,donate_msgs', sidKey = '__subscriber_id') {
     if (!notifyWsAvailable()) return null
     const xSession = notifySession()
     return await new Promise(async (resolve, reject) => {
@@ -213,6 +222,7 @@ export async function notificationSubscribeWs(account, callback, scopes = 'messa
                 reject(err)
                 return
             }
+            window[sidKey] = res.subscriber_id
             resolve(res)
         }, { event: 'queue', callback})
     })
@@ -341,12 +351,13 @@ export async function sendOffchainMessage(op) {
     }
 }
 
-if (process.env.BROWSER) {
+//if (process.env.BROWSER) {
     window.getNotifications = getNotifications;
     window.markNotificationRead = markNotificationRead;
     window.notificationSubscribe = notificationSubscribe;
+    window.notificationSubscribeWs = notificationSubscribeWs
     window.notificationUnsubscribe = notificationUnsubscribe;
     window.notificationShallowUnsubscribe = notificationShallowUnsubscribe
     window.notificationTake = notificationTake;
     window.queueWatch = queueWatch
-}
+//}
