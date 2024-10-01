@@ -62,23 +62,16 @@ async function connectNotifyWs() {
             notifyWs.addEventListener('open', () => {
                 notifyWs.isOpen = true
                 clearTimeout(timeout)
-                setInterval(() => {
-                    console.log('NOTW', notifyWs.readyState)
-                    //notifyWs.send('_heartbeat')
-                }, 1000)
                 resolve()
             })
 
-            notifyWs.addEventListener('error', () => {
-                alert('NOTW close')
-            })
-
             notifyWs.addEventListener('сlose', () => {
-                alert('NOTW close')
                 if (!notifyWs.isOpen) {
                     clearTimeout(timeout)
                     const err = new Error('notifyWs - cannot connect')
                     reject(err)
+                } else {
+                    console.log('NOTW close')
                 }
             })
 
@@ -136,6 +129,14 @@ async function notifyWsSend(api, args, callback = null, eventCallback = null) {
             callback(err, null)
         }
     }
+}
+
+export async function notifyWsPing() {
+    await connectNotifyWs()
+    if (!window.notifyWs || window.notifyWs.readyState !== 1) {
+        throw new Error('Ping detected what Notify WS not ready')
+    }
+    window.notifyWs.send(JSON.stringify({ ping: 1 }))
 }
 
 export function notifyApiLogin(account, authSession) {
@@ -323,6 +324,29 @@ export async function queueWatch(account, group, sidKey = '__subscriber_id') {
     } catch (ex) {
         throw ex
     }
+}
+
+export async function queueWatchWs(account, group, sidKey = '__subscriber_id') {
+    if (!notifyWsAvailable()) return null
+    const xSession = notifySession()
+    return await new Promise(async (resolve, reject) => {
+        await notifyWsSend('queues/subscribe', {
+            account,
+            'X-Session': xSession,
+            objects: {
+                [group]: {
+                    type: 'group',
+                    scope: '*',
+                },
+            },
+        }, (err, res) => {
+            if (err) {
+                reject(err)
+                return
+            }
+            resolve(res)
+        })
+    })
 }
 
 export async function sendOffchainMessage(op) {

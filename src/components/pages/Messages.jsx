@@ -32,7 +32,7 @@ import { getRoleInGroup, opGroup } from 'app/utils/groups'
 import { getProfileImage, } from 'app/utils/NormalizeProfile';
 import { normalizeContacts, normalizeMessages } from 'app/utils/Normalizators';
 import { fitToPreview } from 'app/utils/ImageUtils';
-import { notificationSubscribe, notificationSubscribeWs,
+import { notificationSubscribe, notificationSubscribeWs, notifyWsPing,
     notificationShallowUnsubscribe, notificationTake, queueWatch, sendOffchainMessage } from 'app/utils/NotifyApiClient';
 import { flash, unflash } from 'app/components/elements/messages/FlashTitle';
 import { addShortcut } from 'app/utils/app/ShortcutUtils'
@@ -200,83 +200,6 @@ class Messages extends React.Component {
         return false
     }
 
-    async setCallback0(username, removeTaskIds) {
-        if (process.env.NO_NOTIFY) { // config-overrides.js, yarn run dev
-            return
-        }
-        if (this.checkLoggedOut(username)) return
-        if (this.paused) {
-            setTimeout(() => {
-                this.setCallback(username, removeTaskIds)
-            }, 250)
-            return
-        }
-        let subscribed = null;
-        try {
-            subscribed = await notificationSubscribe(username);
-        } catch (ex) {
-            console.error('notificationSubscribe', ex);
-            this.notifyErrorsInc(15);
-            setTimeout(() => {
-                this.setCallback(username, removeTaskIds);
-            }, 5000);
-            return;
-        }
-        if (subscribed) { // if was not already subscribed
-            this.notifyErrorsClear();
-        }
-        if (this.checkLoggedOut(username)) return
-        const watched = this.watchGroup(this.props.to)
-        try {
-            this.notifyAbort = new fetchEx.AbortController()
-            window.notifyAbort = this.notifyAbort
-            const takeResult = await notificationTake(username, removeTaskIds, (type, op, timestamp, task_id) => {
-                const isDonate = type === 'donate'
-                const toAcc = this.getToAcc()
-                const group = opGroup(op)
-                let updateMessage = group === this.state.to || (!group && (op.from === toAcc || 
-                    op.to === toAcc))
-                const isMine = username === op.from;
-                if (type === 'private_message') {
-                    if (op.update) {
-                        this.props.messageEdited(op, timestamp, updateMessage, isMine);
-                    } else if (this.nonce !== op.nonce) {
-                        this.props.messaged(op, timestamp, updateMessage, isMine);
-                        this.nonce = op.nonce
-                        if (!isMine && !this.windowFocused) {
-                            this.flashMessage();
-                        }
-                    }
-                } else if (type === 'private_delete_message') {
-                    this.props.messageDeleted(op, updateMessage, isMine);
-                } else if (type === 'private_mark_message') {
-                    this.props.messageRead(op, timestamp, updateMessage, isMine);
-                } else if (isDonate) {
-                    this.props.messageDonated(op, updateMessage, isMine)
-                }
-            }, this.notifyAbort);
-            removeTaskIds = takeResult.removeTaskIds
-            window.__lastTake = takeResult.__lastTake
-            setTimeout(() => {
-                this.setCallback(username, removeTaskIds);
-            }, 250);
-        } catch (ex) {
-            console.error('notificationTake', ex);
-            this.notifyErrorsInc(3);
-            let delay = 2000
-            if (ex.message.includes('No such queue')) {
-                console.log('notificationTake: resubscribe forced...')
-                notificationShallowUnsubscribe()
-                delay = 250
-            }
-            setTimeout(() => {
-                this.setCallback(username, removeTaskIds)
-            }, delay);
-            return;
-        }
-        if (watched) this.notifyErrorsClear();
-    }
-
     async setCallback(username, removeTaskIds) {
         if (process.env.NO_NOTIFY) { // config-overrides.js, yarn run dev
             return
@@ -329,6 +252,27 @@ class Messages extends React.Component {
             }, 5000)
             return
         }
+        this.notifyErrorsClear()
+        const ping = async (firstCall = false) => {
+            if (!firstCall) {
+                try {
+                    await notifyWsPing()
+                    if (this.state.notifyErrors) {
+                        // Queue can be cleared by Notify
+                        setTimeout(() => {
+                            this.setCallback(username)
+                        }, 100)
+                        return
+                    }
+                    this.notifyErrorsClear()
+                } catch (err) {
+                    console.error('Notify ping failed', err)
+                    this.notifyErrorsInc(10)
+                }
+            }
+            setTimeout(ping, 10000)
+        }
+        ping(true)
     }
 
     componentDidMount() {
