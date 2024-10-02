@@ -137,11 +137,11 @@ export function* fetchState(location_change_action) {
                         state.the_group = the_group
                         console.timeEnd('prof: getGroupsAsync')
 
-                        const space = getSpaceInCache({ group: the_group.name })
+                        const space = the_group && getSpaceInCache({ group: the_group.name })
                         console.time('prof: getThreadAsync')
                         let query = {
                             group: path,
-                            cache: Object.keys(space),
+                            cache: space ? Object.keys(space) : [],
                             accounts: true,
                             contacts: {
                                 owner: account, limit: 100,
