@@ -37,14 +37,20 @@ export const getContactsSpace = (msg) => {
     return getSpaceInCache(msg, 'contacts')
 }
 
+const zeroDate = '1970-01-01T00:00:00'
+
 const cacheKey = (msg) => {
     let key = [msg.nonce]
+    let recDate = msg.receive_date
+    if (recDate === msg.create_date) {
+        recDate = zeroDate
+    }
     if (msg.group) {
-        key.push(msg.receive_date)
+        key.push(recDate)
         key.push(msg.from)
         key.push(msg.to)
     } else {
-        key.push(msg.receive_date)
+        key.push(recDate)
     }
     key = key.join('|')
     return key
@@ -82,6 +88,24 @@ const loadFromCache = (msg, contact = false) => {
         }
     }
     return false
+}
+
+export function messageOpToObject(op, group) {
+    const obj = {
+        nonce: op.nonce,
+        checksum: op.checksum,
+        from: op.from,
+        from_memo_key: op.from_memo_key,
+        to_memo_key: op.to_memo_key,
+        group,
+        read_date: '1970-01-01T00:00:00',
+        create_date: new Date().toISOString().split('.')[0],
+        receive_date: '1970-01-01T00:00:00',
+        encrypted_message: op.encrypted_message,
+        donates: '0.000 GOLOS',
+        donates_uia: 0
+    }
+    return obj
 }
 
 export async function normalizeContacts(contacts, accounts, currentUser, cachedProfileImages) {
@@ -130,9 +154,11 @@ export async function normalizeContacts(contacts, accounts, currentUser, cachedP
                     }
                 }
 
+                console.log('FCC1')
                 if (loadFromCache(msg, true)) {
                     return true
                 }
+                console.log('FCC2')
                 return false;
             },
             for_each: (msg) => {
@@ -199,10 +225,12 @@ export async function normalizeMessages(messages, accounts, currentUser, to) {
                 }
                 //msg.decrypt_date = null
 
+                console.log('FC1')
                 if (loadFromCache(msg)) {
                     results.push(msg)
                     return true
                 }
+                console.log('FC2')
                 return false;
             },
             for_each: (msg, i) => {

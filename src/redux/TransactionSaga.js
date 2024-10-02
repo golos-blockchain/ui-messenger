@@ -4,6 +4,7 @@ import golos from 'golos-lib-js'
 
 import g from 'app/redux/GlobalReducer'
 import user from 'app/redux/UserReducer'
+import { messageOpToObject } from 'app/utils/Normalizators'
 import { translateError } from 'app/utils/translateError'
 
 export function* transactionWatches() {
@@ -52,20 +53,8 @@ function* preBroadcast_custom_json({operation}) {
                                 break
                             }
                         }
-                        msgs = msgs.insert(0, fromJS({
-                            nonce: json[1].nonce,
-                            checksum: json[1].checksum,
-                            from: json[1].from,
-                            from_memo_key: json[1].from_memo_key,
-                            to_memo_key: json[1].to_memo_key,
-                            group,
-                            read_date: '1970-01-01T00:00:00',
-                            create_date: new Date().toISOString().split('.')[0],
-                            receive_date: '1970-01-01T00:00:00',
-                            encrypted_message: json[1].encrypted_message,
-                            donates: '0.000 GOLOS',
-                            donates_uia: 0
-                        }))
+                        const newMsg = messageOpToObject(json[1], group)
+                        msgs = msgs.insert(0, fromJS(newMsg))
                     } else {
                         messages_update = json[1].nonce;
                         msgs = msgs.update(idx, msg => {
