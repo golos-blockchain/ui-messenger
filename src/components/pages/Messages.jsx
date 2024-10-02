@@ -273,6 +273,7 @@ class Messages extends React.Component {
             setTimeout(ping, 10000)
         }
         ping(true)
+        this.watchGroup(this.props.to)
     }
 
     componentDidMount() {
@@ -288,12 +289,14 @@ class Messages extends React.Component {
             document.addEventListener('resume', this.onResume)
         }
         this.props.loginUser()
+        this.checkUserAuth(true)
+    }
+
+    checkUserAuth = (initial) => {
         const checkAuth = () => {
-            if (!this.props.username) {
-                this.props.checkMemo(this.props.currentUser);
-            }
+            this.props.checkAuth(this.props.currentUser, this.isChat())
         }
-        if (!localStorage.getItem('msgr_auth')) {
+        if (!initial || !localStorage.getItem('msgr_auth')) {
             checkAuth()
         } else {
             setTimeout(() => {
@@ -303,7 +306,11 @@ class Messages extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (this.props.username !== prevProps.username && this.props.username) {
+        const loggedNow = this.props.username !== prevProps.username && this.props.username
+        if (this.props.to !== prevProps.to || (this.isChat() && loggedNow)) {
+            this.checkUserAuth()
+        }
+        if (loggedNow) {
             this.props.fetchState(this.props.to);
             this.setCallback(this.props.username)
         } else if (this.props.to !== this.state.to) {
@@ -323,9 +330,9 @@ class Messages extends React.Component {
             this.setState({
                 to: this.props.to, // protects from infinity loop
             });
-            if (!this.props.checkMemo(currentUser)) {
+            /*if (!this.props.checkMemo(currentUser)) {
                 return;
-            }
+            }*/
             const anotherKey = this.props.memo_private !== prevProps.memo_private;
             const added = this.props.messages.size > this.state.messagesCount;
             let focusTimeout = prevProps.messages.size ? 100 : 1000;
@@ -344,9 +351,7 @@ class Messages extends React.Component {
                     if (added)
                         this.markMessages2();
                     setTimeout(() => {
-                        if (anotherChat || anotherKey) {
-                            this.focusInput();
-                        }
+                        this.focusInput();
                     }, focusTimeout);
                 })
             }
@@ -911,6 +916,11 @@ class Messages extends React.Component {
             </LinkWithDropdown>);
     };
 
+    isChat = () => {
+        const { to } = this.props
+        return to && to.startsWith('@')
+    }
+
     isGroup = () => {
         const { to } = this.props
         return to && !to.startsWith('@')
@@ -1112,7 +1122,7 @@ export default withRouter(connect(
     dispatch => ({
         loginUser: () => dispatch(user.actions.usernamePasswordLogin()),
 
-        checkMemo: (currentUser) => {
+        checkAuth: (currentUser, memoNeed) => {
             if (!currentUser) {
                 hideSplash()
                 dispatch(user.actions.showLogin({
@@ -1120,13 +1130,15 @@ export default withRouter(connect(
                 }));
                 return false;
             }
-            const private_key = currentUser.getIn(['private_keys', 'memo_private']);
-            if (!private_key) {
-                hideSplash()
-                dispatch(user.actions.showLogin({
-                    loginDefault: { username: currentUser.get('username'), authType: 'memo', unclosable: true }
-                }));
-                return false;
+            if (memoNeed) {
+                const private_key = currentUser.getIn(['private_keys', 'memo_private'])
+                if (!private_key) {
+                    hideSplash()
+                    dispatch(user.actions.showLogin({
+                        loginDefault: { username: currentUser.get('username'), authType: 'memo', }
+                    }));
+                    return false
+                }
             }
             return true;
         },

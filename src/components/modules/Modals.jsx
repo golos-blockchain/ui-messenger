@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types'
 import {NotificationStack} from 'react-notification'
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router'
 import CloseButton from 'react-foundation-components/lib/global/close-button';
 import Reveal from 'react-foundation-components/lib/global/reveal';
 
@@ -81,11 +82,23 @@ class Modals extends React.Component {
             overflow: 'hidden',
         }
 
+        const doHideLogin = (e) => {
+            const goBack = () => {
+                const { history, } = this.props
+                if (history.action !== 'POP') {
+                    history.goBack()
+                } else {
+                    history.push('/')
+                }
+            }
+            hideLogin(e, goBack)
+        }
+
         return (
             <div>
                 {show_login_modal && <Reveal revealStyle={{ ...modalStyle, }} onBackdropClick={this.onLoginBackdropClick}
-                    onHide={hideLogin} show={show_login_modal}>
-                    <LoginForm onCancel={hideLogin} />
+                    onHide={doHideLogin} show={show_login_modal}>
+                    <LoginForm onCancel={doHideLogin} />
                 </Reveal>}
                 {show_donate_modal && <Reveal revealStyle={{ ...modalStyle, }}
                     onHide={hideDonate} show={show_donate_modal}>
@@ -132,7 +145,7 @@ class Modals extends React.Component {
     }
 }
 
-export default connect(
+export default withRouter(connect(
     state => {
         const loginDefault = state.user.get('loginDefault');
         const loginUnclosable = loginDefault && loginDefault.get('unclosable');
@@ -150,8 +163,11 @@ export default connect(
         }
     },
     dispatch => ({
-        hideLogin: e => {
+        hideLogin: (e, goBack) => {
             if (e) e.preventDefault();
+            if (goBack) {
+                goBack()
+            }
             dispatch(user.actions.hideLogin())
         },
         hideDonate: e => {
@@ -187,4 +203,4 @@ export default connect(
         removeNotification: (key) => dispatch({type: 'REMOVE_NOTIFICATION', payload: {key}}),
 
     })
-)(Modals)
+)(Modals))
