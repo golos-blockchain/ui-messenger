@@ -30,7 +30,7 @@ import transaction from 'app/redux/TransactionReducer'
 import user from 'app/redux/UserReducer'
 import { getRoleInGroup, opGroup } from 'app/utils/groups'
 import { getProfileImage, } from 'app/utils/NormalizeProfile';
-import { normalizeContacts, normalizeMessages, saveToCache, messageOpToObject } from 'app/utils/Normalizators';
+import { normalizeContacts, normalizeMessages, cacheMyOwnMsg } from 'app/utils/Normalizators';
 import { fitToPreview } from 'app/utils/ImageUtils';
 import { notificationSubscribe, notificationSubscribeWs, notifyWsPing,
     notificationShallowUnsubscribe, notificationTake, queueWatch, sendOffchainMessage } from 'app/utils/NotifyApiClient';
@@ -1230,10 +1230,7 @@ export default withRouter(connect(
                 }]]
             }
 
-            const newMsg = messageOpToObject(opData, group ? group.name : '')
-            newMsg.message = message
-            newMsg.decrypt_date = newMsg.receive_date
-            saveToCache(newMsg, true)
+            cacheMyOwnMsg(opData, group, message)
 
             if (!editInfo) {
                 sendOffchainMessage(opData).catch(err => {

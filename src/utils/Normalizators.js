@@ -98,14 +98,21 @@ export function messageOpToObject(op, group) {
         from_memo_key: op.from_memo_key,
         to_memo_key: op.to_memo_key,
         group,
-        read_date: '1970-01-01T00:00:00',
+        read_date: zeroDate,
         create_date: new Date().toISOString().split('.')[0],
-        receive_date: '1970-01-01T00:00:00',
+        receive_date: zeroDate,
         encrypted_message: op.encrypted_message,
         donates: '0.000 GOLOS',
         donates_uia: 0
     }
     return obj
+}
+
+export function cacheMyOwnMsg(op, group, message) {
+    const newMsg = messageOpToObject(op, group ? group.name : '')
+    newMsg.message = message
+    newMsg.decrypt_date = newMsg.receive_date
+    saveToCache(newMsg, true)
 }
 
 export async function normalizeContacts(contacts, accounts, currentUser, cachedProfileImages) {
