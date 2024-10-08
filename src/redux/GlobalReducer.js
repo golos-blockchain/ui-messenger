@@ -151,6 +151,15 @@ export default createModule({
                         });
                         return contacts;
                     });
+                let { from_account } = message
+                if (from_account && from_account.name) {
+                    from_account = fromJS(from_account)
+                    new_state = new_state.updateIn(
+                        ['accounts', from_account.get('name')],
+                        Map(),
+                        a => a.mergeDeep(from_account)
+                    )
+                }
                 return new_state;
             },
         },
