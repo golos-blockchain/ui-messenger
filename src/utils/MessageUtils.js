@@ -26,9 +26,32 @@ export function processDatedGroup(group, messages, for_each) {
                 break;
             }
             if (inRange) {
-                messages = messages.set(idx, for_each(msg, idx));
+                const updated = for_each(messages, idx)
+                if (updated) {
+                    const { msgs, fixIdx } = updated
+                    if (msgs) {
+                        messages = msgs
+                    }
+                    if (fixIdx !== undefined) {
+                        idx = fixIdx
+                    }
+                }
             }
         }
     }
     return messages;
+}
+
+export function opDeleteContact(op) {
+    let delete_contact
+    if (!op) return delete_contact
+    const { extensions } = op
+    if (extensions) {
+        for (const ext of extensions) {
+            if (ext && ext[0] === 1) {
+                delete_contact = ext[1] && ext[1].delete_contact
+            }
+        }
+    }
+    return delete_contact
 }

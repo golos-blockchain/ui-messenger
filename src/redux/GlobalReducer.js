@@ -4,7 +4,7 @@ import { Asset } from 'golos-lib-js/lib/utils'
 
 import { session } from 'app/redux/UserSaga'
 import { opGroup } from 'app/utils/groups'
-import { processDatedGroup } from 'app/utils/MessageUtils'
+import { processDatedGroup, opDeleteContact } from 'app/utils/MessageUtils'
 
 const updateInMyGroups = (state, group, groupUpdater, groupsUpserter = mg => mg) => {
     state = state.update('my_groups', null, mg => {
@@ -203,8 +203,11 @@ export default createModule({
                     new_state = new_state.updateIn(['messages'],
                     List(),
                     messages => {
-                        return processDatedGroup(message, messages, (msg, idx) => {
-                            return msg.set('read_date', timestamp);
+                        return processDatedGroup(message, messages, (messages, idx) => {
+                            let msg = messages.get(idx)
+                            msg = msg.set('read_date', timestamp)
+                            const msgs = messages.set(idx, msg)
+                            return { msgs }
                         });
                     });
                 }
@@ -243,15 +246,41 @@ export default createModule({
             ) => {
                 let new_state = state;
                 if (updateMessage) {
-                    new_state = new_state.updateIn(['messages'],
-                    List(),
-                    messages => {
-                        const idx = messages.findIndex(i => i.get('nonce') === message.nonce);
-                        if (idx !== -1) {
-                            messages = messages.delete(idx);
-                        }
-                        return messages;
-                    });
+                    if (message.nonce) {
+                        new_state = new_state.updateIn(['messages'],
+                        List(),
+                        messages => {
+                            const idx = messages.findIndex(i => i.get('nonce') === message.nonce);
+                            if (idx !== -1) {
+                                messages = messages.delete(idx);
+                            }
+                            return messages;
+                        })
+                    } else {
+                        new_state = new_state.updateIn(['messages'],
+                        List(),
+                        messages => {
+                            return processDatedGroup(message, messages, (messages, idx) => {
+                                let msg = messages.get(idx)
+                                const msgs = messages.delete(idx)
+                                return { msgs, fixIdx: idx - 1 }
+                            });
+                        })
+                    }
+                }
+                const delCon = opDeleteContact(message)
+                if (delCon) {
+                    new_state = new_state.updateIn(['contacts'],
+                        List(),
+                        contacts => {
+                            let idx = contacts.findIndex(i =>
+                                i.get('contact') === message.to
+                                || i.get('contact') === message.from)
+                            if (idx !== -1) {
+                                contacts = contacts.delete(idx)
+                            }
+                            return contacts
+                        })
                 }
                 return new_state;
             },
