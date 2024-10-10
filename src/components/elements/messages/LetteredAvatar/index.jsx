@@ -68,6 +68,7 @@ class LetteredAvatar extends Component {
       lineHeight: `${size}px`,
       borderRadius: `${radius || radius === 0 ? radius : size}px`,
       fontSize: `100%`,
+      fontWeight: 550,
     };
     return (
       <div
@@ -75,7 +76,7 @@ class LetteredAvatar extends Component {
         style={styles}
         aria-label={name}
       >
-        <div className="lettered-avatar" style={{ fontSize }}>{initials}</div>
+        <div className="lettered-avatar" style={{ fontSize, opacity: 0.6 }}>{initials}</div>
       </div>
     );
   }
