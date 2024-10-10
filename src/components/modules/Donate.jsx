@@ -49,11 +49,14 @@ class Donate extends React.Component {
         const { sym } = opts
         if (sym === 'GOLOS') {
             if (currentAccount) {
-                res = Asset(currentAccount.get('tip_balance'))
+                const tip = currentAccount.get('tip_balance')
+                if (tip) {
+                    res = Asset(tip)
+                }
             }
         } else {
             const uias = this.props.uias && this.props.uias.toJS()
-            if (uias) {
+            if (uias && uias[sym]) {
                 res = Asset(uias[sym].tip_balance)
             }
         }
@@ -110,6 +113,8 @@ class Donate extends React.Component {
         const { sym } = opts
         const { activeConfetti } = this.state
 
+        const balVal = this.balanceValue()
+
         const form = (<Formik
             initialValues={this.state.initialValues}
             enableReinitialize={true}
@@ -128,11 +133,11 @@ class Donate extends React.Component {
                     amountStr={values.amount.amountStr}
                     onChange={amountStr => this.onPresetChange(amountStr, values, setFieldValue)}
                 />
-                <TipAssetList
+                {balVal ? <TipAssetList
                     value={sym} uias={uias} currentAccount={currentAccount}
-                    currentBalance={this.balanceValue()}
+                    currentBalance={balVal}
                     onChange={this.onTipAssetChanged}
-                />
+                /> : null}
             </div>
 
             <div className='row' style={{ marginTop: '1.0rem', marginBottom: '1.0rem' }}>
