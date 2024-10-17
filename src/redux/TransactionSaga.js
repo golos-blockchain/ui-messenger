@@ -46,14 +46,16 @@ function* preBroadcast_custom_json({operation}) {
                     const idx = msgs.findIndex(i => i.get('nonce') === json[1].nonce);
                     if (idx === -1) {
                         let group = ''
+                        let mentions = []
                         const exts = json[1].extensions || []
                         for (const [key, val ] of exts) {
                             if (key === 0) {
                                 group = val.group
+                                mentions = val.mentions
                                 break
                             }
                         }
-                        const newMsg = messageOpToObject(json[1], group)
+                        const newMsg = messageOpToObject(json[1], group, mentions)
                         msgs = msgs.insert(0, fromJS(newMsg))
                     } else {
                         messages_update = json[1].nonce;

@@ -43,6 +43,7 @@ export function* fetchState(location_change_action) {
 
         const state = {}
         state.nodeError = null
+        state.fetched = ''
         if (isFirstRendering || fake) {
             state.contacts = [];
             state.the_group = undefined
@@ -80,7 +81,7 @@ export function* fetchState(location_change_action) {
                 const conCache = getSpaceInCache(null, 'contacts')
 
                 if (path.startsWith('@') || !path) {
-                    console.time('prof: getContactsAsync')
+                    if (window._perfo) console.time('prof: getContactsAsync')
                     const con = yield call([auth, 'withNodeLogin'], { account, keys: { posting },
                         call: async (loginData) => {
                             return await api.getContactsAsync({
@@ -92,11 +93,10 @@ export function* fetchState(location_change_action) {
                             })
                         }
                     })
-                    //alert(JSON.stringify(con))
-                    console.log('procc:' + con._dec_processed)
+                    if (window._perfo) console.log('procc:' + con._dec_processed)
                     state.contacts = con.contacts
                     if (hasErr) return
-                    console.timeEnd('prof: getContactsAsync')
+                    if (window._perfo) console.timeEnd('prof: getContactsAsync')
 
                     addMiniAccounts(state, con.accounts)
                 }
@@ -120,7 +120,7 @@ export function* fetchState(location_change_action) {
 
                         addMiniAccounts(state, mess.accounts)
                     } else {
-                        console.time('prof: getGroupsAsync')
+                        if (window._perfo) console.time('prof: getGroupsAsync')
                         let the_group = yield callSafe(state, [], 'getGroupsAsync', [api, api.getGroupsAsync], {
                             start_group: path,
                             limit: 1,
@@ -135,10 +135,10 @@ export function* fetchState(location_change_action) {
                             the_group = null
                         }
                         state.the_group = the_group
-                        console.timeEnd('prof: getGroupsAsync')
+                        if (window._perfo) console.timeEnd('prof: getGroupsAsync')
 
                         const space = the_group && getSpaceInCache({ group: the_group.name })
-                        console.time('prof: getThreadAsync')
+                        if (window._perfo) console.time('prof: getThreadAsync')
                         let query = {
                             group: path,
                             cache: space ? Object.keys(space) : [],
@@ -165,7 +165,7 @@ export function* fetchState(location_change_action) {
 
                         addMiniAccounts(state, thRes.accounts)
 
-                        console.log('proc:' + thRes._dec_processed)
+                        if (window._perfo) console.log('proc:' + thRes._dec_processed)
                         if (the_group && thRes.error) {
                             the_group.error = thRes.error
                         }
@@ -176,7 +176,9 @@ export function* fetchState(location_change_action) {
                                 state.messages_update = state.messages[state.messages.length - 1].nonce;
                             }
                         }
-                        console.timeEnd('prof: getThreadAsync')
+                        if (window._perfo) console.timeEnd('prof: getThreadAsync')
+
+                        state.fetched = path
                     }
                 }
             }
@@ -243,6 +245,9 @@ export function* fetchMyGroups({ payload: { account } }) {
             }
         })
         groups = [...groupsOwn, ...groups]
+        groups.sort((a, b) => {
+            return b.pendings - a.pendings
+        })
 
         yield put(g.actions.receiveMyGroups({ groups }))
     } catch (err) {

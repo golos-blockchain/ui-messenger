@@ -84,7 +84,7 @@ export default createModule({
             action: 'MESSAGED',
             reducer: (
                 state,
-                { payload: { message, timestamp, updateMessage, isMine } }
+                { payload: { message, timestamp, updateMessage, isMine, username } }
             ) => {
                 message.create_date = timestamp;
                 message.receive_date = timestamp;
@@ -93,8 +93,10 @@ export default createModule({
                     message.donates = '0.000 GOLOS'
                     message.donates_uia = 0
                 }
-                const group = opGroup(message)
+                const { group, mentions } = opGroup(message)
                 message.group = group
+                message.mentions = mentions
+                message.read_date = (group && !message.to) ? timestamp : '1970-01-01T00:00:00';
 
                 let new_state = state;
                 let messages_update = message.nonce;
@@ -123,6 +125,14 @@ export default createModule({
                                 (i.get('contact') === message.to
                                 || i.get('contact') === message.from)
                         })
+                        let newInbox = 0, newMentions = 0
+                        if (!isMine && !updateMessage) {
+                            if (!group || message.to === username) {
+                                newInbox++
+                            } else if (group && message.mentions && message.mentions.includes(username)) {
+                                newMentions++
+                            }
+                        }
                         if (idx === -1) {
                             let contact = group || (isMine ? message.to : message.from)
                             contacts = contacts.insert(0, fromJS({
@@ -130,16 +140,20 @@ export default createModule({
                                 kind: group ? 'group' : 'account',
                                 last_message: message,
                                 size: {
-                                    unread_inbox_messages: !isMine ? 1 : 0,
+                                    unread_inbox_messages: newInbox,
+                                    unread_mentions: newMentions,
                                 },
                             }));
                         } else {
                             contacts = contacts.update(idx, contact => {
                                 contact = contact.set('last_message', fromJS(message));
-                                if (!isMine && !updateMessage) {
-                                    let msgs = contact.getIn(['size', 'unread_inbox_messages']);
-                                    contact = contact.setIn(['size', 'unread_inbox_messages'],
-                                        msgs + 1);
+                                if (newInbox) {
+                                    contact = contact.updateIn(['size', 'unread_inbox_messages'],
+                                        msgs => msgs + newInbox)
+                                }
+                                if (newMentions) {
+                                    contact = contact.updateIn(['size', 'unread_mentions'],
+                                        msgs => msgs + newMentions)
                                 }
                                 return contact
                             });
@@ -199,15 +213,14 @@ export default createModule({
             ) => {
                 let new_state = state;
                 let messages_update = message.nonce || Math.random();
+                const { group, requester } = opGroup(message)
                 if (updateMessage) {
                     new_state = new_state.updateIn(['messages'],
                     List(),
                     messages => {
-                        return processDatedGroup(message, messages, (messages, idx) => {
-                            let msg = messages.get(idx)
+                        return processDatedGroup(message, messages, (msg, idx) => {
                             msg = msg.set('read_date', timestamp)
-                            const msgs = messages.set(idx, msg)
-                            return { msgs }
+                            return { updated: msg }
                         });
                     });
                 }
@@ -215,7 +228,7 @@ export default createModule({
                     List(),
                     contacts => {
                         let idx = contacts.findIndex(i =>
-                            i.get('contact') === (isMine ? message.to : message.from));
+                            i.get('contact') === (group || (isMine ? message.to : message.from)))
                         if (idx !== -1) {
                             contacts = contacts.update(idx, contact => {
                                  // to update read_date (need for isMine case), and more actualize text
@@ -229,6 +242,9 @@ export default createModule({
                                 // currently used only !isMine case
                                 const msgsKey = isMine ? 'unread_outbox_messages' : 'unread_inbox_messages';
                                 contact = contact.setIn(['size', msgsKey], 0);
+                                if (!isMine) {
+                                    contact = contact.setIn(['size', 'unread_mentions'], 0)
+                                }
                                 return contact;
                             });
                         }
@@ -260,10 +276,8 @@ export default createModule({
                         new_state = new_state.updateIn(['messages'],
                         List(),
                         messages => {
-                            return processDatedGroup(message, messages, (messages, idx) => {
-                                let msg = messages.get(idx)
-                                const msgs = messages.delete(idx)
-                                return { msgs, fixIdx: idx - 1 }
+                            return processDatedGroup(message, messages, (msg, idx) => {
+                                return { updated: null, fixIdx: idx - 1 }
                             });
                         })
                     }

@@ -12,6 +12,7 @@ import user from 'app/redux/UserReducer'
 import DropdownMenu from 'app/components/elements/DropdownMenu'
 import Icon from 'app/components/elements/Icon'
 import LoadingIndicator from 'app/components/elements/LoadingIndicator'
+import MarkNotificationRead from 'app/components/elements/MarkNotificationRead'
 import { showLoginDialog } from 'app/components/dialogs/LoginDialog'
 import { getGroupLogo, getGroupMeta, getRoleInGroup } from 'app/utils/groups'
 
@@ -244,6 +245,8 @@ class MyGroups extends React.Component {
             </div>
         }
 
+        const { username } = this.props
+
         return <div className='MyGroups'>
                <div className='row'>
                    <h3>{tt('my_groups_jsx.title')}</h3>
@@ -251,6 +254,8 @@ class MyGroups extends React.Component {
                {button}
                {groups}
                {hasGroups ? <div style={{ height: '50px' }}></div> : null}
+                {username ? <MarkNotificationRead fields='group_member' account={username}
+                /> : null}
         </div>
     }
 }

@@ -6,12 +6,20 @@ export function displayQuoteMsg(body) {
 }
 
 export function processDatedGroup(group, messages, for_each) {
+    let deleteIt
     if (group.nonce) {
         const idx = messages.findIndex(i => i.get('nonce') === group.nonce);
         if (idx !== -1) {
             messages = messages.update(idx, (msg) => {
-                return for_each(msg, idx);
-            });
+                const { updated, fixIdx } = for_each(msg, idx)
+                if (!updated) {
+                    deleteIt = idx
+                }
+                return updated || msg
+            })
+            if (deleteIt !== undefined) {
+                messages = messages.delete(idx)
+            }
         }
     } else {
         let inRange = false;
@@ -26,15 +34,19 @@ export function processDatedGroup(group, messages, for_each) {
                 break;
             }
             if (inRange) {
-                const updated = for_each(messages, idx)
-                if (updated) {
-                    const { msgs, fixIdx } = updated
-                    if (msgs) {
-                        messages = msgs
+                deleteIt = undefined
+                messages = messages.update(idx, (msg) => {
+                    const { updated, fixIdx } = for_each(msg, idx)
+                    if (!updated) {
+                        deleteIt = idx
                     }
                     if (fixIdx !== undefined) {
                         idx = fixIdx
                     }
+                    return updated || msg
+                })
+                if (deleteIt !== undefined) {
+                    messages = messages.delete(idx)
                 }
             }
         }

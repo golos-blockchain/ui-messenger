@@ -339,10 +339,20 @@
       "one": "1 member",
       "other": "%(count)s members"
     },
+    "mention_count": {
+      "zero": "0 mentions",
+      "one": "1 mention",
+      "other": "%(count)s mentions"
+    },
     "message_count": {
       "zero": "0 messages",
       "one": "1 message",
       "other": "%(count)s messages"
+    },
+    "reply_count": {
+      "zero": "0 replies",
+      "one": "1 reply",
+      "other": "%(count)s replies"
     }
   },
   "g": {

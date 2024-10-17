@@ -44,6 +44,9 @@
     text-decoration: underline;
     font-weight: bold;
 }
+.msgs-message .bubble-container a.mention {
+    text-decoration: none;
+}
 
 .msgs-message.mine .bubble-container {
     justify-content: flex-end;
@@ -88,6 +91,11 @@
 }
 
 .msgs-message .bubble-container.selected .bubble {
+    background: #fc544e !important;
+    color: white;
+}
+
+.msgs-message.highlight .bubble-container .bubble {
     background: #fc544e !important;
     color: white;
 }

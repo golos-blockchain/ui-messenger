@@ -13,7 +13,7 @@ function getProfileImageLazy(contact, account, cachedProfileImages) {
     let cached = cachedProfileImages[contact.contact];
     if (cached && now - cached.time < 60*1000)
         return cached.image
-    console.log('getProfileImageLazy',  contact.contact)
+    //console.log('getProfileImageLazy',  contact.contact)
     const image = contact.kind === 'group' ?
         getGroupLogo(contact.object_meta) : getProfileImage(account)
     cachedProfileImages[contact.contact] = { image, time: now }
@@ -90,7 +90,7 @@ const loadFromCache = (msg, contact = false) => {
     return false
 }
 
-export function messageOpToObject(op, group) {
+export function messageOpToObject(op, group, mentions = []) {
     const obj = {
         nonce: op.nonce,
         checksum: op.checksum,
@@ -103,7 +103,8 @@ export function messageOpToObject(op, group) {
         receive_date: zeroDate,
         encrypted_message: op.encrypted_message,
         donates: '0.000 GOLOS',
-        donates_uia: 0
+        donates_uia: 0,
+        mentions,
     }
     return obj
 }
@@ -161,11 +162,11 @@ export async function normalizeContacts(contacts, accounts, currentUser, cachedP
                     }
                 }
 
-                console.log('FCC1')
+                if (window._perfo) console.log('FCC1')
                 if (loadFromCache(msg, true)) {
                     return true
                 }
-                console.log('FCC2')
+                if (window._perfo) console.log('FCC2')
                 return false;
             },
             for_each: (msg) => {
@@ -208,7 +209,7 @@ export async function normalizeMessages(messages, accounts, currentUser, to) {
         const posting = currentUser.getIn(['private_keys', 'posting_private'])
         const privateMemo = currentUser.getIn(['private_keys', 'memo_private']);
 
-        console.log('ttt', Date.now())
+        if (window._perfo) console.log('ttt', Date.now())
         const decoded = await decodeMsgs({ msgs: messagesCopy,
             private_memo: !isGroup && privateMemo,
             login: {
@@ -219,25 +220,32 @@ export async function normalizeMessages(messages, accounts, currentUser, to) {
                 msg.author = msg.from;
                 msg.date = new Date(msg.create_date + 'Z');
 
-                if (!isGroup) {
-                    if (msg.to === currentAcc.name) {
-                        if (msg.read_date.startsWith('19')) {
-                            msg.toMark = true;
+                if (msg.read_date.startsWith('19')) {
+                    if (!isGroup) {
+                        if (msg.to === currentAcc.name) {
+                            msg.toMark = true
+                        } else {
+                            msg.unread = true
                         }
                     } else {
-                        if (msg.read_date.startsWith('19')) {
-                            msg.unread = true;
+                        if (msg.to === currentAcc.name) {
+                            msg.toMark = true
+                        } else if (msg.to) {
+                            msg.unread = true
+                        }
+                        if (!msg.toMark && msg.mentions.includes(currentAcc.name)) {
+                            msg.toMark = true
                         }
                     }
                 }
                 //msg.decrypt_date = null
 
-                console.log('FC1')
+                if (window._perfo) console.log('FC1')
                 if (loadFromCache(msg)) {
                     results.push(msg)
                     return true
                 }
-                console.log('FC2')
+                if (window._perfo) console.log('FC2')
                 return false;
             },
             for_each: (msg, i) => {
@@ -250,7 +258,7 @@ export async function normalizeMessages(messages, accounts, currentUser, to) {
             begin_idx: messagesCopy.length - 1,
             end_idx: -1,
         })
-        console.log('ttte', Date.now())
+        if (window._perfo) console.log('ttte', Date.now())
         return decoded
     } catch (ex) {
         console.log(ex);

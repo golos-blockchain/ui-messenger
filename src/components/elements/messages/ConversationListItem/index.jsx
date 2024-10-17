@@ -64,7 +64,7 @@ export default class ConversationListItem extends React.Component {
 
     render() {
         const { selected } = this.props;
-        const { avatar, isSystemMessage, contact, last_message, size, unread_donate } = this.props.data;
+        const { avatar, isSystemMessage, contact, last_message, size, unread_donate, kind } = this.props.data;
 
         const link = this.makeLink();
 
@@ -84,12 +84,31 @@ export default class ConversationListItem extends React.Component {
                 unread = (<div className='conversation-unread mine'>●</div>);
         }
 
-        const unreadMessages = size && size.unread_inbox_messages;
+        let title = ''
+
+        const unreadMessages = size && size.unread_inbox_messages
+        const unreadMentions = size && size.unread_mentions
 
         if (!unread && unreadMessages) {
             unread = (<div className='conversation-unread'>
                 {unreadMessages}
             </div>)
+            if (kind === 'group') {
+                title += tt('plurals.reply_count', { count: unreadMessages })
+            }
+        }
+
+        if (unreadMentions) {
+            unread = <React.Fragment>
+                <div className='conversation-unread mention'>
+                    {unreadMentions}
+                </div>
+                {unread}
+            </React.Fragment>
+            if (kind === 'group') {
+                if (title) title += ', '
+                title += tt('plurals.mention_count', { count: unreadMentions })
+            }
         }
 
         let checkmark
@@ -100,7 +119,7 @@ export default class ConversationListItem extends React.Component {
         }
 
         return (
-            <Link to={isSystemMessage ? null : link} className={'conversation-list-item' + (selected ? ' selected' : '')}>
+            <Link to={isSystemMessage ? null : link} className={'conversation-list-item' + (selected ? ' selected' : '')} title={title}>
                 {this._renderAvatar()}
                 <div className='conversation-info'>
                     <h1 className='conversation-title'>{contact}{checkmark}</h1>

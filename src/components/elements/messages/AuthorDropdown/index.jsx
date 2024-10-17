@@ -61,10 +61,12 @@ class AuthorDropdown extends React.Component {
         let banBtn
         if (isModer) {
             const isBanned = authorAcc && authorAcc.member_type === 'banned'
+            const isOwner = the_group && the_group.owner === author
             banBtn = <button className={cn('button hollow small btn', {
                 alert: !isBanned,
                 banned: isBanned,
-            })} onClick={e => this.btnClick(e, isBanned)} disabled={this.state.submitting}>
+                disabled: isOwner,
+            })} disabled={isOwner} onClick={e => this.btnClick(e, isBanned)} disabled={this.state.submitting}>
                 <Icon name='ionicons/ban' />
                 <span className='title'>{isBanned ? tt('group_members_jsx.unban') :
                     tt('group_members_jsx.ban')}</span>

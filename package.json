@@ -18,7 +18,7 @@
     "emoji-picker-element": "^1.10.1",
     "formik": "./git-deps/formik/packages/formik",
     "git-rev-sync": "^3.0.2",
-    "golos-lib-js": "^0.9.75",
+    "golos-lib-js": "^0.9.76",
     "history": "4.10.1",
     "immutable": "^4.0.0",
     "koa": "^2.13.4",
@@ -73,7 +73,7 @@
   "scripts": {
     "preinstall": "node git-install.js",
     "cordova": "cordova",
-    "dev": "cross-env HTTPS=true react-app-rewired start",
+    "dev": "cross-env react-app-rewired start",
     "dev:server": "nodemon server",
     "build": "react-app-rewired build",
     "prod": "NODE_ENV=production node server/index.js",

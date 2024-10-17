@@ -2,6 +2,7 @@ import React from 'react';
 import {connect} from 'react-redux'
 import { Fade } from 'react-foundation-components/lib/global/fade'
 import { LinkWithDropdown } from 'react-foundation-components/lib/global/dropdown'
+import { Link } from 'react-router-dom'
 import tt from 'counterpart';
 import cn from 'classnames'
 import { Asset } from 'golos-lib-js/lib/utils'
@@ -9,11 +10,18 @@ import { Asset } from 'golos-lib-js/lib/utils'
 import AuthorDropdown from 'app/components/elements/messages/AuthorDropdown'
 import Donating from 'app/components/elements/messages/Donating'
 import Userpic from 'app/components/elements/Userpic'
+import { session } from 'app/redux/UserSaga'
+import { accountNameRegEx } from 'app/utils/mentions'
 import { displayQuoteMsg } from 'app/utils/MessageUtils';
 import { proxifyImageUrl } from 'app/utils/ProxifyUrl';
 import './Message.css';
 
 class Message extends React.Component {
+    constructor(props) {
+        super(props)
+        this.dropdown = React.createRef()
+    }
+
     onMessageSelect = (idx, event) => {
         if (this.props.onMessageSelect) {
             const { data, selected } = this.props;
@@ -26,6 +34,8 @@ class Message extends React.Component {
     };
 
     render() {
+        let username
+
         const {
             idx,
             data,
@@ -72,6 +82,11 @@ class Message extends React.Component {
                     } else if (word.length <= 2 && /(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/.test(word)) {
                         spans.push(<span key={key++} style={{fontSize: '20px'}}>{word}</span>);
                         spans.push(' ');
+                    } else if (word.length > 3 && accountNameRegEx.test(word)) {
+                        const sess = session.load()
+                        if (sess && !username) username = sess[0]
+                        spans.push(<Link className='mention' to={('@' + username === word) ? '/' : '/' + word} key={key} tabIndex='-1' onClick={this.doNotSelectMessage}>{word}</Link>)
+                        spans.push(' ')
                     } else {
                         spans.push(word + ' ');
                     }
@@ -115,7 +130,11 @@ class Message extends React.Component {
             if (startsSequence) {
                 author = <div className={cn('author', {
                     banned: isBanned
-                })}>
+                })} onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    this.dropdown.current.click()
+                }}>
                     {from}
                 </div>
 
@@ -125,7 +144,8 @@ class Message extends React.Component {
                     dropdownContent={<AuthorDropdown author={from} />}
                     transition={Fade}
                 >
-                    <Userpic account={from} title={'@' + from} width={32} height={32}
+                    <span style={{ display: 'none' }} ref={this.dropdown}></span>
+                    <Userpic account={from} width={32} height={32}
                         disabled={isBanned} />
                 </LinkWithDropdown>
             }
@@ -143,7 +163,7 @@ class Message extends React.Component {
                 `${isMine ? 'mine' : ''}`,
                 `${startsSequence ? 'start' : ''}`,
                 `${endsSequence ? 'end' : ''}`
-            ].join(' ')}>
+            ].join(' ')} id={'msgs-' + data.nonce}>
                 {
                     showTimestamp &&
                         <div className='timestamp'>
