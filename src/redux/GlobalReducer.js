@@ -93,8 +93,9 @@ export default createModule({
                     message.donates = '0.000 GOLOS'
                     message.donates_uia = 0
                 }
-                const group = opGroup(message)
+                const { group, mentions } = opGroup(message)
                 message.group = group
+                message.mentions = mentions
 
                 let new_state = state;
                 let messages_update = message.nonce;
@@ -199,15 +200,14 @@ export default createModule({
             ) => {
                 let new_state = state;
                 let messages_update = message.nonce || Math.random();
+                const { requester } = opGroup(message)
                 if (updateMessage) {
                     new_state = new_state.updateIn(['messages'],
                     List(),
                     messages => {
-                        return processDatedGroup(message, messages, (messages, idx) => {
-                            let msg = messages.get(idx)
+                        return processDatedGroup(message, messages, (msg, idx) => {
                             msg = msg.set('read_date', timestamp)
-                            const msgs = messages.set(idx, msg)
-                            return { msgs }
+                            return { updated: msg }
                         });
                     });
                 }
@@ -260,10 +260,8 @@ export default createModule({
                         new_state = new_state.updateIn(['messages'],
                         List(),
                         messages => {
-                            return processDatedGroup(message, messages, (messages, idx) => {
-                                let msg = messages.get(idx)
-                                const msgs = messages.delete(idx)
-                                return { msgs, fixIdx: idx - 1 }
+                            return processDatedGroup(message, messages, (msg, idx) => {
+                                return { updated: null, fixIdx: idx - 1 }
                             });
                         })
                     }

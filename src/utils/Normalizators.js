@@ -90,7 +90,7 @@ const loadFromCache = (msg, contact = false) => {
     return false
 }
 
-export function messageOpToObject(op, group) {
+export function messageOpToObject(op, group, mentions = []) {
     const obj = {
         nonce: op.nonce,
         checksum: op.checksum,
@@ -103,7 +103,8 @@ export function messageOpToObject(op, group) {
         receive_date: zeroDate,
         encrypted_message: op.encrypted_message,
         donates: '0.000 GOLOS',
-        donates_uia: 0
+        donates_uia: 0,
+        mentions,
     }
     return obj
 }
@@ -219,14 +220,21 @@ export async function normalizeMessages(messages, accounts, currentUser, to) {
                 msg.author = msg.from;
                 msg.date = new Date(msg.create_date + 'Z');
 
-                if (!isGroup) {
-                    if (msg.to === currentAcc.name) {
-                        if (msg.read_date.startsWith('19')) {
-                            msg.toMark = true;
+                if (msg.read_date.startsWith('19')) {
+                    if (!isGroup) {
+                        if (msg.to === currentAcc.name) {
+                            msg.toMark = true
+                        } else {
+                            msg.unread = true
                         }
                     } else {
-                        if (msg.read_date.startsWith('19')) {
-                            msg.unread = true;
+                        if (msg.to === currentAcc.name) {
+                            msg.toMark = true
+                        } else if (msg.to) {
+                            msg.unread = true
+                        }
+                        if (!msg.toMark && msg.mentions.includes(currentAcc.name)) {
+                            msg.toMark = true
                         }
                     }
                 }

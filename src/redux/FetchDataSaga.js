@@ -243,6 +243,9 @@ export function* fetchMyGroups({ payload: { account } }) {
             }
         })
         groups = [...groupsOwn, ...groups]
+        groups.sort((a, b) => {
+            return b.pendings - a.pendings
+        })
 
         yield put(g.actions.receiveMyGroups({ groups }))
     } catch (err) {

@@ -11,6 +11,7 @@ import AccountName from 'app/components/elements/common/AccountName'
 import Input from 'app/components/elements/common/Input';
 import GroupMember from 'app/components/elements/groups/GroupMember'
 import LoadingIndicator from 'app/components/elements/LoadingIndicator'
+import MarkNotificationRead from 'app/components/elements/MarkNotificationRead'
 import { getRoleInGroup, getGroupMeta, getGroupTitle } from 'app/utils/groups'
 
 export async function validateMembersStep(values, errors) {
@@ -253,6 +254,8 @@ class GroupMembers extends React.Component {
                         {this._renderMemberTypeSwitch()}
                     </div>
                 </div>}
+                {(username && showPendings) ? <MarkNotificationRead fields='join_request' account={username}
+                /> : null}
             </div>
         }
 

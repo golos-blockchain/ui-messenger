@@ -55,23 +55,27 @@ const getRoleInGroup = (group, username) => {
 
 const opGroup = (op) => {
     let group = ''
-    if (!op) return group
+    let requester = ''
+    let mentions = []
+    if (!op) return { group, requester, mentions }
     const { extensions, memo } = op
     if (extensions) {
         for (const ext of extensions) {
-            if (ext && ext[0] === 0) {
-                group = (ext[1] && ext[1].group) || group
+            if (ext && ext[0] === 0 && ext[1]) {
+                group = ext[1].group || group
+                mentions = ext[1].mentions || mentions
+                requester = ext[1].requester || requester
             }
         }
     }
-    if (group) return group
+    if (group) return { group, requester, mentions }
     if (memo) { // donate
         const { target } = memo
         if (target && target.group) {
-            return target.group
+            group = target.group
         }
     }
-    return group
+    return { group, requester, mentions }
 }
 
 export {

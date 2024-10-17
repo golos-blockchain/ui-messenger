@@ -29,6 +29,7 @@ import g from 'app/redux/GlobalReducer'
 import transaction from 'app/redux/TransactionReducer'
 import user from 'app/redux/UserReducer'
 import { getRoleInGroup, opGroup } from 'app/utils/groups'
+import { parseMentions } from 'app/utils/mentions'
 import { getProfileImage, } from 'app/utils/NormalizeProfile';
 import { normalizeContacts, normalizeMessages, cacheMyOwnMsg } from 'app/utils/Normalizators';
 import { fitToPreview } from 'app/utils/ImageUtils';
@@ -53,7 +54,7 @@ class Messages extends React.Component {
         };
         this.cachedProfileImages = {};
         this.windowFocused = true;
-        this.newMessages = 0;
+        this.newMessages = {}
         if (process.env.MOBILE_APP) {
             this.stopService()
         }
@@ -71,21 +72,43 @@ class Messages extends React.Component {
         return the_group ? the_group.name : ''
     }
 
-    markMessages() {
-        const { messages } = this.state;
-        if (!messages.length) return;
+    markMessages = () => {
+        const { messages } = this.props
+        if (!messages || !messages.size) return
+
+        const msgs = messages.toJS()
 
         const { account, accounts, } = this.props;
         const to = this.getToAcc()
 
-        let OPERATIONS = golos.messages.makeDatedGroups(messages, (message_object, idx) => {
-            return message_object.toMark && !message_object._offchain;
+        const isGroup = this.isGroup()
+
+        let OPERATIONS = golos.messages.makeDatedGroups(msgs, (msg, idx) => {
+            if (msg._offchain) return false
+            if (msg.read_date.startsWith('19')) {
+                if (!isGroup) {
+                    return msg.to === account.name
+                } else {
+                    if (msg.to === account.name) return true
+                }
+            }
+            if (isGroup && msg.mentions.includes(account.name)) {
+                return true
+            }
+            return false
         }, (group, indexes, results) => {
-            const json = JSON.stringify(['private_mark_message', {
-                from: accounts[to].name,
-                to: account.name,
+            const op = {
+                from: isGroup ? '' : accounts[to].name,
+                to: isGroup ? '' : account.name,
                 ...group,
-            }]);
+            }
+            if (isGroup) {
+                op.extensions = [[0, {
+                    group: to,
+                    requester: account.name,
+                }]]
+            }
+            const json = JSON.stringify(['private_mark_message', op])
             return ['custom_json',
                 {
                     id: 'private_message',
@@ -93,25 +116,26 @@ class Messages extends React.Component {
                     json,
                 }
             ];
-        }, messages.length - 1, -1);
+        }, 0, msgs.length);
 
         this.props.sendOperations(account, accounts[to], OPERATIONS);
     }
 
-    markMessages2 = debounce(this.markMessages, 1000);
+    markMessages2 = debounce(this.markMessages, 1000)
 
-    flashMessage() {
-        ++this.newMessages;
+    flashMessage(nonce) {
+        this.newMessages[nonce] = true
 
-        let title = this.newMessages;
-        const plural = this.newMessages % 10;
+        const count = Object.keys(this.newMessages).length
+        let title = count
+        const plural = count % 10
 
         if (plural === 1) {
-            if (this.newMessages === 11)
+            if (count === 11)
                 title += tt('messages.new_message5');
             else
                 title += tt('messages.new_message1');
-        } else if ((plural === 2 || plural === 3 || plural === 4) && (this.newMessages < 10 || this.newMessages > 20)) {
+        } else if ((plural === 2 || plural === 3 || plural === 4) && (count < 10 || count > 20)) {
             title += tt('messages.new_message234');
         } else {
             title += tt('messages.new_message5');
@@ -220,18 +244,20 @@ class Messages extends React.Component {
                     //alert(scope + ' ' + type + op +' ' + timestamp)
                     const isDonate = type === 'donate'
                     const toAcc = this.getToAcc()
-                    const group = opGroup(op)
+                    const { group } = opGroup(op)
                     let updateMessage = group === this.state.to || (!group && (op.from === toAcc || 
                         op.to === toAcc))
                     const isMine = username === op.from;
                     if (type === 'private_message') {
                         if (op.update) {
                             this.props.messageEdited(op, timestamp, updateMessage, isMine);
-                        } else if (this.nonce !== op.nonce) {
+                        } else {
                             this.props.messaged(op, timestamp, updateMessage, isMine);
-                            this.nonce = op.nonce
-                            if (!isMine && !this.windowFocused) {
-                                this.flashMessage();
+                            if (this.nonce !== op.nonce) {
+                                this.nonce = op.nonce
+                                if (!isMine && !this.windowFocused) {
+                                    this.flashMessage(op.nonce)
+                                }
                             }
                         }
                     } else if (type === 'private_delete_message') {
@@ -357,6 +383,7 @@ class Messages extends React.Component {
             }
             updateData()
         }
+        this.markMessages2()
     }
     
     componentWillUnmount() {
@@ -808,7 +835,7 @@ class Messages extends React.Component {
                             <Icon name="new/more" />
                             </div>
                             <div className='TopRightMenu__notificounter'>
-                                <NotifiCounter fields='mention,donate,send,receive,fill_order,delegate_vs,new_sponsor,sponsor_inactive,nft_receive,nft_token_sold,nft_buy_offer,referral' />
+                                <NotifiCounter fields='mention,donate,send,receive,fill_order,delegate_vs,new_sponsor,sponsor_inactive,nft_receive,nft_token_sold,nft_buy_offer,referral,join_request,group_member' />
                             </div>
                         </div>
                     </a>
@@ -864,7 +891,7 @@ class Messages extends React.Component {
         }
 
         let user_menu = [
-            {link: '#', onClick: openMyGroups, icon: 'voters', value: tt('g.groups') + (isSmall ? (' @' + username) : '') },
+            {link: '#', onClick: openMyGroups, icon: 'voters', value: tt('g.groups') + (isSmall ? (' @' + username) : ''), addon: <NotifiCounter fields='join_request,group_member' /> },
             {link: accountLink, extLink: 'blogs', icon: 'new/blogging', value: tt('g.blog'), addon: <NotifiCounter fields='new_sponsor,sponsor_inactive,referral' />},
             {link: mentionsLink, extLink: 'blogs', icon: 'new/mention', value: tt('g.mentions'), addon: <NotifiCounter fields='mention' />},
             {link: donatesLink, extLink: 'wallet', icon: 'editor/coin', value: tt('g.rewards'), addon: <NotifiCounter fields='donate' />},
@@ -906,7 +933,7 @@ class Messages extends React.Component {
                     <div className='msgs-curruser-notify-sink'>
                         <Userpic account={username} title={isSmall ? username : null} width={40} height={40} />
                         <div className='TopRightMenu__notificounter'>
-                            <NotifiCounter fields='mention,donate,send,receive,fill_order,delegate_vs,new_sponsor,sponsor_inactive,nft_receive,nft_token_sold,nft_buy_offer,referral' />
+                            <NotifiCounter fields='mention,donate,send,receive,fill_order,delegate_vs,new_sponsor,sponsor_inactive,nft_receive,nft_token_sold,nft_buy_offer,referral,join_request,group_member' />
                         </div>
                     </div>
                     {!isSmall ? <div className='msgs-curruser-name'>
@@ -953,11 +980,11 @@ class Messages extends React.Component {
     handleFocusChange = isFocused => {
         this.windowFocused = isFocused;
         if (!isFocused) {
-            if (this.newMessages) {
+            if (Object.keys(this.newMessages).length) {
                 flash();
             }
         } else {
-            this.newMessages = 0;
+            this.newMessages = {}
             unflash();
         }
     }
@@ -1191,6 +1218,11 @@ export default withRouter(connect(
                 message = {...message, ...replyingMessage};
             }
 
+            let mentions = []
+            if (group) {
+                mentions = parseMentions(message)
+            }
+
             let data = null
             try {
                 data = await golos.messages.encodeMsg({ group,
@@ -1214,7 +1246,6 @@ export default withRouter(connect(
                 update: editInfo ? true : false,
                 encrypted_message: data.encrypted_message,
             }
-            //alert(JSON.stringify(opData))
 
             if (group) {
                 let requester
@@ -1226,9 +1257,11 @@ export default withRouter(connect(
 
                 opData.extensions = [[0, {
                     group: group.name,
-                    requester
+                    requester,
+                    mentions
                 }]]
             }
+            //alert(JSON.stringify(opData))
 
             cacheMyOwnMsg(opData, group, message)
 
