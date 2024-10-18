@@ -106,6 +106,7 @@ class Messages extends React.Component {
                 op.extensions = [[0, {
                     group: to,
                     requester: account.name,
+                    mentions: [account.name],
                 }]]
             }
             const json = JSON.stringify(['private_mark_message', op])
@@ -252,7 +253,7 @@ class Messages extends React.Component {
                         if (op.update) {
                             this.props.messageEdited(op, timestamp, updateMessage, isMine);
                         } else {
-                            this.props.messaged(op, timestamp, updateMessage, isMine);
+                            this.props.messaged(op, timestamp, updateMessage, isMine, username)
                             if (this.nonce !== op.nonce) {
                                 this.nonce = op.nonce
                                 if (!isMine && !this.windowFocused) {
@@ -1285,10 +1286,14 @@ export default withRouter(connect(
                 successCallback: null,
                 errorCallback: (err, errStr) => {
                     if (err && err.message) {
-                        if (err.message.includes('blocked by')) {
+                        const bm = 'blocked by user (@'
+                        const bmIdx = err.message.indexOf(bm)
+                        if (bmIdx > -1) {
+                            const msg = err.message.substring(bmIdx + bm.length)
+                            const blocker = msg.substring(0, msg.indexOf(')'))
                             this.showError(tt(
                                 'messages.blocked_BY', {
-                                    BY: toAcc ? toAcc.name : ''
+                                    BY: blocker
                                 }
                             ), 10000)
                             return
@@ -1307,8 +1312,8 @@ export default withRouter(connect(
                 },
             }));
         },
-        messaged: (message, timestamp, updateMessage, isMine) => {
-            dispatch(g.actions.messaged({message, timestamp, updateMessage, isMine}));
+        messaged: (message, timestamp, updateMessage, isMine, username) => {
+            dispatch(g.actions.messaged({message, timestamp, updateMessage, isMine, username}));
         },
         messageEdited: (message, timestamp, updateMessage, isMine) => {
             dispatch(g.actions.messageEdited({message, timestamp, updateMessage, isMine}));

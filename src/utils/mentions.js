@@ -1,5 +1,5 @@
 
-const accountNameRegEx = /^@[a-z0-9.-]+$/
+export const accountNameRegEx = /^@[a-z0-9.-]+$/
 
 // TODO: can be renderMsg which also supports links, and rendering
 export function parseMentions(message) {

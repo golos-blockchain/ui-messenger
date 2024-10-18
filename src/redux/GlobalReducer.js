@@ -84,7 +84,7 @@ export default createModule({
             action: 'MESSAGED',
             reducer: (
                 state,
-                { payload: { message, timestamp, updateMessage, isMine } }
+                { payload: { message, timestamp, updateMessage, isMine, username } }
             ) => {
                 message.create_date = timestamp;
                 message.receive_date = timestamp;
@@ -96,6 +96,7 @@ export default createModule({
                 const { group, mentions } = opGroup(message)
                 message.group = group
                 message.mentions = mentions
+                message.read_date = (group && !message.to) ? timestamp : '1970-01-01T00:00:00';
 
                 let new_state = state;
                 let messages_update = message.nonce;
@@ -138,9 +139,15 @@ export default createModule({
                             contacts = contacts.update(idx, contact => {
                                 contact = contact.set('last_message', fromJS(message));
                                 if (!isMine && !updateMessage) {
-                                    let msgs = contact.getIn(['size', 'unread_inbox_messages']);
-                                    contact = contact.setIn(['size', 'unread_inbox_messages'],
-                                        msgs + 1);
+                                    if (!group || message.to === username) {
+                                        let msgs = contact.getIn(['size', 'unread_inbox_messages']);
+                                        contact = contact.setIn(['size', 'unread_inbox_messages'],
+                                            msgs + 1);
+                                    }
+                                    if (group && message.mentions && message.mentions.includes(username)) {
+                                        contact = contact.updateIn(['size', 'unread_mentions'],
+                                            msgs => msgs + 1)
+                                    }
                                 }
                                 return contact
                             });
@@ -200,7 +207,7 @@ export default createModule({
             ) => {
                 let new_state = state;
                 let messages_update = message.nonce || Math.random();
-                const { requester } = opGroup(message)
+                const { group, requester } = opGroup(message)
                 if (updateMessage) {
                     new_state = new_state.updateIn(['messages'],
                     List(),
@@ -215,7 +222,7 @@ export default createModule({
                     List(),
                     contacts => {
                         let idx = contacts.findIndex(i =>
-                            i.get('contact') === (isMine ? message.to : message.from));
+                            i.get('contact') === (group || (isMine ? message.to : message.from)))
                         if (idx !== -1) {
                             contacts = contacts.update(idx, contact => {
                                  // to update read_date (need for isMine case), and more actualize text
@@ -229,6 +236,9 @@ export default createModule({
                                 // currently used only !isMine case
                                 const msgsKey = isMine ? 'unread_outbox_messages' : 'unread_inbox_messages';
                                 contact = contact.setIn(['size', msgsKey], 0);
+                                if (!isMine) {
+                                    contact = contact.setIn(['size', 'unread_mentions'], 0)
+                                }
                                 return contact;
                             });
                         }
