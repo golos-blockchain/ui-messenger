@@ -125,6 +125,14 @@ export default createModule({
                                 (i.get('contact') === message.to
                                 || i.get('contact') === message.from)
                         })
+                        let newInbox = 0, newMentions = 0
+                        if (!isMine && !updateMessage) {
+                            if (!group || message.to === username) {
+                                newInbox++
+                            } else if (group && message.mentions && message.mentions.includes(username)) {
+                                newMentions++
+                            }
+                        }
                         if (idx === -1) {
                             let contact = group || (isMine ? message.to : message.from)
                             contacts = contacts.insert(0, fromJS({
@@ -132,22 +140,20 @@ export default createModule({
                                 kind: group ? 'group' : 'account',
                                 last_message: message,
                                 size: {
-                                    unread_inbox_messages: !isMine ? 1 : 0,
+                                    unread_inbox_messages: newInbox,
+                                    unread_mentions: newMentions,
                                 },
                             }));
                         } else {
                             contacts = contacts.update(idx, contact => {
                                 contact = contact.set('last_message', fromJS(message));
-                                if (!isMine && !updateMessage) {
-                                    if (!group || message.to === username) {
-                                        let msgs = contact.getIn(['size', 'unread_inbox_messages']);
-                                        contact = contact.setIn(['size', 'unread_inbox_messages'],
-                                            msgs + 1);
-                                    }
-                                    if (group && message.mentions && message.mentions.includes(username)) {
-                                        contact = contact.updateIn(['size', 'unread_mentions'],
-                                            msgs => msgs + 1)
-                                    }
+                                if (newInbox) {
+                                    contact = contact.updateIn(['size', 'unread_inbox_messages'],
+                                        msgs => msgs + newInbox)
+                                }
+                                if (newMentions) {
+                                    contact = contact.updateIn(['size', 'unread_mentions'],
+                                        msgs => msgs + newMentions)
                                 }
                                 return contact
                             });

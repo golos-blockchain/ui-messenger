@@ -17,6 +17,11 @@ import { proxifyImageUrl } from 'app/utils/ProxifyUrl';
 import './Message.css';
 
 class Message extends React.Component {
+    constructor(props) {
+        super(props)
+        this.dropdown = React.createRef()
+    }
+
     onMessageSelect = (idx, event) => {
         if (this.props.onMessageSelect) {
             const { data, selected } = this.props;
@@ -125,7 +130,11 @@ class Message extends React.Component {
             if (startsSequence) {
                 author = <div className={cn('author', {
                     banned: isBanned
-                })}>
+                })} onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    this.dropdown.current.click()
+                }}>
                     {from}
                 </div>
 
@@ -135,7 +144,8 @@ class Message extends React.Component {
                     dropdownContent={<AuthorDropdown author={from} />}
                     transition={Fade}
                 >
-                    <Userpic account={from} title={'@' + from} width={32} height={32}
+                    <span style={{ display: 'none' }} ref={this.dropdown}></span>
+                    <Userpic account={from} width={32} height={32}
                         disabled={isBanned} />
                 </LinkWithDropdown>
             }
@@ -153,7 +163,7 @@ class Message extends React.Component {
                 `${isMine ? 'mine' : ''}`,
                 `${startsSequence ? 'start' : ''}`,
                 `${endsSequence ? 'end' : ''}`
-            ].join(' ')}>
+            ].join(' ')} id={'msgs-' + data.nonce}>
                 {
                     showTimestamp &&
                         <div className='timestamp'>
