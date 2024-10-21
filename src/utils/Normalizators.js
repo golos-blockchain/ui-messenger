@@ -13,7 +13,7 @@ function getProfileImageLazy(contact, account, cachedProfileImages) {
     let cached = cachedProfileImages[contact.contact];
     if (cached && now - cached.time < 60*1000)
         return cached.image
-    console.log('getProfileImageLazy',  contact.contact)
+    //console.log('getProfileImageLazy',  contact.contact)
     const image = contact.kind === 'group' ?
         getGroupLogo(contact.object_meta) : getProfileImage(account)
     cachedProfileImages[contact.contact] = { image, time: now }
@@ -162,11 +162,11 @@ export async function normalizeContacts(contacts, accounts, currentUser, cachedP
                     }
                 }
 
-                console.log('FCC1')
+                if (window._perfo) console.log('FCC1')
                 if (loadFromCache(msg, true)) {
                     return true
                 }
-                console.log('FCC2')
+                if (window._perfo) console.log('FCC2')
                 return false;
             },
             for_each: (msg) => {
@@ -209,7 +209,7 @@ export async function normalizeMessages(messages, accounts, currentUser, to) {
         const posting = currentUser.getIn(['private_keys', 'posting_private'])
         const privateMemo = currentUser.getIn(['private_keys', 'memo_private']);
 
-        console.log('ttt', Date.now())
+        if (window._perfo) console.log('ttt', Date.now())
         const decoded = await decodeMsgs({ msgs: messagesCopy,
             private_memo: !isGroup && privateMemo,
             login: {
@@ -240,12 +240,12 @@ export async function normalizeMessages(messages, accounts, currentUser, to) {
                 }
                 //msg.decrypt_date = null
 
-                console.log('FC1')
+                if (window._perfo) console.log('FC1')
                 if (loadFromCache(msg)) {
                     results.push(msg)
                     return true
                 }
-                console.log('FC2')
+                if (window._perfo) console.log('FC2')
                 return false;
             },
             for_each: (msg, i) => {
@@ -258,7 +258,7 @@ export async function normalizeMessages(messages, accounts, currentUser, to) {
             begin_idx: messagesCopy.length - 1,
             end_idx: -1,
         })
-        console.log('ttte', Date.now())
+        if (window._perfo) console.log('ttte', Date.now())
         return decoded
     } catch (ex) {
         console.log(ex);

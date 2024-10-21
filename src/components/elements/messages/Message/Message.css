@@ -95,6 +95,11 @@
     color: white;
 }
 
+.msgs-message.highlight .bubble-container .bubble {
+    background: #fc544e !important;
+    color: white;
+}
+
 .msgs-message.mine .bubble-container .bubble {
     background: #007aff;
     color: white;

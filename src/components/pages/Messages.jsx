@@ -72,6 +72,42 @@ class Messages extends React.Component {
         return the_group ? the_group.name : ''
     }
 
+    scrollToMention = () => {
+        const { username } = this.props
+        const { messages } = this.state
+        //alert('scrollToMention ' + messages.length)
+        let nonce
+        for (const msg of messages) {
+            console.log(msg.read_date)
+            if (msg.to === username && msg.read_date && msg.read_date.startsWith('1970')) {
+                nonce = msg.nonce
+                break
+            }
+            if (msg.mentions && msg.mentions.includes(username)) {
+                nonce = msg.nonce
+            }
+        }
+        if (nonce) {
+            const msgEl = document.getElementById('msgs-' + nonce)
+            if (msgEl) {
+                msgEl.scrollIntoView({ block: 'center' })
+                const bubEl = msgEl.querySelector('.bubble')
+                let oldTrans
+                if (bubEl) {
+                    oldTrans = bubEl.style.transition
+                }
+                msgEl.classList.toggle('highlight')
+                setTimeout(() => {
+                    bubEl.style.transition = '0.5s'
+                    if (msgEl) msgEl.classList.remove('highlight')
+                    setTimeout(() => {
+                        if (bubEl) bubEl.style.transition = oldTrans
+                    }, 1000)
+                }, 500)
+            }
+        }
+    }
+
     markMessages = () => {
         const { messages } = this.props
         if (!messages || !messages.size) return
@@ -375,6 +411,9 @@ class Messages extends React.Component {
                     messagesCount: messages.size,
                 }, () => {
                     hideSplash()
+                    if (this.props.fetched !== prevProps.fetched && this.isGroup()) {
+                        this.scrollToMention()
+                    }
                     if (added)
                         this.markMessages2();
                     setTimeout(() => {
@@ -1116,6 +1155,7 @@ export default withRouter(connect(
         const contacts = state.global.get('contacts')
         const messages = state.global.get('messages')
         const nodeError = state.global.get('nodeError')
+        const fetched = state.global.get('fetched')
 
         const messages_update = state.global.get('messages_update')
         const username = state.user.getIn(['current', 'username'])
@@ -1144,7 +1184,8 @@ export default withRouter(connect(
             accounts: accounts ?  accounts.toJS() : {},
             username,
             locale,
-            nodeError
+            nodeError,
+            fetched
         }
     },
     dispatch => ({
