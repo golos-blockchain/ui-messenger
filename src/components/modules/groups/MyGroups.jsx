@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { Map } from 'immutable'
 import { api, formatter } from 'golos-lib-js'
 import tt from 'counterpart'
+import cn from 'classnames'
 
 import DialogManager from 'app/components/elements/common/DialogManager'
 import g from 'app/redux/GlobalReducer'
@@ -15,6 +16,7 @@ import LoadingIndicator from 'app/components/elements/LoadingIndicator'
 import MarkNotificationRead from 'app/components/elements/MarkNotificationRead'
 import { showLoginDialog } from 'app/components/dialogs/LoginDialog'
 import { getGroupLogo, getGroupMeta, getRoleInGroup } from 'app/utils/groups'
+import isScreenSmall from 'app/utils/isScreenSmall'
 
 class MyGroups extends React.Component {
     constructor(props) {
@@ -126,10 +128,13 @@ class MyGroups extends React.Component {
 
         const meta = getGroupMeta(json_metadata)
 
+        const isSmall = isScreenSmall()
+
+        const maxLength = isSmall ? 15 : 20
         let title = meta.title || name
         let titleShr = title
-        if (titleShr.length > 20) {
-            titleShr = titleShr.substring(0, 17) + '...'
+        if (titleShr.length > maxLength) {
+            titleShr = titleShr.substring(0, maxLength - 3) + '...'
         }
 
         const kebabItems = []
@@ -161,7 +166,9 @@ class MyGroups extends React.Component {
                     e.preventDefault()
                     e.stopPropagation()
                 }}>
-                    {amPending ? <button className='button hollow alert' title={
+                    {amPending ? <button className={cn('button hollow alert', {
+                        'icon-only': isSmall
+                    })} title={
                         amPending ? tt('msgs_group_dropdown.pending') : null} onClick={e => {
                         this.retireCancel(e, group, titleShr, amPending)
                     }}>
@@ -172,11 +179,15 @@ class MyGroups extends React.Component {
                         this.showGroupMembers(e, group, true)
                     }} title={tt('group_members_jsx.check_pending_hint')}>
                         <Icon name='voters' size='0_95x' />
-                        <span className='btn-title'>{tt('group_members_jsx.check_pending') + ' (' + pendings + ')'}</span>
+                        <span className='btn-title'>
+                            {(isSmall ? '' : tt('group_members_jsx.check_pending')) + ' (' + pendings + ')'}
+                        </span>
                     </button> : null}
-                    <button className='button' onClick={e => {
+                    <button className={cn('button', {
+                        'icon-only': (isSmall || pendings || amPending)
+                    })} onClick={e => {
                         this.showGroupMembers(e, group)
-                    }}>
+                    }} title={(isSmall || pendings || amPending) ? tt('my_groups_jsx.members') : null}>
                         <Icon name='voters' size='0_95x' />
                         <span className='btn-title'>{tt('my_groups_jsx.members')}</span>
                     </button>

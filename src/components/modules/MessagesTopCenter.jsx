@@ -229,6 +229,31 @@ class MessagesTopCenter extends React.Component {
         </div>
     }
 
+    showErrorLogs = (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        try {
+            const { errorLogs } = this.props
+            let msg = ''
+            for (const err of errorLogs) {
+                msg += (err.err ? err.err.toString() : '') + '\n' + JSON.stringify(err.details) + '\n\n'
+            }
+            alert(msg)
+        } catch (err) {
+            alert('Cannot display error logs, due to: ' + (err && err.toString()))
+        }
+    }
+
+    refreshSync = e => {
+        this.setState({ refreshing: true })
+        e.preventDefault()
+        e.stopPropagation()
+        this.props.fetchState(this.props.to) 
+        setTimeout(() => {
+            this.setState({ refreshing: false })
+        }, 500)
+    }
+
     render() {
         let avatar = []
         let items = []
@@ -257,7 +282,7 @@ class MessagesTopCenter extends React.Component {
                     closeOnClickOutside
                     dropdownClassName="GroupDropdown"
                     dropdownPosition="bottom"
-                    dropdownAlignment="center"
+                    dropdownAlignment="right"
                     dropdownContent={this._renderGroupDropdown()}
                     transition={Fade}
                 >
@@ -282,12 +307,13 @@ class MessagesTopCenter extends React.Component {
         }
 
         if (notifyErrors >= 30) {
+            const { refreshing } = this.state
             items.push(<div key='to-last-seen' style={{fontSize: '13px', fontWeight: 'normal', color: 'red'}}>
                 {isSmall ?
-                    <span>
+                    <span onClick={this.showErrorLogs}>
                         {tt('messages.sync_error_short')}
-                        <a href='#' onClick={e => { e.preventDefault(); this.props.fetchState(this.props.to) }}>
-                            {tt('g.refresh').toLowerCase()}.
+                        <a href='#' onClick={this.refreshSync}>
+                            {refreshing ? '...' : tt('g.refresh')}.
                         </a>
                     </span> :
                     <span>{tt('messages.sync_error')}</span>

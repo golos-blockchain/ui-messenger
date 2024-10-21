@@ -6,6 +6,7 @@ import Icon from 'app/components/elements/Icon'
 import TimeAgoWrapper from 'app/components/elements/TimeAgoWrapper'
 import Userpic from 'app/components/elements/Userpic'
 import { getRoleInGroup } from 'app/utils/groups'
+import isScreenSmall from 'app/utils/isScreenSmall'
 
 class GroupMember extends React.Component {
     // shouldComponentUpdate(nextProps) {
@@ -96,6 +97,8 @@ class GroupMember extends React.Component {
                     onClick={e => this.groupMember(e, member, 'retired')} />
         }
 
+        const isSmall = isScreenSmall()
+
         return <tr key={account}>
             <td style={{ paddingBottom: '0px' }}>
                 <a href={'/@' + account} target='_blank' rel='noopener noreferrer'>
@@ -106,7 +109,7 @@ class GroupMember extends React.Component {
                 </a>
             </td>
             <td>
-                {!creatingNew && <TimeAgoWrapper date={joined} />}
+                {!isSmall && !creatingNew && <TimeAgoWrapper date={joined} />}
             </td>
             <td className='member-btns'>
                 {isOwner && <Icon className={cn('member-btn owner selected')}

@@ -34,7 +34,7 @@ import { getProfileImage, } from 'app/utils/NormalizeProfile';
 import { normalizeContacts, normalizeMessages, cacheMyOwnMsg } from 'app/utils/Normalizators';
 import { fitToPreview } from 'app/utils/ImageUtils';
 import { notificationSubscribe, notificationSubscribeWs, notifyWsPing,
-    notificationShallowUnsubscribe, notificationTake, queueWatch, sendOffchainMessage } from 'app/utils/NotifyApiClient';
+    notificationShallowUnsubscribe, notificationTake, queueWatch, sendOffchainMessage, notifyWsHost, notifyUrl } from 'app/utils/NotifyApiClient';
 import { flash, unflash } from 'app/components/elements/messages/FlashTitle';
 import { addShortcut } from 'app/utils/app/ShortcutUtils'
 import { hideSplash } from 'app/utils/app/SplashUtils'
@@ -44,6 +44,7 @@ import { proxifyImageUrl } from 'app/utils/ProxifyUrl'
 class Messages extends React.Component {
     constructor(props) {
         super(props);
+        window.errorLogs = window.errorLogs || []
         this.state = {
             contacts: [],
             messages: [],
@@ -78,7 +79,6 @@ class Messages extends React.Component {
         //alert('scrollToMention ' + messages.length)
         let nonce
         for (const msg of messages) {
-            console.log(msg.read_date)
             if (msg.to === username && msg.read_date && msg.read_date.startsWith('1970')) {
                 nonce = msg.nonce
                 break
@@ -182,16 +182,21 @@ class Messages extends React.Component {
     }
 
     notifyErrorsClear = () => {
-        if (this.state.notifyErrors)
+        if (this.state.notifyErrors) {
+            window.errorLogs = []
             this.setState({
                 notifyErrors: 0,
             });
+        }
     };
 
-    notifyErrorsInc = (score) => {
+    notifyErrorsInc = (score, err, errDetails) => {
         this.setState({
             notifyErrors: this.state.notifyErrors + score,
         });
+        if (err) {
+            window.errorLogs.push({ err, details: errDetails })
+        }
     };
 
     checkLoggedOut = (username) => {
@@ -256,7 +261,7 @@ class Messages extends React.Component {
             return true
         } catch (err) {
             console.error('watchGroup - ', to, err)
-            this.notifyErrorsInc(30)
+            this.notifyErrorsInc(30, err, {watchGroup: notifyUrl()})
         }
         return false
     }
@@ -309,7 +314,7 @@ class Messages extends React.Component {
             console.log('WSS:', subscribed)
         } catch (ex) {
             console.error('notificationSubscribe', ex)
-            this.notifyErrorsInc(15)
+            this.notifyErrorsInc(15, ex, {subscribeWs: notifyWsHost()})
             setTimeout(() => {
                 this.setCallback(username)
             }, 5000)
@@ -330,12 +335,11 @@ class Messages extends React.Component {
                     this.notifyErrorsClear()
                 } catch (err) {
                     console.error('Notify ping failed', err)
-                    this.notifyErrorsInc(10)
+                    this.notifyErrorsInc(10, err, {wsPing: notifyWsHost()})
                 }
             }
             setTimeout(ping, 10000)
         }
-        ping(true)
         this.watchGroup(this.props.to)
     }
 
@@ -372,6 +376,9 @@ class Messages extends React.Component {
         const loggedNow = this.props.username !== prevProps.username && this.props.username
         if (this.props.to !== prevProps.to || (this.isChat() && loggedNow)) {
             this.checkUserAuth()
+        }
+        if (prevProps.username && !this.props.username) {
+            this.checkUserAuth(true)
         }
         if (loggedNow) {
             this.props.fetchState(this.props.to);
@@ -896,15 +903,17 @@ class Messages extends React.Component {
     };
 
     _renderMessagesTopCenter = ({ isSmall }) => {
-        const { to } = this.props
+        const { fetchState, to } = this.props
         const toAcc = this.getToAcc()
-        const { notifyErrors } = this.state
+        const { notifyErrors, } = this.state
 
         return <MessagesTopCenter 
             isSmall={isSmall}
             to={to}
             toAcc={toAcc}
             notifyErrors={notifyErrors}
+            errorLogs={window.errorLogs}
+            fetchState={fetchState}
         />
     };
 
@@ -966,7 +975,7 @@ class Messages extends React.Component {
         return (<LinkWithDropdown
                 closeOnClickOutside
                 dropdownPosition='bottom'
-                dropdownAlignment='bottom'
+                dropdownAlignment='right'
                 dropdownContent={<VerticalMenu className={'VerticalMenu_nav-profile'} items={menuItems} />}
             >
                 <div className='msgs-curruser'>

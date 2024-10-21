@@ -57,6 +57,7 @@ function* preBroadcast_custom_json({operation}) {
                         }
                         const newMsg = messageOpToObject(json[1], group, mentions)
                         msgs = msgs.insert(0, fromJS(newMsg))
+                        messages_update = json[1].nonce;
                     } else {
                         messages_update = json[1].nonce;
                         msgs = msgs.update(idx, msg => {

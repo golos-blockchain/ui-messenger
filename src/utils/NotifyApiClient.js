@@ -14,13 +14,13 @@ const notifyAvailable = () => {
         && $GLS_Config.notify_service && $GLS_Config.notify_service.host;
 };
 
-const notifyWsAvailable = () => {
+export function notifyWsHost() {
     return notifyAvailable() && $GLS_Config.notify_service.host_ws
 }
 
-const notifyUrl = (pathname) => {
+export function notifyUrl(pathname = '') {
     return new URL(pathname, window.$GLS_Config.notify_service.host).toString();
-};
+}
 
 function notifySession() {
     return localStorage.getItem('X-Session')
@@ -50,7 +50,7 @@ async function connectNotifyWs() {
             window.notifyWs.close()
         }
         await new Promise((resolve, reject) => {
-            const notifyWs = new WebSocket($GLS_Config.notify_service.host_ws)
+            const notifyWs = new WebSocket(notifyWsHost())
             window.notifyWs = notifyWs
 
             const timeout = setTimeout(() => {
@@ -211,7 +211,7 @@ export async function notificationSubscribe(account, scopes = 'message,donate_ms
 }
 
 export async function notificationSubscribeWs(account, callback, scopes = 'message,donate_msgs', sidKey = '__subscriber_id') {
-    if (!notifyWsAvailable()) return null
+    if (!notifyWsHost()) throw new Error('No notify_service host_ws in config')
     const xSession = notifySession()
     return await new Promise(async (resolve, reject) => {
         await notifyWsSend('queues/subscribe', {
@@ -327,7 +327,7 @@ export async function queueWatch(account, group, sidKey = '__subscriber_id') {
 }
 
 export async function queueWatchWs(account, group, sidKey = '__subscriber_id') {
-    if (!notifyWsAvailable()) return null
+    if (!notifyWsHost()) return null
     const xSession = notifySession()
     return await new Promise(async (resolve, reject) => {
         await notifyWsSend('queues/subscribe', {

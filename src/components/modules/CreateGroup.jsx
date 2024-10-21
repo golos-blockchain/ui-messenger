@@ -20,13 +20,17 @@ import GroupMembers, { validateMembersStep } from 'app/components/modules/groups
 import GroupFinal from 'app/components/modules/groups/GroupFinal'
 import DialogManager from 'app/components/elements/common/DialogManager'
 import { showLoginDialog } from 'app/components/dialogs/LoginDialog'
+import isScreenSmall from 'app/utils/isScreenSmall'
 
-const STEPS = () => { return {
-    name: tt('create_group_jsx.step_name'),
-    logo: tt('create_group_jsx.step_logo'),
-    members: tt('create_group_jsx.step_members'),
-    final: tt('create_group_jsx.step_create')
-} }
+const STEPS = () => {
+    const isSmall = isScreenSmall()
+    return {
+        name: tt('create_group_jsx.step_name'),
+        logo: isSmall ? tt('create_group_jsx.step_logo_mobile') : tt('create_group_jsx.step_logo'),
+        members: isSmall ? tt('create_group_jsx.step_members_mobile') : tt('create_group_jsx.step_members'),
+        final: isSmall ? tt('create_group_jsx.step_create_mobile') : tt('create_group_jsx.step_create')
+    }
+}
 
 class ActionOnUnmount extends React.Component {
     componentWillUnmount() {
