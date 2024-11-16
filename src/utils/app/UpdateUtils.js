@@ -55,10 +55,15 @@ export async function checkUpdates(timeout = 2000) {
             if (versions[0]) {
                 const [ v, obj ] = versions[0]
                 if (obj.exe) {
+                    let exeLink = new URL(obj.exe_url, updaterHost()).toString()
+                    if (!isDesktop) {
+                        exeLink = new URL('/api/html/' + path + '/' + v, updaterHost())
+                        exeLink = exeLink.toString()
+                    }
                     return {
                         version: v,
                         exe: obj.exe,
-                        exeLink: new URL(obj.exe_url, updaterHost()).toString(),
+                        exeLink,
                         txt: obj.txt,
                         txtLink: new URL(obj.txt_url, updaterHost()).toString(),
                         title: tt('app_update.notify_VERSION', { VERSION: v }),
@@ -84,6 +89,6 @@ export async function getChangelog(txtLink) {
         return res
     } catch (err) {
         console.error('getChangelog', err)
-        return ''
+        throw err
     }
 }

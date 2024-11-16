@@ -41,6 +41,7 @@ const loadMobileConfig = async () => {
     if (cfg.images.use_img_proxy === undefined) {
         cfg.images.use_img_proxy = true
     }
+    cfg.app_version = defaultCfg.app_version
     window.$GLS_Config = cfg
     await initGolos()
 }
