@@ -4,6 +4,8 @@ import golos from 'golos-lib-js'
 
 import g from 'app/redux/GlobalReducer'
 import user from 'app/redux/UserReducer'
+import { messageOpToObject } from 'app/utils/Normalizators'
+import { translateError } from 'app/utils/translateError'
 
 export function* transactionWatches() {
     yield fork(watchForBroadcast)
@@ -15,7 +17,22 @@ export function* watchForBroadcast() {
 
 const hook = {
     preBroadcast_custom_json,
+    accepted_custom_json,
 }
+
+function* accepted_custom_json({operation}) {
+    const json = JSON.parse(operation.json)
+    if (operation.id === 'private_message') {
+        if (json[0] === 'private_group') {
+            yield put(g.actions.upsertGroup(json[1]))
+        } else if (json[0] === 'private_group_member') {
+            const { name, member, member_type } = json[1]
+            yield put(g.actions.updateGroupMember({ group: name, member, member_type, }))
+        }
+    }
+    return operation
+}
+
 
 function* preBroadcast_custom_json({operation}) {
     const json = JSON.parse(operation.json)
@@ -28,17 +45,19 @@ function* preBroadcast_custom_json({operation}) {
                 updater: msgs => {
                     const idx = msgs.findIndex(i => i.get('nonce') === json[1].nonce);
                     if (idx === -1) {
-                        msgs = msgs.insert(0, fromJS({
-                            nonce: json[1].nonce,
-                            checksum: json[1].checksum,
-                            from: json[1].from,
-                            read_date: '1970-01-01T00:00:00',
-                            create_date: new Date().toISOString().split('.')[0],
-                            receive_date: '1970-01-01T00:00:00',
-                            encrypted_message: json[1].encrypted_message,
-                            donates: '0.000 GOLOS',
-                            donates_uia: 0
-                        }))
+                        let group = ''
+                        let mentions = []
+                        const exts = json[1].extensions || []
+                        for (const [key, val ] of exts) {
+                            if (key === 0) {
+                                group = val.group
+                                mentions = val.mentions
+                                break
+                            }
+                        }
+                        const newMsg = messageOpToObject(json[1], group, mentions)
+                        msgs = msgs.insert(0, fromJS(newMsg))
+                        messages_update = json[1].nonce;
                     } else {
                         messages_update = json[1].nonce;
                         msgs = msgs.update(idx, msg => {
@@ -114,9 +133,15 @@ function* broadcastOperation(
         return;
     }
 
-    const posting_private = yield select(state => state.user.getIn(['current', 'private_keys', 'posting_private']));
-    if (!posting_private) {
-        alert('Not authorized')
+    if (!keys) keys = ['posting']
+    keys = [...new Set(keys)] // remove duplicate
+    const idxP = keys.indexOf('posting')
+    if (idxP !== -1) {
+        const posting = yield select(state => state.user.getIn(['current', 'private_keys', 'posting_private']));
+        if (!posting) {
+            alert('Not authorized')
+        }
+        keys[idxP] = posting
     }
 
     let operations = trx || [
@@ -144,11 +169,23 @@ function* broadcastOperation(
     }
     try {
         const res = yield golos.broadcast.sendAsync(
-        tx, [posting_private])
+        tx, keys)
+        for (const [type, operation] of operations) {
+            if (hook['accepted_' + type]) {
+                try {
+                    yield call(hook['accepted_' + type], {operation})
+                } catch (error) {
+                    console.error(error)
+                }
+            }
+        }
     } catch (err) {
         console.error('Broadcast error', err)
         if (errorCallback) {
-            errorCallback(err)
+            let errStr = err.toString()
+            errStr = translateError(errStr, err.payload)
+            errStr = errStr.substring(0, 160)
+            errorCallback(err, errStr)
         }
         return
     }

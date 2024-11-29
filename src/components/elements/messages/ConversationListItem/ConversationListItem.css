@@ -54,6 +54,11 @@
     text-align: center;
 }
 
+.conversation-unread.mention:not(.mine) {
+    background-color: #007aff;
+    margin-left: 8px;
+}
+
 .conversation-unread.mine {
     float: right;
     color: #007aff;

@@ -1,0 +1,24 @@
+.compose-stub {
+    height: 60px !important;
+    padding-top: 0.75rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+.message-list-container {
+    .msgs-stub {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        padding: 1rem;
+        width: 98%;
+    }
+}
+
+.stub-btn {
+    white-space: nowrap;
+    &.alert {
+        color: red;
+    }
+}

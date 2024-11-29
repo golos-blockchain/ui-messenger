@@ -1,0 +1,86 @@
+.MessagesTopCenter {
+    &.clickable {
+        cursor: pointer;
+    }
+
+    .avatar-items {
+        display: inline-block;
+        vertical-align: top;
+        margin-top: 5px;
+        margin-right: 7px;
+
+        .group-logo {
+            cursor: pointer;
+            img {
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+            }
+        }
+    }
+
+    .main-items {
+        display: inline-block;
+        .to-group {
+            cursor: pointer;
+            color: #0078C4;
+        }
+        .group-stats {
+            cursor: pointer;
+        }
+    }
+}
+
+.GroupDropdown {
+    backdrop-filter: blur(10px) !important;
+    border-radius: 8px !important;
+}
+.theme-light {
+    .GroupDropdown {
+        background-color: rgba(255, 255, 255, 0.7) !important;
+    }
+}
+.theme-dark {
+    .GroupDropdown {
+        background-color: rgba(40, 51, 54, 0.7) !important;
+    }
+}
+
+.msgs-group-dropdown {
+    .logo {
+        margin-top: 1rem;
+        width: 100%;
+        max-height: 100px;
+        object-fit: contain;
+    }
+    .title {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+        margin-top: 0.5rem;
+        margin-bottom: 0.15rem;
+    }
+    .group-type {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+        margin-bottom: 0.05rem;
+    }
+    .buttons {
+        margin-top: 0.5rem;
+        padding-left: 0.75rem;
+        padding-bottom: 0.75rem;
+        padding-right: 0.75rem;
+        min-width: 200px;
+
+        .button {
+            margin-right: 0px !important;
+            &.margin {
+                margin-right: 7px !important;
+            }
+            margin-bottom: 0.75rem;
+        }
+        .DropdownMenu {
+            margin-left: 0.25rem;
+            margin-top: 0.25rem;
+        }
+    }
+}

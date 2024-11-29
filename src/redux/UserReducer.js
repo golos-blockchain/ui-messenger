@@ -5,6 +5,11 @@ const defaultState = fromJS({
     current: null,
     show_login_modal: false,
     show_donate_modal: false,
+    show_create_group_modal: false,
+    show_my_groups_modal: false,
+    show_top_groups_modal: false,
+    show_group_settings_modal: false,
+    show_group_members_modal: false,
     show_app_download_modal: false,
     loginLoading: false,
     pub_keys_used: null,
@@ -128,6 +133,31 @@ export default createModule({
         { action: 'HIDE_CONNECTION_ERROR_MODAL', reducer: state => state.set('hide_connection_error_modal', true) },
         { action: 'SHOW_DONATE', reducer: state => state.set('show_donate_modal', true) },
         { action: 'HIDE_DONATE', reducer: state => state.set('show_donate_modal', false) },
+        { action: 'SHOW_CREATE_GROUP', reducer: (state, { payload: { redirectAfter }}) => {
+            state = state.set('show_create_group_modal', true)
+            state = state.set('create_group_redirect_after', redirectAfter)
+            return state
+        }},
+        { action: 'HIDE_CREATE_GROUP', reducer: state => state.set('show_create_group_modal', false) },
+        { action: 'SHOW_MY_GROUPS', reducer: state => state.set('show_my_groups_modal', true) },
+        { action: 'HIDE_MY_GROUPS', reducer: state => state.set('show_my_groups_modal', false) },
+        { action: 'SHOW_TOP_GROUPS', reducer: state => state.set('show_top_groups_modal', true) },
+        { action: 'HIDE_TOP_GROUPS', reducer: state => state.set('show_top_groups_modal', false) },
+        { action: 'SHOW_GROUP_SETTINGS', reducer: (state, { payload: { group }}) => {
+            state = state.set('show_group_settings_modal', true)
+            state = state.set('current_group', fromJS(group))
+            return state
+        }},
+        { action: 'HIDE_GROUP_SETTINGS', reducer: state => state.set('show_group_settings_modal', false) },
+        { action: 'SHOW_GROUP_MEMBERS', reducer: (state, { payload: { group, show_pendings }}) => {
+            state = state.set('show_group_members_modal', true)
+            state = state.set('group_members_modal', fromJS({
+                group,
+                show_pendings,
+            }))
+            return state
+        }},
+        { action: 'HIDE_GROUP_MEMBERS', reducer: state => state.set('show_group_members_modal', false) },
         { action: 'SHOW_APP_DOWNLOAD', reducer: state => state.set('show_app_download_modal', true) },
         { action: 'HIDE_APP_DOWNLOAD', reducer: state => state.set('show_app_download_modal', false) },
         { action: 'SET_DONATE_DEFAULTS', reducer: (state, {payload}) => state.set('donate_defaults', fromJS(payload)) },

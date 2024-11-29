@@ -1,10 +1,13 @@
 
 export function hideSplash() {
-    if (process.env.MOBILE_APP) {
-        try {
+    try {
+        if (process.env.MOBILE_APP) {
             navigator.splashscreen.hide()
-        } catch (err) {
-            console.error('hideSplash', err)
+        } else if (process.env.DESKTOP_APP) {
+            if (window.appSplash)
+                window.appSplash.contentLoaded()
         }
+    } catch (err) {
+        console.error('hideSplash', err)
     }
 }

@@ -1,4 +1,32 @@
 {
+  "account_dropdown_jsx": {
+    "clear_history": "Clear Hstory",
+    "delete_chat": "Delete Chat",
+    "are_you_sure": "Are you sure you want to clear history?",
+    "are_you_sure_delete": "Are you sure you want to clear history and delete chat?",
+    "are_you_sure_delete_empty": "Are you sure you want to delete chat?"
+  },
+  "account_name": {
+    "account_name_should_be_shorter": "Account name should be shorter.",
+    "account_name_should_be_longer": "Account name should be longer.",
+    "account_name_should_not_be_empty": "Account name should not be empty.",
+    "each_account_segment_should_start_with_a_letter": "Each account name segment should start with a letter.",
+    "each_account_segment_should_have_only_letters_digits_or_dashes": "Each account name segment should have only letters, digits or dashes.",
+    "each_account_segment_should_have_only_one_dash_in_a_row": "Each account name segment should have only one dash in a row.",
+    "each_account_segment_should_end_with_a_letter_or_digit": "Each account name segment should end with a letter or digit.",
+    "each_account_segment_should_be_longer": "Each account name segment should be longer."
+  },
+  "account_name_jsx": {
+    "loading": "Loading...",
+    "no_options": "Cannot search..."
+  },
+  "chain_errors": {
+    "exceeded_maximum_allowed_bandwidth": "Insufficient account bandwidth. Replenish the Golos Power or write to info@golos.id",
+    "insufficient1": "It costs ",
+    "insufficient2": ", but you have just ",
+    "insufficient3": ". ",
+    "insufficient_top_up": "Top Up"
+  },
   "chainvalidation_js": {
     "account_name_should": "Account name should ",
     "not_be_empty": "not be empty.",
@@ -33,6 +61,8 @@
     "login_to_post": "Login to Post",
     "login_to_comment": "Login to Comment",
     "login_to_message": "Login with Memo Key or Password",
+    "login_active": "Enter password (or active-key)",
+    "is_is_for_operation": "This is to send an operation.",
     "login_to_your_steem_account": "Login to your Steem Account",
     "login_with_active_key_USERNAME": "Login with your Active key, please\n\nUsername:\n%(USERNAME)s\n\nActive-key:\n",
     "posting": "Posting",
@@ -59,6 +89,11 @@
     "join_our": "Join our",
     "account_frozen": "This account is temporarily frozen due to inactivity."
   },
+  "login_dialog_jsx": {
+    "node_failure_NODE_ERROR": "Node failure. Node: %(NODE)s Error: %(ERROR)s",
+    "wrong_pass": "Wrong password.",
+    "wrong_pass_ROLE": "Wrong password. No access to %(ROLE)s permissions."
+  },
   "messages": {
     "last_seen": "last seen ",
     "verified_golos_account": "Verified account of Golos staff",
@@ -72,9 +107,129 @@
     "new_message5": " notifications",
     "invalid_message": "(This message could not be displayed in Golos Messenger)",
     "sync_error": "Sync error. To receive new messages please refresh the page.",
-    "sync_error_short": "Sync error. To receive new messages touch ",
+    "sync_error_short": "Sync error. ",
     "blocked_BY": "You are blocked by @%(BY)s.",
     "do_not_bother_BY": "@%(BY)s wants to not be bothered by low-reputation users."
+  },
+  "msgs_group_dropdown": {
+    "join": "Join",
+    "retire": "Retire",
+    "cancel": "Cancel",
+    "public": "Public group",
+    "read_only": "Public only as read-only",
+    "private": "Private group",
+    "encrypted": "Messages are encrypted",
+    "not_encrypted": "Messages are not encrypted",
+    "banned": "You are banned.",
+    "pending": "You requested membership.",
+    "moder": "You are moderator.",
+    "owner": "You are owner.",
+    "are_you_sure_retire": "Are you sure you want to retire from ",
+    "joining_back_will_require_approval": "Joining it back will require approval."
+  },
+  "msgs_start_panel": {
+    "start_chat": "Start chat",
+    "create_group": "Create group"
+  },
+  "msgs_chat_error": {
+    "404_group": "We have not such group",
+    "404_acc": "No such account",
+    "404_but": "But we have many interesting things...",
+    "500_group": "Error",
+    "500_load_msgs": "Cannot load messages."
+  },
+  "create_group_jsx": {
+    "title": "Title",
+    "name": "Link chat.golos.app/",
+    "logo": "Logo",
+    "admin": "Admin",
+    "encrypted": "Encrypt messages in group",
+    "encrypted_hint": "Шифрование позволяет сделать сообщения доступными только тем, кто имеет доступ к группе.",
+    "encrypted_dis": " (required for privacy)",
+    "access": "Access to group for...",
+    "access_hint": "Можно сделать группу открытой, или доступной только тем, чьи заявки на вступление в группу одобрит администрация.",
+    "access_all": "Everyone",
+    "all_read_only": "Everyone, but posting only for members",
+    "access_private": "Only members",
+    "next": "Next",
+    "back": "Back",
+    "submit": "Create",
+    "step_name": "Name",
+    "step_logo": "Logo",
+    "step_logo_mobile": "Logo",
+    "step_members": "Members",
+    "step_members_mobile": "Membs",
+    "step_create": "Create!",
+    "step_create_mobile": "Go!",
+    "group_already_exists": "Group already exists.",
+    "group_min_length": "Min is 3 symbols.",
+    "golos_power_too_low": "To create group you should have Golos Power at least ",
+    "golos_power_too_low2": "That is not enough ",
+    "golos_power_too_low3": "Your Golos Power is ",
+    "gbg_too_low": "Group creation costs ",
+    "gbg_too_low2": "That is not enough ",
+    "gbg_too_low3": "Your GBG balance is ",
+    "create_of_group_is": "Creating of group is ",
+    "free": "free",
+    "deposit_gp": "Increase Golos Power",
+    "logo_desc": "The group logo is like a user’s avatar... Not required, but \"must have\"...",
+    "logo_upload": "Upload logo",
+    "logo_link": "Add logo from the URL",
+    "members_desc": "Add people, set moderators of the group...",
+    "final_desc": "Now we are ready to create the group!",
+    "moders_list": "Moderators:",
+    "members_list": "Members:",
+    "image_wrong": "Cannot load this image.",
+    "image_timeout": "Cannot load this image, it is loading too long...",
+    "add_member": "+ Add Member..."
+  },
+  "my_groups_jsx": {
+    "title": "My Groups",
+    "empty": "You have not any groups yet. ",
+    "empty2": "You can ",
+    "find": "find",
+    "find2": "interesting group",
+    "create": "create",
+    "create2": "your own one",
+    "create_more": "+ Create a group",
+    "more_groups": "More groups...",
+    "edit": "Edit",
+    "login_hint_GROUP": "(delete \"%(GROUP)s\" group)",
+    "members": "Members",
+    "cancel_pending": "Cancel request",
+    "are_you_sure_cancel": "Do you sure you don't want to join"
+  },
+  "top_groups_jsx": {
+    "title": "Popular Groups",
+    "empty": "We have no groups yet. ",
+    "empty2": "Become the first - ",
+    "create": "create your own group!",
+    "public": "Public",
+    "read_only": "Read-only",
+    "private": "Private"
+  },
+  "group_members_jsx": {
+    "title": "Members Of ",
+    "title2": " Group",
+    "check_pending": "Requests",
+    "check_pending_hint": "Pending Group Join Requests",
+    "check_banned": "Blocked",
+    "all": "All",
+    "moders": "Moderators",
+    "member": "Member",
+    "moder": "Moderator",
+    "owner": "Group Owner",
+    "make_member": "Make Simple Member",
+    "make_moder": "Make Moderator",
+    "ban": "Ban",
+    "unban": "Unban",
+    "banned": "Banned"
+  },
+  "group_settings_jsx": {
+    "title_GROUP": "%(GROUP)s Group",
+    "submit": "Save",
+    "owner": "Owner",
+    "upload": "Upload"
   },
   "emoji_i18n": {
     "categoriesLabel": "Категории",
@@ -109,6 +264,15 @@
       "symbols": "Символы и знаки",
       "flags": "Флаги"
     }
+  },
+  "stub_jsx": {
+    "read_only": "Only members can post messages in this group.",
+    "private_group": "This group is private. To read and write messages, you should be a member.",
+    "pending": "You issued request to join group.",
+    "banned": "You banned in this group.",
+    "join": "Make Request",
+    "blocked": "User blocked you.",
+    "blocking": "You are blocked by user."
   },
   "user_saga_js": {
     "image_upload": {
@@ -152,7 +316,8 @@
     "current_node": "GOLOS node URL",
     "img_proxy_prefix": "Use Proxy For Images",
     "auth_service": "Golos Auth & Registration Service (for messenger)",
-    "notify_service": "Golos Notify Service (for messenger)",
+    "notify_service": "Golos Notify Service (for instant messages)",
+    "notify_service_ws": "Golos Notify Service WebSocket (for instant messages)",
     "blogs_service": "Blogs",
     "save": "Save",
     "node_error_NODE": "Cannot connect to %(NODE)s. It may be internet failure. Try ",
@@ -172,21 +337,48 @@
     "confirm": "Confirmation",
     "prompt": "Enter the data"
   },
+  "plurals": {
+    "member_count": {
+      "zero": "0 members",
+      "one": "1 member",
+      "other": "%(count)s members"
+    },
+    "mention_count": {
+      "zero": "0 mentions",
+      "one": "1 mention",
+      "other": "%(count)s mentions"
+    },
+    "message_count": {
+      "zero": "0 messages",
+      "one": "1 message",
+      "other": "%(count)s messages"
+    },
+    "reply_count": {
+      "zero": "0 replies",
+      "one": "1 reply",
+      "other": "%(count)s replies"
+    }
+  },
   "g": {
     "and": "and",
+    "block": "Block",
+    "blocked": "Blocked",
     "blog": "Blog",
     "cancel": "Cancel",
     "delete": "Delete",
     "dismiss": "Dismiss",
     "edit": "Edit",
+    "groups": "Groups",
     "feed": "Feed",
     "incorrect_password": "Incorrect password",
     "posting_not_memo": "Use posting key now, not memo",
     "login": "Login",
     "logout": "Logout",
     "mentions": "Mentions",
+    "name": "Name",
     "night_mode": "Night Mode",
     "ok": "OK",
+    "or": "or",
     "refresh": "Refresh",
     "required": "Required",
     "replies": "Replies",
@@ -195,6 +387,7 @@
     "settings": "Settings",
     "sign_up": "Sign Up",
     "submit": "Submit",
+    "unblock": "Unblock",
     "username_does_not_exist": "Username does not exist",
     "wallet": "Wallet"
   }

@@ -1,0 +1,47 @@
+.MyGroups {
+    .group-logo {
+        width: 67px;
+        img {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+        }
+    }
+    .group-title {
+        font-weight: bold;
+        font-size: 110%;
+        @include themify($themes) {
+            color: themed('textColorPrimary');
+        }
+    }
+    .create-group {
+        margin-right: 0.5rem !important;
+    }
+    .more-group {
+        float: right;
+        &:not(:hover) {
+            border-color: transparent;
+        }
+    }
+    .group-buttons {
+        float: right;
+        padding-top: 0.8rem;
+        cursor: default;
+        .button {
+            vertical-align: middle;
+            margin-bottom: 0px;
+        }
+        .DropdownMenu.show > .VerticalMenu {
+            transform: translateX(-100%);
+        }
+    }
+    .btn-title {
+        margin-left: 5px;
+        vertical-align: middle;
+    }
+    .button.icon-only {
+        .btn-title {
+            display: none;
+        }
+    }
+}

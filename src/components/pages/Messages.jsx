@@ -5,30 +5,36 @@ import { LinkWithDropdown } from 'react-foundation-components/lib/global/dropdow
 import { withRouter } from 'react-router'
 import golos from 'golos-lib-js'
 import { fetchEx } from 'golos-lib-js/lib/utils'
+import { Aes } from 'golos-lib-js/lib/auth/ecc'
 import tt from 'counterpart'
 import debounce from 'lodash/debounce';
 
 import BackButtonController from 'app/components/elements/app/BackButtonController'
 import AppUpdateChecker from 'app/components/elements/app/AppUpdateChecker'
-import ExtLink from 'app/components/elements/ExtLink'
 import Icon from 'app/components/elements/Icon'
 import Logo from 'app/components/elements/Logo'
 import MarkNotificationRead from 'app/components/elements/MarkNotificationRead'
 import NotifiCounter from 'app/components/elements/NotifiCounter'
 import DialogManager from 'app/components/elements/common/DialogManager'
 import AddImageDialog from 'app/components/dialogs/AddImageDialog'
+import ChatError from 'app/components/elements/messages/ChatError'
+import LetteredAvatar from 'app/components/elements/messages/LetteredAvatar'
 import PageFocus from 'app/components/elements/messages/PageFocus'
-import TimeAgoWrapper from 'app/components/elements/TimeAgoWrapper'
+import { renderStubs } from 'app/components/elements/Stub'
 import Userpic from 'app/components/elements/Userpic'
 import VerticalMenu from 'app/components/elements/VerticalMenu'
 import Messenger from 'app/components/modules/messages/Messenger'
+import MessagesTopCenter from 'app/components/modules/MessagesTopCenter'
 import g from 'app/redux/GlobalReducer'
 import transaction from 'app/redux/TransactionReducer'
 import user from 'app/redux/UserReducer'
-import { getProfileImage, getLastSeen } from 'app/utils/NormalizeProfile';
-import { normalizeContacts, normalizeMessages } from 'app/utils/Normalizators';
+import { getRoleInGroup, opGroup } from 'app/utils/groups'
+import { parseMentions } from 'app/utils/mentions'
+import { getProfileImage, } from 'app/utils/NormalizeProfile';
+import { normalizeContacts, normalizeMessages, cacheMyOwnMsg } from 'app/utils/Normalizators';
 import { fitToPreview } from 'app/utils/ImageUtils';
-import { notificationSubscribe, notificationShallowUnsubscribe, notificationTake, sendOffchainMessage } from 'app/utils/NotifyApiClient';
+import { notificationSubscribe, notificationSubscribeWs, notifyWsPing,
+    notificationShallowUnsubscribe, notificationTake, queueWatch, sendOffchainMessage, notifyWsHost, notifyUrl } from 'app/utils/NotifyApiClient';
 import { flash, unflash } from 'app/components/elements/messages/FlashTitle';
 import { addShortcut } from 'app/utils/app/ShortcutUtils'
 import { hideSplash } from 'app/utils/app/SplashUtils'
@@ -38,6 +44,7 @@ import { proxifyImageUrl } from 'app/utils/ProxifyUrl'
 class Messages extends React.Component {
     constructor(props) {
         super(props);
+        window.errorLogs = window.errorLogs || []
         this.state = {
             contacts: [],
             messages: [],
@@ -46,30 +53,99 @@ class Messages extends React.Component {
             searchContacts: null,
             notifyErrors: 0,
         };
-        this.preDecoded = {};
         this.cachedProfileImages = {};
         this.windowFocused = true;
-        this.newMessages = 0;
+        this.newMessages = {}
         if (process.env.MOBILE_APP) {
             this.stopService()
         }
         this.composeRef = React.createRef()
     }
 
-    markMessages() {
-        const { messages } = this.state;
-        if (!messages.length) return;
+    getToAcc = () => {
+        let { to } = this.props
+        if (to) to = to.replace('@', '')
+        return to
+    }
 
-        const { account, accounts, to } = this.props;
+    getGroupName = () => {
+        const { the_group } = this.props
+        return the_group ? the_group.name : ''
+    }
 
-        let OPERATIONS = golos.messages.makeDatedGroups(messages, (message_object, idx) => {
-            return message_object.toMark && !message_object._offchain;
+    scrollToMention = () => {
+        const { username } = this.props
+        const { messages } = this.state
+        //alert('scrollToMention ' + messages.length)
+        let nonce
+        for (const msg of messages) {
+            if (msg.to === username && msg.read_date && msg.read_date.startsWith('1970')) {
+                nonce = msg.nonce
+                break
+            }
+            if (msg.mentions && msg.mentions.includes(username)) {
+                nonce = msg.nonce
+            }
+        }
+        if (nonce) {
+            const msgEl = document.getElementById('msgs-' + nonce)
+            if (msgEl) {
+                msgEl.scrollIntoView({ block: 'center' })
+                const bubEl = msgEl.querySelector('.bubble')
+                let oldTrans
+                if (bubEl) {
+                    oldTrans = bubEl.style.transition
+                }
+                msgEl.classList.toggle('highlight')
+                setTimeout(() => {
+                    bubEl.style.transition = '0.5s'
+                    if (msgEl) msgEl.classList.remove('highlight')
+                    setTimeout(() => {
+                        if (bubEl) bubEl.style.transition = oldTrans
+                    }, 1000)
+                }, 500)
+            }
+        }
+    }
+
+    markMessages = () => {
+        const { messages } = this.props
+        if (!messages || !messages.size) return
+
+        const msgs = messages.toJS()
+
+        const { account, accounts, } = this.props;
+        const to = this.getToAcc()
+
+        const isGroup = this.isGroup()
+
+        let OPERATIONS = golos.messages.makeDatedGroups(msgs, (msg, idx) => {
+            if (msg._offchain) return false
+            if (msg.read_date.startsWith('19')) {
+                if (!isGroup) {
+                    return msg.to === account.name
+                } else {
+                    if (msg.to === account.name) return true
+                }
+            }
+            if (isGroup && msg.mentions.includes(account.name)) {
+                return true
+            }
+            return false
         }, (group, indexes, results) => {
-            const json = JSON.stringify(['private_mark_message', {
-                from: accounts[to].name,
-                to: account.name,
+            const op = {
+                from: isGroup ? '' : accounts[to].name,
+                to: isGroup ? '' : account.name,
                 ...group,
-            }]);
+            }
+            if (isGroup) {
+                op.extensions = [[0, {
+                    group: to,
+                    requester: account.name,
+                    mentions: [account.name],
+                }]]
+            }
+            const json = JSON.stringify(['private_mark_message', op])
             return ['custom_json',
                 {
                     id: 'private_message',
@@ -77,25 +153,26 @@ class Messages extends React.Component {
                     json,
                 }
             ];
-        }, messages.length - 1, -1);
+        }, 0, msgs.length);
 
         this.props.sendOperations(account, accounts[to], OPERATIONS);
     }
 
-    markMessages2 = debounce(this.markMessages, 1000);
+    markMessages2 = debounce(this.markMessages, 1000)
 
-    flashMessage() {
-        ++this.newMessages;
+    flashMessage(nonce) {
+        this.newMessages[nonce] = true
 
-        let title = this.newMessages;
-        const plural = this.newMessages % 10;
+        const count = Object.keys(this.newMessages).length
+        let title = count
+        const plural = count % 10
 
         if (plural === 1) {
-            if (this.newMessages === 11)
+            if (count === 11)
                 title += tt('messages.new_message5');
             else
                 title += tt('messages.new_message1');
-        } else if ((plural === 2 || plural === 3 || plural === 4) && (this.newMessages < 10 || this.newMessages > 20)) {
+        } else if ((plural === 2 || plural === 3 || plural === 4) && (count < 10 || count > 20)) {
             title += tt('messages.new_message234');
         } else {
             title += tt('messages.new_message5');
@@ -105,16 +182,21 @@ class Messages extends React.Component {
     }
 
     notifyErrorsClear = () => {
-        if (this.state.notifyErrors)
+        if (this.state.notifyErrors) {
+            window.errorLogs = []
             this.setState({
                 notifyErrors: 0,
             });
+        }
     };
 
-    notifyErrorsInc = (score) => {
+    notifyErrorsInc = (score, err, errDetails) => {
         this.setState({
             notifyErrors: this.state.notifyErrors + score,
         });
+        if (err) {
+            window.errorLogs.push({ err, details: errDetails })
+        }
     };
 
     checkLoggedOut = (username) => {
@@ -163,7 +245,31 @@ class Messages extends React.Component {
         }, 'CorePlugin', 'stopService', [])
     }
 
+    async watchGroup(to) {
+        if (!to || to.startsWith('@')) {
+            return true
+        }
+
+        const {username} = this.props
+        if (!username) {
+            console.log('watchGroup -', to, ' - no username')
+            return false
+        }
+        try {
+            await queueWatch(username, to)
+            console.log('watchGroup - ', to)
+            return true
+        } catch (err) {
+            console.error('watchGroup - ', to, err)
+            this.notifyErrorsInc(30, err, {watchGroup: notifyUrl()})
+        }
+        return false
+    }
+
     async setCallback(username, removeTaskIds) {
+        if (process.env.NO_NOTIFY) { // config-overrides.js, yarn run dev
+            return
+        }
         if (this.checkLoggedOut(username)) return
         if (this.paused) {
             setTimeout(() => {
@@ -171,67 +277,70 @@ class Messages extends React.Component {
             }, 250)
             return
         }
-        let subscribed = null;
+        let subscribed = null
         try {
-            subscribed = await notificationSubscribe(username);
-        } catch (ex) {
-            console.error('notificationSubscribe', ex);
-            this.notifyErrorsInc(15);
-            setTimeout(() => {
-                this.setCallback(username, removeTaskIds);
-            }, 5000);
-            return;
-        }
-        if (subscribed) { // if was not already subscribed
-            this.notifyErrorsClear();
-        }
-        if (this.checkLoggedOut(username)) return
-        try {
-            this.notifyAbort = new fetchEx.AbortController()
-            window.notifyAbort = this.notifyAbort
-            const takeResult = await notificationTake(username, removeTaskIds, (type, op, timestamp, task_id) => {
-                const isDonate = type === 'donate'
-                let updateMessage = op.from === this.state.to || 
-                    op.to === this.state.to
-                const isMine = username === op.from;
-                if (type === 'private_message') {
-                    if (op.update) {
-                        this.props.messageEdited(op, timestamp, updateMessage, isMine);
-                    } else if (this.nonce !== op.nonce) {
-                        this.props.messaged(op, timestamp, updateMessage, isMine);
-                        this.nonce = op.nonce
-                        if (!isMine && !this.windowFocused) {
-                            this.flashMessage();
+            subscribed = await notificationSubscribeWs(username, (err, event) => {
+                for (const task of event.tasks) {
+                    const { scope, data, timestamp } = task
+                    const [ type, op ] = data
+                    //alert(scope + ' ' + type + op +' ' + timestamp)
+                    const isDonate = type === 'donate'
+                    const toAcc = this.getToAcc()
+                    const { group } = opGroup(op)
+                    let updateMessage = group === this.state.to || (!group && (op.from === toAcc || 
+                        op.to === toAcc))
+                    const isMine = username === op.from;
+                    if (type === 'private_message') {
+                        if (op.update) {
+                            this.props.messageEdited(op, timestamp, updateMessage, isMine);
+                        } else {
+                            this.props.messaged(op, timestamp, updateMessage, isMine, username)
+                            if (this.nonce !== op.nonce) {
+                                this.nonce = op.nonce
+                                if (!isMine && !this.windowFocused) {
+                                    this.flashMessage(op.nonce)
+                                }
+                            }
                         }
+                    } else if (type === 'private_delete_message') {
+                        this.props.messageDeleted(op, updateMessage, isMine);
+                    } else if (type === 'private_mark_message') {
+                        this.props.messageRead(op, timestamp, updateMessage, isMine);
+                    } else if (isDonate) {
+                        this.props.messageDonated(op, updateMessage, isMine)
                     }
-                } else if (type === 'private_delete_message') {
-                    this.props.messageDeleted(op, updateMessage, isMine);
-                } else if (type === 'private_mark_message') {
-                    this.props.messageRead(op, timestamp, updateMessage, isMine);
-                } else if (isDonate) {
-                    this.props.messageDonated(op, updateMessage, isMine)
                 }
-            }, this.notifyAbort);
-            removeTaskIds = takeResult.removeTaskIds
-            window.__lastTake = takeResult.__lastTake
-            setTimeout(() => {
-                this.setCallback(username, removeTaskIds);
-            }, 250);
+            })
+            console.log('WSS:', subscribed)
         } catch (ex) {
-            console.error('notificationTake', ex);
-            this.notifyErrorsInc(3);
-            let delay = 2000
-            if (ex.message.includes('No such queue')) {
-                console.log('notificationTake: resubscribe forced...')
-                notificationShallowUnsubscribe()
-                delay = 250
-            }
+            console.error('notificationSubscribe', ex)
+            this.notifyErrorsInc(15, ex, {subscribeWs: notifyWsHost()})
             setTimeout(() => {
-                this.setCallback(username, removeTaskIds)
-            }, delay);
-            return;
+                this.setCallback(username)
+            }, 5000)
+            return
         }
-        this.notifyErrorsClear();
+        this.notifyErrorsClear()
+        const ping = async (firstCall = false) => {
+            if (!firstCall) {
+                try {
+                    await notifyWsPing()
+                    if (this.state.notifyErrors) {
+                        // Queue can be cleared by Notify
+                        setTimeout(() => {
+                            this.setCallback(username)
+                        }, 100)
+                        return
+                    }
+                    this.notifyErrorsClear()
+                } catch (err) {
+                    console.error('Notify ping failed', err)
+                    this.notifyErrorsInc(10, err, {wsPing: notifyWsHost()})
+                }
+            }
+            setTimeout(ping, 10000)
+        }
+        this.watchGroup(this.props.to)
     }
 
     componentDidMount() {
@@ -247,12 +356,14 @@ class Messages extends React.Component {
             document.addEventListener('resume', this.onResume)
         }
         this.props.loginUser()
+        this.checkUserAuth(true)
+    }
+
+    checkUserAuth = (initial) => {
         const checkAuth = () => {
-            if (!this.props.username) {
-                this.props.checkMemo(this.props.currentUser);
-            }
+            this.props.checkAuth(this.props.currentUser, this.isChat())
         }
-        if (!localStorage.getItem('msgr_auth')) {
+        if (!initial || !localStorage.getItem('msgr_auth')) {
             checkAuth()
         } else {
             setTimeout(() => {
@@ -262,10 +373,18 @@ class Messages extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (this.props.username !== prevProps.username && this.props.username) {
+        const loggedNow = this.props.username !== prevProps.username && this.props.username
+        if (this.props.to !== prevProps.to || (this.isChat() && loggedNow)) {
+            this.checkUserAuth()
+        }
+        if (prevProps.username && !this.props.username) {
+            this.checkUserAuth(true)
+        }
+        if (loggedNow) {
             this.props.fetchState(this.props.to);
-            this.setCallback(this.props.username);
+            this.setCallback(this.props.username)
         } else if (this.props.to !== this.state.to) {
+            this.watchGroup(this.props.to)
             this.props.fetchState(this.props.to)
             if (this.state.to) {
                 this.leaveChat()
@@ -277,35 +396,41 @@ class Messages extends React.Component {
             || this.props.contacts.size !== prevProps.contacts.size
             || this.props.memo_private !== prevProps.memo_private) {
             const { contacts, messages, accounts, currentUser } = this.props;
-            if (!this.props.checkMemo(currentUser)) {
-                this.setState({
-                    to: this.props.to, // protects from infinity loop
-                });
-                return;
-            }
             const anotherChat = this.props.to !== this.state.to;
+            this.setState({
+                to: this.props.to, // protects from infinity loop
+            });
+            /*if (!this.props.checkMemo(currentUser)) {
+                return;
+            }*/
             const anotherKey = this.props.memo_private !== prevProps.memo_private;
             const added = this.props.messages.size > this.state.messagesCount;
             let focusTimeout = prevProps.messages.size ? 100 : 1000;
-            const newContacts = contacts.size ?
-                normalizeContacts(contacts, accounts, currentUser, this.preDecoded, this.cachedProfileImages) :
-                this.state.contacts
-            this.setState({
-                to: this.props.to,
-                contacts: newContacts,
-                messages: normalizeMessages(messages, accounts, currentUser, prevProps.to, this.preDecoded),
-                messagesCount: messages.size,
-            }, () => {
-                hideSplash()
-                if (added)
-                    this.markMessages2();
-                setTimeout(() => {
-                    if (anotherChat || anotherKey) {
-                        this.focusInput();
+
+            const updateData = async () => {
+                const newContacts = contacts.size ?
+                    await normalizeContacts(contacts, accounts, currentUser, this.cachedProfileImages) :
+                    this.state.contacts
+                const decoded = await normalizeMessages(messages, accounts, currentUser, prevProps.to)
+                this.setState({
+                    contacts: newContacts,
+                    messages: decoded,
+                    messagesCount: messages.size,
+                }, () => {
+                    hideSplash()
+                    if (this.props.fetched !== prevProps.fetched && this.isGroup()) {
+                        this.scrollToMention()
                     }
-                }, focusTimeout);
-            })
+                    if (added)
+                        this.markMessages2();
+                    setTimeout(() => {
+                        this.focusInput();
+                    }, focusTimeout);
+                })
+            }
+            updateData()
         }
+        this.markMessages2()
     }
     
     componentWillUnmount() {
@@ -333,12 +458,16 @@ class Messages extends React.Component {
                 continue;
             }
             account.contact = account.name;
-            account.avatar = getProfileImage(account, this.cachedProfileImages);
+            const { url, isDefault } = getProfileImage(account, this.cachedProfileImages)
+            if (!isDefault) {
+                account.avatar = url
+            }
             contacts.push(account);
         }
         if (contacts.length === 0) {
             contacts = [{
                 contact: tt('messages.search_not_found'),
+                avatar: require('app/assets/images/user.png'),
                 isSystemMessage: true
             }];
         }
@@ -387,16 +516,18 @@ class Messages extends React.Component {
 
     onSendMessage = (message, event) => {
         if (!message.length) return;
-        const { to, account, accounts, currentUser, messages } = this.props;
+        const { account, accounts, currentUser, messages, the_group } = this.props;
+        const to = this.getToAcc()
         const private_key = currentUser.getIn(['private_keys', 'memo_private']);
 
         let editInfo;
         if (this.editNonce) {
-            editInfo = { nonce: this.editNonce };
+            editInfo = { from: this.editFrom, nonce: this.editNonce }
         }
 
         this.props.sendMessage({
             senderAcc: account, memoKey: private_key, toAcc: accounts[to],
+            group: this.isGroup() && the_group,
             body: message, editInfo, type: 'text', replyingMessage: this.state.replyingMessage,
             notifyAbort: this.notifyAbort
         })
@@ -425,7 +556,20 @@ class Messages extends React.Component {
             let selectedMessages = {...this.state.selectedMessages};
 
             let selectMessage = (msg, idx) => {
-                const isMine = account.name === msg.from;
+                const isMine = account.name === msg.from
+                let canIEdit = isMine
+                let canIDelete = true
+                if (this.isGroup()) {
+                    const { the_group } = this.props
+                    const { amModer, amMember, amBanned } = getRoleInGroup(the_group, account.name)
+                    if (amModer) {
+                        canIEdit = true
+                    } else if (amBanned || (the_group.privacy !== 'public_group' && !amModer && !amMember)) {
+                        canIEdit = false
+                    }
+                    canIDelete = canIEdit
+                }
+
                 let isImage = false;
                 let isInvalid = true;
                 const { message } = msg;
@@ -434,7 +578,9 @@ class Messages extends React.Component {
                     isInvalid = !!message.invalid;
                 }
                 selectedMessages[msg.nonce] = {
-                    editable: isMine && !isImage && !isInvalid, idx };
+                    editable: canIEdit && !isImage && !isInvalid,
+                    deletable: canIDelete,
+                    idx };
             };
 
             if (event.shiftKey) {
@@ -477,7 +623,8 @@ class Messages extends React.Component {
     onPanelDeleteClick = (event) => {
         const { messages } = this.state;
 
-        const { account, accounts, to } = this.props;
+        const { account, accounts, the_group } = this.props;
+        const to = this.getToAcc()
 
         // TODO: works wrong if few messages have same create_time
         /*let OPERATIONS = golos.messages.makeDatedGroups(messages, (message_object, idx) => {
@@ -509,6 +656,14 @@ class Messages extends React.Component {
             if (!this.state.selectedMessages[message_object.nonce]) {
                 continue;
             }
+
+            const extensions = []
+            if (this.isGroup()) {
+                extensions.push([0, {
+                    group: the_group.name
+                }])
+            }
+
             const json = JSON.stringify(['private_delete_message', {
                 requester: account.name,
                 from: message_object.from,
@@ -516,6 +671,7 @@ class Messages extends React.Component {
                 start_date: '1970-01-01T00:00:00',
                 stop_date: '1970-01-01T00:00:00',
                 nonce: message_object.nonce,
+                extensions,
             }]);
             OPERATIONS.push(['custom_json',
                 {
@@ -526,7 +682,9 @@ class Messages extends React.Component {
             ]);
         }
 
-        this.props.sendOperations(account, accounts[to], OPERATIONS);
+        this.props.sendOperations(account, accounts[to], OPERATIONS, (err, errStr) => {
+            this.props.showError(errStr, 10000)
+        })
 
         this.setState({
             selectedMessages: {},
@@ -566,6 +724,7 @@ class Messages extends React.Component {
             selectedMessages: {},
         }, () => {
             this.editNonce = message[0].nonce;
+            this.editFrom = message[0].from
             if (message[0].message.quote) {
                 this.setState({
                     replyingMessage: {quote: message[0].message.quote},
@@ -594,10 +753,12 @@ class Messages extends React.Component {
             if (!url)
                 return;
 
-            const { to, account, accounts, currentUser, messages } = this.props;
+            const { account, accounts, the_group, currentUser, messages } = this.props;
+            const to = this.getToAcc()
             const private_key = currentUser.getIn(['private_keys', 'memo_private']);
             this.props.sendMessage({
                 senderAcc: account, memoKey: private_key, toAcc: accounts[to],
+                group: this.isGroup() && the_group,
                 body: url, type: 'image', meta: {width, height}, replyingMessage: this.state.replyingMessage,
                 notifyAbort: this.notifyAbort
             });
@@ -721,7 +882,7 @@ class Messages extends React.Component {
                             <Icon name="new/more" />
                             </div>
                             <div className='TopRightMenu__notificounter'>
-                                <NotifiCounter fields='mention,donate,send,receive' />
+                                <NotifiCounter fields='mention,donate,send,receive,fill_order,delegate_vs,new_sponsor,sponsor_inactive,nft_receive,nft_token_sold,nft_buy_offer,referral,join_request,group_member' />
                             </div>
                         </div>
                     </a>
@@ -742,46 +903,18 @@ class Messages extends React.Component {
     };
 
     _renderMessagesTopCenter = ({ isSmall }) => {
-        let messagesTopCenter = [];
-        const { to, accounts } = this.props;
-        if (accounts[to]) {
-            let checkmark
-            if (to === 'notify') {
-                checkmark = <span className='msgs-checkmark'>
-                    <Icon name='ionicons/checkmark-circle' size='0_95x' title={tt('messages.verified_golos_account')} />
-                </span>
-            }
-            messagesTopCenter.push(<div key='to-link' style={{fontSize: '15px', width: '100%', textAlign: 'center'}}>
-                <ExtLink href={'/@' + to}>{to}{checkmark}</ExtLink>
-            </div>);
-            const { notifyErrors } = this.state;
-            if (notifyErrors >= 30) {
-                messagesTopCenter.push(<div key='to-last-seen' style={{fontSize: '13px', fontWeight: 'normal', color: 'red'}}>
-                    {isSmall ?
-                        <span>
-                            {tt('messages.sync_error_short')}
-                            <a href='#' onClick={e => { e.preventDefault(); this.props.fetchState(this.props.to) }}>
-                                {tt('g.refresh').toLowerCase()}.
-                            </a>
-                        </span> :
-                        <span>{tt('messages.sync_error')}</span>
-                    }
-                </div>);
-            } else {
-                let lastSeen = getLastSeen(accounts[to]);
-                if (lastSeen) {
-                    messagesTopCenter.push(<div key='to-last-seen' style={{fontSize: '13px', fontWeight: 'normal'}}>
-                        {
-                            <span>
-                                {tt('messages.last_seen')}
-                                <TimeAgoWrapper date={`${lastSeen}`} />
-                            </span>
-                        }
-                    </div>);
-                }
-            }
-        }
-        return messagesTopCenter;
+        const { fetchState, to } = this.props
+        const toAcc = this.getToAcc()
+        const { notifyErrors, } = this.state
+
+        return <MessagesTopCenter 
+            isSmall={isSmall}
+            to={to}
+            toAcc={toAcc}
+            notifyErrors={notifyErrors}
+            errorLogs={window.errorLogs}
+            fetchState={fetchState}
+        />
     };
 
     _renderMenuItems = (isSmall) => {
@@ -801,11 +934,17 @@ class Messages extends React.Component {
             this.props.logout(username)
         }
 
+        const openMyGroups = (e) => {
+            e.preventDefault()
+            this.props.showMyGroups()
+        }
+
         let user_menu = [
-            {link: accountLink, extLink: 'blogs', icon: 'new/blogging', value: tt('g.blog') + (isSmall ? (' @' + username) : '')},
+            {link: '#', onClick: openMyGroups, icon: 'voters', value: tt('g.groups') + (isSmall ? (' @' + username) : ''), addon: <NotifiCounter fields='join_request,group_member' /> },
+            {link: accountLink, extLink: 'blogs', icon: 'new/blogging', value: tt('g.blog'), addon: <NotifiCounter fields='new_sponsor,sponsor_inactive,referral' />},
             {link: mentionsLink, extLink: 'blogs', icon: 'new/mention', value: tt('g.mentions'), addon: <NotifiCounter fields='mention' />},
             {link: donatesLink, extLink: 'wallet', icon: 'editor/coin', value: tt('g.rewards'), addon: <NotifiCounter fields='donate' />},
-            {link: walletLink, extLink: 'wallet', icon: 'new/wallet', value: tt('g.wallet'), addon: <NotifiCounter fields='send,receive,fill_order' />},
+            {link: walletLink, extLink: 'wallet', icon: 'new/wallet', value: tt('g.wallet'), addon: <NotifiCounter fields='send,receive,fill_order,delegate_vs,nft_receive,nft_token_sold,nft_buy_offer' />},
             {link: '#', onClick: this.props.toggleNightmode, icon: 'editor/eye', value: tt('g.night_mode')},
             {link: '#', onClick: () => {
                     this.props.changeLanguage(this.props.locale)
@@ -836,14 +975,14 @@ class Messages extends React.Component {
         return (<LinkWithDropdown
                 closeOnClickOutside
                 dropdownPosition='bottom'
-                dropdownAlignment='bottom'
+                dropdownAlignment='right'
                 dropdownContent={<VerticalMenu className={'VerticalMenu_nav-profile'} items={menuItems} />}
             >
                 <div className='msgs-curruser'>
                     <div className='msgs-curruser-notify-sink'>
                         <Userpic account={username} title={isSmall ? username : null} width={40} height={40} />
                         <div className='TopRightMenu__notificounter'>
-                            <NotifiCounter fields='mention,donate,send,receive,fill_order' />
+                            <NotifiCounter fields='mention,donate,send,receive,fill_order,delegate_vs,new_sponsor,sponsor_inactive,nft_receive,nft_token_sold,nft_buy_offer,referral,join_request,group_member' />
                         </div>
                     </div>
                     {!isSmall ? <div className='msgs-curruser-name'>
@@ -853,14 +992,48 @@ class Messages extends React.Component {
             </LinkWithDropdown>);
     };
 
+    isChat = () => {
+        const { to } = this.props
+        return to && to.startsWith('@')
+    }
+
+    isGroup = () => {
+        const { to } = this.props
+        return to && !to.startsWith('@')
+    }
+
+    _renderMessages = (messagesStub, { }) => {
+        const { to, the_group, accounts } = this.props
+
+        if (to) {
+            const isGroup = this.isGroup()
+            if (isGroup) {
+                const noGroup = the_group === null
+                const groupError = noGroup || (the_group && the_group.error)
+                if (groupError) {
+                    return <ChatError error={noGroup ? 404 : the_group.error}
+                        isGroup={isGroup} />
+                }
+            } else if (!isGroup && !accounts[this.getToAcc()]) {
+                return <ChatError error={404} isGroup={isGroup} />
+            }
+        }
+
+        if (messagesStub && messagesStub.ui) {
+            return messagesStub.ui
+        }
+
+        return false
+    }
+
     handleFocusChange = isFocused => {
         this.windowFocused = isFocused;
         if (!isFocused) {
-            if (this.newMessages) {
+            if (Object.keys(this.newMessages).length) {
                 flash();
             }
         } else {
-            this.newMessages = 0;
+            this.newMessages = {}
             unflash();
         }
     }
@@ -906,7 +1079,7 @@ class Messages extends React.Component {
     }
 
     render() {
-        const { contacts, account, to, nodeError } = this.props;
+        const { contacts, account, accounts, to, nodeError } = this.props;
         let bbc, auc
         if (process.env.MOBILE_APP) {
             bbc = <BackButtonController goHome={!to} />
@@ -925,6 +1098,11 @@ class Messages extends React.Component {
                     conversationTopLeft={this._renderConversationTopLeft}
                     />
             </div>);
+        const toAcc = this.getToAcc()
+
+        const { username, the_group } = this.props
+        const { composeStub, msgsStub } = renderStubs(the_group, to, username, accounts)
+
         return (
             <div>
                 {bbc}
@@ -937,16 +1115,28 @@ class Messages extends React.Component {
                 </PageFocus>
                 {Messenger ? (<Messenger
                     account={this.props.account}
-                    to={to}
+                    to={toAcc}
                     contacts={this.state.searchContacts || this.state.contacts}
                     conversationTopLeft={this._renderConversationTopLeft}
                     conversationTopRight={this._renderConversationTopRight}
-                    conversationLinkPattern='/@*'
+                    conversationLinkPattern={contact => {
+                        if (contact.kind === 'group') return '/*'
+                        return '/@*'
+                    }}
+                    renderConversationAvatar={(contact, defaultRender) => {
+                        if (contact.avatar) {
+                            return defaultRender(contact.avatar)
+                        }
+                        return <span className='conversation-photo'>
+                            <LetteredAvatar name={contact.contact} size={50} />
+                        </span>
+                    }}
                     onConversationSearch={this.onConversationSearch}
                     messages={this.state.messages}
                     messagesTopLeft={this._renderMessagesTopLeft()}
                     messagesTopCenter={this._renderMessagesTopCenter}
                     messagesTopRight={this._renderMessagesTopRight}
+                    renderMessages={(...args) => this._renderMessages(msgsStub, ...args)}
                     replyingMessage={this.state.replyingMessage}
                     onCancelReply={this.onCancelReply}
                     onSendMessage={this.onSendMessage}
@@ -960,6 +1150,7 @@ class Messages extends React.Component {
                     onImagePasted={this.onImagePasted}
                     onImageDropped={this.onImageDropped}
                     composeRef={this.composeRef}
+                    composeStub={composeStub}
                 />) : null}
             </div>
         )
@@ -973,12 +1164,12 @@ export default withRouter(connect(
         const contacts = state.global.get('contacts')
         const messages = state.global.get('messages')
         const nodeError = state.global.get('nodeError')
+        const fetched = state.global.get('fetched')
 
         const messages_update = state.global.get('messages_update')
         const username = state.user.getIn(['current', 'username'])
 
         let to = ownProps.match.params.to
-        if (to) to = to.replace('@', '')
 
         let memo_private = null
         if (currentUser) {
@@ -987,24 +1178,29 @@ export default withRouter(connect(
 
         const locale = state.user.get('locale')
 
+        let the_group = state.global.get('the_group')
+        if (the_group && the_group.toJS) the_group = the_group.toJS()
+
         return {
             to,
             contacts: contacts,
             messages: messages,
             messages_update,
+            the_group,
             account: currentUser && accounts && accounts.toJS()[currentUser.get('username')],
             currentUser,
             memo_private,
             accounts: accounts ?  accounts.toJS() : {},
             username,
             locale,
-            nodeError
+            nodeError,
+            fetched
         }
     },
     dispatch => ({
         loginUser: () => dispatch(user.actions.usernamePasswordLogin()),
 
-        checkMemo: (currentUser) => {
+        checkAuth: (currentUser, memoNeed) => {
             if (!currentUser) {
                 hideSplash()
                 dispatch(user.actions.showLogin({
@@ -1012,18 +1208,23 @@ export default withRouter(connect(
                 }));
                 return false;
             }
-            const private_key = currentUser.getIn(['private_keys', 'memo_private']);
-            if (!private_key) {
-                hideSplash()
-                dispatch(user.actions.showLogin({
-                    loginDefault: { username: currentUser.get('username'), authType: 'memo', unclosable: true }
-                }));
-                return false;
+            if (memoNeed) {
+                const private_key = currentUser.getIn(['private_keys', 'memo_private'])
+                if (!private_key) {
+                    hideSplash()
+                    dispatch(user.actions.showLogin({
+                        loginDefault: { username: currentUser.get('username'), authType: 'memo', }
+                    }));
+                    return false
+                }
             }
             return true;
         },
+
+        showMyGroups: () => dispatch(user.actions.showMyGroups()),
+
         fetchState: (to) => {
-            const pathname = '/' + (to ? ('@' + to) : '');
+            const pathname = '/' + (to || '')
             dispatch({type: 'FETCH_STATE', payload: {
                 location: {
                     pathname
@@ -1031,20 +1232,21 @@ export default withRouter(connect(
                 fake: true
             }});
         },
-        sendOperations: (senderAcc, toAcc, OPERATIONS) => {
+        sendOperations: (senderAcc, toAcc, OPERATIONS, onError = null) => {
             if (!OPERATIONS.length) return;
             dispatch(
                 transaction.actions.broadcastOperation({
                     type: 'custom_json',
                     trx: OPERATIONS,
                     successCallback: null,
-                    errorCallback: (e) => {
-                        console.log(e);
+                    errorCallback: (e, errStr) => {
+                        if (onError) onError(e, errStr)
+                        console.error(e)
                     }
                 })
             );
         },
-        sendMessage ({ senderAcc, memoKey, toAcc, body, editInfo = undefined, type = 'text', meta = {}, replyingMessage = null, notifyAbort }) {
+        sendMessage: async function({ senderAcc, memoKey, toAcc, group, body, editInfo = undefined, type = 'text', meta = {}, replyingMessage = null, notifyAbort }) {
             let message = {
                 app: 'golos-messenger',
                 version: 1,
@@ -1058,22 +1260,61 @@ export default withRouter(connect(
                     throw new Error('Unknown message type: ' + type);
                 }
             }
+            let to = toAcc ? toAcc.name : ''
             if (replyingMessage) {
+                if (group) {
+                    to = replyingMessage.quote.from
+                    if (to === senderAcc.name) to = ''
+                }
                 message = {...message, ...replyingMessage};
             }
 
-            const data = golos.messages.encode(memoKey, toAcc.memo_key, message, editInfo ? editInfo.nonce : undefined);
+            let mentions = []
+            if (group) {
+                mentions = parseMentions(message)
+            }
+
+            let data = null
+            try {
+                data = await golos.messages.encodeMsg({ group,
+                    private_memo: !group && memoKey,
+                    to_public_memo: !group && toAcc.memo_key,
+                    msg: message,
+                    nonce: editInfo ? editInfo.nonce : undefined,
+                })
+            } catch (err) {
+                console.error(err)
+                this.showError((err && err.message) || err.toString(), 10000)
+            }
 
             const opData = {
                 from: senderAcc.name,
-                to: toAcc.name,
+                to,
                 nonce: editInfo ? editInfo.nonce : data.nonce,
-                from_memo_key: senderAcc.memo_key,
-                to_memo_key: toAcc.memo_key,
+                from_memo_key: data.from_memo_key,
+                to_memo_key: data.to_memo_key,
                 checksum: data.checksum,
                 update: editInfo ? true : false,
                 encrypted_message: data.encrypted_message,
-            };
+            }
+
+            if (group) {
+                let requester
+
+                if (editInfo && editInfo.from !== senderAcc.name) {
+                    opData.from = editInfo.from
+                    requester = senderAcc.name
+                }
+
+                opData.extensions = [[0, {
+                    group: group.name,
+                    requester,
+                    mentions
+                }]]
+            }
+            //alert(JSON.stringify(opData))
+
+            cacheMyOwnMsg(opData, group, message)
 
             if (!editInfo) {
                 sendOffchainMessage(opData).catch(err => {
@@ -1093,12 +1334,16 @@ export default withRouter(connect(
                     json,
                 },
                 successCallback: null,
-                errorCallback: (err) => {
+                errorCallback: (err, errStr) => {
                     if (err && err.message) {
-                        if (err.message.includes('blocked by')) {
+                        const bm = 'blocked by user (@'
+                        const bmIdx = err.message.indexOf(bm)
+                        if (bmIdx > -1) {
+                            const msg = err.message.substring(bmIdx + bm.length)
+                            const blocker = msg.substring(0, msg.indexOf(')'))
                             this.showError(tt(
                                 'messages.blocked_BY', {
-                                    BY: toAcc.name
+                                    BY: blocker
                                 }
                             ), 10000)
                             return
@@ -1106,18 +1351,19 @@ export default withRouter(connect(
                         if (err.message.includes('do not bother')) {
                             this.showError(tt(
                                 'messages.do_not_bother_BY', {
-                                    BY: toAcc.name
+                                    BY: toAcc ? toAcc.name : ''
                                 }
                             ), 10000)
                             return
                         }
                     }
                     console.error(err)
+                    this.showError(errStr, 10000)
                 },
             }));
         },
-        messaged: (message, timestamp, updateMessage, isMine) => {
-            dispatch(g.actions.messaged({message, timestamp, updateMessage, isMine}));
+        messaged: (message, timestamp, updateMessage, isMine, username) => {
+            dispatch(g.actions.messaged({message, timestamp, updateMessage, isMine, username}));
         },
         messageEdited: (message, timestamp, updateMessage, isMine) => {
             dispatch(g.actions.messageEdited({message, timestamp, updateMessage, isMine}));

@@ -20,10 +20,32 @@
     display: flex;
 }
 
+.msgs-message .bubble-container .author {
+    font-size: 98%;
+    font-weight: bold;
+    color: #0078C4;
+    padding-bottom: 3px;
+}
+.msgs-message .bubble-container .author.banned {
+    text-decoration: line-through;
+    color: #999;
+}
+.msgs-message .bubble-container .avatar {
+    width: 42px;
+    margin-top: 14px;
+    cursor: pointer;
+}
+.msgs-message .bubble-container .avatar .Userpic {
+    position: static;
+}
+
 .msgs-message .bubble-container a {
     color: #007aff;
     text-decoration: underline;
     font-weight: bold;
+}
+.msgs-message .bubble-container a.mention {
+    text-decoration: none;
 }
 
 .msgs-message.mine .bubble-container {
@@ -69,6 +91,11 @@
 }
 
 .msgs-message .bubble-container.selected .bubble {
+    background: #fc544e !important;
+    color: white;
+}
+
+.msgs-message.highlight .bubble-container .bubble {
     background: #fc544e !important;
     color: white;
 }

@@ -7,6 +7,7 @@ const cors = require('@koa/cors')
 const coBody = require('co-body')
 const config = require('config')
 const git = require('git-rev-sync')
+const fs = require('fs')
 const path = require('path')
 const { convertEntriesToArrays, } = require('./utils/misc')
 
@@ -70,14 +71,22 @@ if (env === 'production') {
 }
 
 if (env === 'production') {
+    const buildPath = path.join(__dirname, '../build')
     app.use(async (ctx, next) => {
-        if (ctx.path.startsWith('/@')) {
-            ctx.url = '/'
+        const parts = ctx.path.split('/')
+        // /
+        // /@user
+        // /group
+        if (parts.length === 2 && parts[1] !== 'api') {
+            const filePath = path.join(buildPath, parts[1])
+            if (!fs.existsSync(filePath)) {
+                ctx.url = '/'
+            }
         }
         await next()
     })
     const cacheOpts = { maxage: 0, gzip: true }
-    app.use(static(path.join(__dirname, '../build'), cacheOpts))
+    app.use(static(buildPath, cacheOpts))
 }
 
 app.use(router.routes())

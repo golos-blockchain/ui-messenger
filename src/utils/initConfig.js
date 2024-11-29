@@ -23,7 +23,10 @@ const loadMobileConfig = async () => {
     if (cfg) {
         try {
             cfg = JSON.parse(cfg)
-            // Add here migrations in future, if need
+            // Add here migrations
+            if (cfg.notify_service && !cfg.notify_service.host_ws) {
+                delete cfg.notify_service
+            }
             cfg = { ...defaultCfg, ...cfg }
         } catch (err) {
             console.error('Cannot parse app_settings', err)
@@ -38,6 +41,7 @@ const loadMobileConfig = async () => {
     if (cfg.images.use_img_proxy === undefined) {
         cfg.images.use_img_proxy = true
     }
+    cfg.app_version = defaultCfg.app_version
     window.$GLS_Config = cfg
     await initGolos()
 }

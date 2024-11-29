@@ -1,0 +1,14 @@
+.AccountName {
+    input {
+        box-shadow: none !important;
+        line-height: 1 !important;
+        height: 1.8rem !important;
+    }
+    .name-item {
+        margin-top: 0.45rem;
+        display: inline-block;
+        .title {
+            margin-left: 0.25rem;
+        }
+    }
+}

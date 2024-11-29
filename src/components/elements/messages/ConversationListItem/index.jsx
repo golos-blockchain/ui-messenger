@@ -10,7 +10,8 @@ export default class ConversationListItem extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            avatarSrc: require('app/assets/images/user.png'),
+            //avatarSrc: require('app/assets/images/user.png'),
+            avatarSrc: null,
         };
     }
 
@@ -34,8 +35,10 @@ export default class ConversationListItem extends React.Component {
     makeLink = () => {
         const { conversationLinkPattern } = this.props;
         if (conversationLinkPattern) {
-            const {  contact } = this.props.data;
-            return conversationLinkPattern.replace('*', contact);
+            const { data } = this.props
+            const { contact } = data
+            const pattern = conversationLinkPattern(data)
+            return pattern.replace('*', contact)
         }
         return null;
     };
@@ -48,9 +51,20 @@ export default class ConversationListItem extends React.Component {
         }
     };
 
+    _renderAvatar = () => {
+        const defaultRender = (src) => {
+            return <img className='conversation-photo' src={src} alt={''} />
+        }
+        const { renderConversationAvatar } = this.props
+        if (!renderConversationAvatar) {
+            return defaultRender(this.state.avatarSrc)
+        }
+        return renderConversationAvatar(this.props.data, defaultRender)
+    }
+
     render() {
         const { selected } = this.props;
-        const { avatar, isSystemMessage, contact, last_message, size, unread_donate } = this.props.data;
+        const { avatar, isSystemMessage, contact, last_message, size, unread_donate, kind } = this.props.data;
 
         const link = this.makeLink();
 
@@ -70,12 +84,31 @@ export default class ConversationListItem extends React.Component {
                 unread = (<div className='conversation-unread mine'>●</div>);
         }
 
-        const unreadMessages = size && size.unread_inbox_messages;
+        let title = ''
+
+        const unreadMessages = size && size.unread_inbox_messages
+        const unreadMentions = size && size.unread_mentions
 
         if (!unread && unreadMessages) {
             unread = (<div className='conversation-unread'>
                 {unreadMessages}
             </div>)
+            if (kind === 'group') {
+                title += tt('plurals.reply_count', { count: unreadMessages })
+            }
+        }
+
+        if (unreadMentions) {
+            unread = <React.Fragment>
+                <div className='conversation-unread mention'>
+                    {unreadMentions}
+                </div>
+                {unread}
+            </React.Fragment>
+            if (kind === 'group') {
+                if (title) title += ', '
+                title += tt('plurals.mention_count', { count: unreadMentions })
+            }
         }
 
         let checkmark
@@ -86,8 +119,8 @@ export default class ConversationListItem extends React.Component {
         }
 
         return (
-            <Link to={isSystemMessage ? null : link} className={'conversation-list-item' + (selected ? ' selected' : '')}>
-                <img className='conversation-photo' src={this.state.avatarSrc} alt={''} />
+            <Link to={isSystemMessage ? null : link} className={'conversation-list-item' + (selected ? ' selected' : '')} title={title}>
+                {this._renderAvatar()}
                 <div className='conversation-info'>
                     <h1 className='conversation-title'>{contact}{checkmark}</h1>
                     <div className='conversation-snippet'>{last_body && truncate(last_body, {length: 30})}

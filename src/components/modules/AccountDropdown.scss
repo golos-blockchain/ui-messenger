@@ -1,0 +1,26 @@
+.AccountDropdown {
+    backdrop-filter: blur(10px) !important;
+    border-radius: 8px !important;
+
+    .VerticalMenu {
+        width: auto;
+        li[data-value="clear_all"] {
+            a {
+                color: #fc544e !important;
+                font-weight: 450;
+            }
+        }
+    }
+}
+
+.theme-light {
+    .AccountDropdown {
+        background-color: rgba(255, 255, 255, 0.75) !important;
+    }
+}
+
+.theme-dark {
+    .AccountDropdown {
+        background-color: rgba(40, 51, 54, 0.75) !important;
+    }
+}

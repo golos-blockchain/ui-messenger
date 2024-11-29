@@ -1,13 +1,27 @@
 import React from 'react';
+import {connect} from 'react-redux'
+import { Fade } from 'react-foundation-components/lib/global/fade'
+import { LinkWithDropdown } from 'react-foundation-components/lib/global/dropdown'
+import { Link } from 'react-router-dom'
 import tt from 'counterpart';
+import cn from 'classnames'
 import { Asset } from 'golos-lib-js/lib/utils'
 
+import AuthorDropdown from 'app/components/elements/messages/AuthorDropdown'
 import Donating from 'app/components/elements/messages/Donating'
+import Userpic from 'app/components/elements/Userpic'
+import { session } from 'app/redux/UserSaga'
+import { accountNameRegEx } from 'app/utils/mentions'
 import { displayQuoteMsg } from 'app/utils/MessageUtils';
 import { proxifyImageUrl } from 'app/utils/ProxifyUrl';
 import './Message.css';
 
-export default class Message extends React.Component {
+class Message extends React.Component {
+    constructor(props) {
+        super(props)
+        this.dropdown = React.createRef()
+    }
+
     onMessageSelect = (idx, event) => {
         if (this.props.onMessageSelect) {
             const { data, selected } = this.props;
@@ -20,6 +34,8 @@ export default class Message extends React.Component {
     };
 
     render() {
+        let username
+
         const {
             idx,
             data,
@@ -36,7 +52,7 @@ export default class Message extends React.Component {
 
         const unread = data.unread ? (<div className={'unread' + loading}>●</div>) : null;
 
-        const { message } = data;
+        const { message, group, from} = data;
 
         let content;
         if (message.type === 'image') {
@@ -66,6 +82,11 @@ export default class Message extends React.Component {
                     } else if (word.length <= 2 && /(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/.test(word)) {
                         spans.push(<span key={key++} style={{fontSize: '20px'}}>{word}</span>);
                         spans.push(' ');
+                    } else if (word.length > 3 && accountNameRegEx.test(word)) {
+                        const sess = session.load()
+                        if (sess && !username) username = sess[0]
+                        spans.push(<Link className='mention' to={('@' + username === word) ? '/' : '/' + word} key={key} tabIndex='-1' onClick={this.doNotSelectMessage}>{word}</Link>)
+                        spans.push(' ')
                     } else {
                         spans.push(word + ' ');
                     }
@@ -100,13 +121,49 @@ export default class Message extends React.Component {
             adds.unshift(unread)
         }
 
+        let author
+        let avatar
+        if (!isMine && group) {
+            const { authorAcc } = this.props
+            const isBanned = authorAcc && authorAcc.member_type === 'banned'
+
+            if (startsSequence) {
+                author = <div className={cn('author', {
+                    banned: isBanned
+                })} onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    this.dropdown.current.click()
+                }}>
+                    {from}
+                </div>
+
+                avatar = <LinkWithDropdown
+                    closeOnClickOutside
+                    dropdownClassName="GroupDropdown"
+                    dropdownContent={<AuthorDropdown author={from} />}
+                    transition={Fade}
+                >
+                    <span style={{ display: 'none' }} ref={this.dropdown}></span>
+                    <Userpic account={from} width={32} height={32}
+                        disabled={isBanned} />
+                </LinkWithDropdown>
+            }
+
+            avatar = <div className={cn('avatar', {
+                banned: isBanned
+            })}>
+                {avatar} 
+            </div>
+        }
+
         return (
             <div className={[
                 'msgs-message',
                 `${isMine ? 'mine' : ''}`,
                 `${startsSequence ? 'start' : ''}`,
                 `${endsSequence ? 'end' : ''}`
-            ].join(' ')}>
+            ].join(' ')} id={'msgs-' + data.nonce}>
                 {
                     showTimestamp &&
                         <div className='timestamp'>
@@ -115,8 +172,10 @@ export default class Message extends React.Component {
                 }
 
                 <div className={'bubble-container' + (selected ? ' selected' : '')}>
+                    {avatar}
                     {isMine ? adds : null}
                     <div className={'bubble' + loading} onClick={(event) => this.onMessageSelect(idx, event)} title={friendlyDate + (modified ? tt('g.modified') : '')}>
+                        {author}
                         { quoteHeader }
                         { content }
                     </div>
@@ -126,3 +185,18 @@ export default class Message extends React.Component {
         );
     }
 }
+
+export default connect(
+    (state, ownProps) => {
+        const accounts = state.global.get('accounts')
+
+        let authorAcc = ownProps.data && accounts.get(ownProps.data.from)
+        authorAcc = authorAcc ? authorAcc.toJS() : null
+
+        return {
+            authorAcc,
+        }
+    },
+    dispatch => ({
+    }),
+)(Message)

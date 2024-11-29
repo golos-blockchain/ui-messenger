@@ -14,6 +14,7 @@ class AppSettings extends React.Component {
             use_img_proxy: $GLS_Config.images.use_img_proxy,
             auth_service: $GLS_Config.auth_service.host,
             notify_service: $GLS_Config.notify_service.host,
+            notify_service_ws: $GLS_Config.notify_service.host_ws,
             blogs_service: $GLS_Config.blogs_service.host,
         }
         this.initialValues = initialValues
@@ -78,6 +79,7 @@ class AppSettings extends React.Component {
         cfg.images.use_img_proxy = data.use_img_proxy
         cfg.auth_service.host = data.auth_service
         cfg.notify_service.host = data.notify_service
+        cfg.notify_service.host_ws = data.notify_service_ws
         cfg.blogs_service.host = data.blogs_service
         cfg = JSON.stringify(cfg)
         localStorage.setItem('app_settings', cfg)
@@ -158,6 +160,17 @@ class AppSettings extends React.Component {
                             {tt('app_settings.notify_service')}
                             <div className='input-group' style={{marginBottom: '1.25rem'}}>
                                 <Field name='notify_service'
+                                    type='text'
+                                    autoComplete='off'
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <div className='row'>
+                        <div className='column small-12' style={{paddingTop: 5}}>
+                            {tt('app_settings.notify_service_ws')}
+                            <div className='input-group' style={{marginBottom: '1.25rem'}}>
+                                <Field name='notify_service_ws'
                                     type='text'
                                     autoComplete='off'
                                 />

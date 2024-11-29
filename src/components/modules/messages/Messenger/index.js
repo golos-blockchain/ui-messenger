@@ -3,6 +3,7 @@ import Dropzone from 'react-dropzone';
 
 import ConversationList from '../ConversationList';
 import MessageList from '../MessageList';
+import StartPanel from 'app/components/elements/messages/StartPanel'
 import isScreenSmall from 'app/utils/isScreenSmall'
 import './Messenger.css';
 
@@ -37,13 +38,14 @@ export default class Messages extends React.Component {
     }
 
     render() {
-        const { account, to,
-            contacts, conversationTopLeft, conversationTopRight, conversationLinkPattern,
+        const { account, to, toNew,
+            contacts, conversationTopLeft, conversationTopRight, conversationLinkPattern, renderConversationAvatar,
             onConversationSearch, onConversationSelect,
-            messagesTopLeft, messagesTopCenter, messagesTopRight, messages, replyingMessage, onCancelReply, onSendMessage,
+            messagesTopLeft, messagesTopCenter, messagesTopRight, messages, renderMessages,
+            replyingMessage, onCancelReply, onSendMessage,
             onButtonImageClicked, onImagePasted,
             selectedMessages, onMessageSelect, onPanelDeleteClick, onPanelReplyClick, onPanelEditClick, onPanelCloseClick,
-            composeRef
+            composeRef, composeStub
         } = this.props;
 
         const { isSmall } = this.state
@@ -52,6 +54,7 @@ export default class Messages extends React.Component {
             <Dropzone
                 className='messenger-dropzone'
                 noClick
+                noKeyboard
                 multiple={false}
                 accept='image/*'
                 disabled={!to}
@@ -68,6 +71,7 @@ export default class Messages extends React.Component {
                             conversations={contacts}
                             conversationSelected={to}
                             conversationLinkPattern={conversationLinkPattern}
+                            renderConversationAvatar={renderConversationAvatar}
                             onConversationSearch={onConversationSearch}
                             onConversationSelect={onConversationSelect}
                             />
@@ -83,8 +87,9 @@ export default class Messages extends React.Component {
                             topRight={messagesTopRight}
                             renderEmpty={() => {
                                 if ((localStorage.getItem('msgr_auth') && !account) || process.env.MOBILE_APP) return null
-                                return (<img className='msgs-empty-chat' src='/msg_empty.png' />)
+                                return <StartPanel />
                             }}
+                            renderMessages={renderMessages}
                             messages={messages}
                             replyingMessage={replyingMessage}
                             onCancelReply={onCancelReply}
@@ -98,6 +103,7 @@ export default class Messages extends React.Component {
                             onButtonImageClicked={onButtonImageClicked}
                             onImagePasted={onImagePasted}
                             composeRef={composeRef}
+                            composeStub={composeStub}
                             />
                     </div> : null}
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import cn from 'classnames'
 import throttle from 'lodash/throttle'
 
 import Compose from 'app/components/elements/messages/Compose';
@@ -79,7 +80,15 @@ export default class MessageList extends React.Component {
     }
 
     renderMessages = () => {
-        const { to, renderEmpty, messages, selectedMessages, onMessageSelect } = this.props;
+        const { to, renderEmpty, renderMessages, messages, selectedMessages, onMessageSelect } = this.props;
+
+        let renderRes = false
+        if (renderMessages) {
+            renderRes = renderMessages({})
+        }
+        if (renderRes !== false) {
+            return renderRes
+        }
 
         if (!to && renderEmpty) {
             return renderEmpty()
@@ -154,7 +163,7 @@ export default class MessageList extends React.Component {
         const { account, to, topLeft, topCenter, topRight, replyingMessage, onCancelReply, onSendMessage, selectedMessages,
             onButtonImageClicked, onImagePasted,
             onPanelDeleteClick, onPanelReplyClick, onPanelEditClick, onPanelCloseClick,
-            isSmall } = this.props;
+            isSmall, composeStub } = this.props;
         const showImageBtn = !isSmall || this.state.inputEmpty
         return (
             <div className='message-list'>
@@ -171,9 +180,13 @@ export default class MessageList extends React.Component {
                         onCancelReply={onCancelReply}
                         onSendMessage={onSendMessage}
                         rightItems={[
-                            (showImageBtn ? <ToolbarButton key='image' icon='image-outline' onClick={onButtonImageClicked} /> : undefined),
+                            (showImageBtn ? <ToolbarButton key='image' className={cn('', {
+                                    disabled: !!composeStub
+                                })} icon='image-outline' onClick={composeStub ? null : onButtonImageClicked} /> : undefined),
                             (<div key='emoji'>
-                                <ToolbarButton className='msgs-emoji-picker-opener' icon='happy-outline' />
+                                <ToolbarButton className={cn('msgs-emoji-picker-opener', {
+                                    disabled: !!composeStub
+                                })} icon='happy-outline' />
                                 <div className='msgs-emoji-picker-tooltip' role='tooltip'></div>
                             </div>),
                         ]}
@@ -185,6 +198,7 @@ export default class MessageList extends React.Component {
                         onImagePasted={onImagePasted}
                         onChange={this.onChange}
                         ref={this.props.composeRef}
+                        stub={composeStub}
                     />) : null}
             </div>
         );

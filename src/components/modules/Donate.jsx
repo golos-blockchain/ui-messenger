@@ -49,11 +49,14 @@ class Donate extends React.Component {
         const { sym } = opts
         if (sym === 'GOLOS') {
             if (currentAccount) {
-                res = Asset(currentAccount.get('tip_balance'))
+                const tip = currentAccount.get('tip_balance')
+                if (tip) {
+                    res = Asset(tip)
+                }
             }
         } else {
             const uias = this.props.uias && this.props.uias.toJS()
-            if (uias) {
+            if (uias && uias[sym]) {
                 res = Asset(uias[sym].tip_balance)
             }
         }
@@ -88,13 +91,13 @@ class Donate extends React.Component {
 
     _onSubmit = (values, actions) => {
         const { currentUser, opts, dispatchSubmit } = this.props
-        const { from, to, nonce } = opts
+        const { group, from, to, nonce } = opts
         this.setState({
             activeConfetti: true
         })
         setTimeout(() => {
             dispatchSubmit({
-                message: { from, to, nonce },
+                message: { group, from, to, nonce },
                 amount: values.amount.asset,
                 currentUser,
                 errorCallback: (err) => {
@@ -109,6 +112,8 @@ class Donate extends React.Component {
         const { currentUser, currentAccount, opts, uias } = this.props
         const { sym } = opts
         const { activeConfetti } = this.state
+
+        const balVal = this.balanceValue()
 
         const form = (<Formik
             initialValues={this.state.initialValues}
@@ -128,11 +133,11 @@ class Donate extends React.Component {
                     amountStr={values.amount.amountStr}
                     onChange={amountStr => this.onPresetChange(amountStr, values, setFieldValue)}
                 />
-                <TipAssetList
+                {balVal ? <TipAssetList
                     value={sym} uias={uias} currentAccount={currentAccount}
-                    currentBalance={this.balanceValue()}
+                    currentBalance={balVal}
                     onChange={this.onTipAssetChanged}
-                />
+                /> : null}
             </div>
 
             <div className='row' style={{ marginTop: '1.0rem', marginBottom: '1.0rem' }}>
@@ -211,7 +216,7 @@ export default connect(
         dispatchSubmit: ({
             message, amount, currentUser, errorCallback
         }) => {
-            const { from, to, nonce } = message
+            const { group, from, to, nonce } = message
 
             const username = currentUser.get('username')
 
@@ -220,9 +225,9 @@ export default connect(
             }
 
             operation.memo = {
-                app: 'golos-messenger', version: 1, comment: '',
+                app: 'golos-messenger', version: 2, comment: '',
                 target: {
-                    from, to, nonce: nonce.toString()
+                    group, from, to, nonce: nonce.toString()
                 }
             }
 

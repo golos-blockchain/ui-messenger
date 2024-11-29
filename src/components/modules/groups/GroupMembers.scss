@@ -1,0 +1,87 @@
+.GroupMembers {
+    .member-name {
+        margin-left: 0.5rem;
+        line-height: 40px;
+        vertical-align: top;
+    }
+    @include themify($themes) {
+        .label {
+            padding: 0.5rem;
+            transition: all .1s ease-in;
+            user-select: none;
+
+            &:not(.disabled) { 
+                cursor: pointer;
+            }
+            &:not(.checked) {
+                background: #f4f4f8;
+                color: #333333;
+            }
+            &:hover:not(.disabled) {
+                background: #0078C4;
+                color: #fefefe;
+            }
+
+            &.moders {
+                &:hover:not(.disabled) {
+                    background: lime;
+                    color: #333333;
+                }
+                &.checked {
+                    background: lime;
+                    color: #333333;
+                }
+            }
+        }
+
+        .member-btns {
+            float: right;
+            padding-right: 1rem;
+
+            .member-btn {
+                cursor: pointer;
+                padding-top: 0.35rem;
+                transition: all .1s ease-in;
+                &.selected:not(.ban) {
+                    cursor: auto;
+                }
+            }
+            .owner {
+                color: green;
+            }
+            .member {
+                color: $medium-gray;
+                &.selected {
+                    color: #0078C4;
+                }
+                &:hover {
+                    color: #0078C4;
+                }
+            }
+            .moder {
+                margin-left: 0.25rem;
+                color: $medium-gray;
+                &.selected {
+                    color: lime;
+                }
+                &:hover {
+                    color: lime;
+                }
+            }
+            .ban {
+                margin-left: 0.35rem;
+                color: $medium-gray;
+                &.selected {
+                    color: red;
+                }
+                &:hover {
+                    color: red;
+                }
+            }
+            .delete {
+                margin-left: 0.5rem;
+                color: red;
+            }
+        }
+    }
+}

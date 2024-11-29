@@ -1,11 +1,24 @@
 import React from 'react';
 import tt from 'counterpart';
+import cn from 'classnames'
 import { Picker } from 'emoji-picker-element';
 import TextareaAutosize from 'react-textarea-autosize';
 
 import Icon from 'app/components/elements/Icon';
 import { displayQuoteMsg } from 'app/utils/MessageUtils';
 import './Compose.css';
+
+const fixComposeSize = () => {
+    const sb = document.getElementsByClassName('msgs-sidebar')[0]
+    let cw = '100%'
+    if (sb) {
+        cw = 'calc(100% - ' + sb.offsetWidth + 'px)'
+    }
+    const compose = document.getElementsByClassName('msgs-compose')[0]
+    if (compose) {
+        compose.style.width = cw
+    }
+}
 
 export default class Compose extends React.Component {
     onKeyDown = (e) => {
@@ -56,14 +69,24 @@ export default class Compose extends React.Component {
 
     componentDidMount() {
         this.init();
+        fixComposeSize()
+        window.addEventListener('resize', fixComposeSize)
     }
 
     componentDidUpdate() {
         this.init();
     }
 
+    componentWillUnmount() {
+        window.removeEventListener('resize', fixComposeSize)
+    }
+
     onEmojiClick = (event) => {
         event.stopPropagation();
+
+        const { stub } = this.props
+        if (stub) return
+
         this._tooltip.classList.toggle('shown');
         if (!this._tooltip.classList.contains('shown')) {
             const input = document.getElementsByClassName('msgs-compose-input')[0];
@@ -100,6 +123,7 @@ export default class Compose extends React.Component {
 
     onEmojiSelect = (event) => {
         event.stopPropagation();
+
         this._tooltip.classList.toggle('shown');
 
         const input = document.getElementsByClassName('msgs-compose-input')[0];
@@ -200,16 +224,20 @@ export default class Compose extends React.Component {
     }
 
     render() {
-        const { account, rightItems, replyingMessage } = this.props
+        const { account, rightItems, replyingMessage, stub } = this.props
         const { onPanelDeleteClick, onPanelReplyClick, onPanelEditClick, onPanelCloseClick, onCancelReply } = this;
 
         const selectedMessages = Object.entries(this.props.selectedMessages);
         let selectedMessagesCount = 0;
-        let selectedEditablesCount = 0;
+        let selectedEditables = 0
+        let selectedDeletables = 0
         for (let [nonce, info] of selectedMessages) {
             selectedMessagesCount++;
             if (info.editable) {
-                selectedEditablesCount++;
+                selectedEditables++;
+            }
+            if (info.deletable) {
+                selectedDeletables++
             }
         }
 
@@ -224,9 +252,11 @@ export default class Compose extends React.Component {
                 </div>);
         }
 
-        const sendButton = selectedMessagesCount ? null :
-            (<button className='button small msgs-compose-send' title={tt('g.submit')}
-                    onClick={this.onSendClick}
+        const sendButton = (selectedMessagesCount && !stub) ? null :
+            (<button className={cn('button small msgs-compose-send', {
+                disabled: !!stub
+            })} title={tt('g.submit')}
+                    onClick={stub ? null : this.onSendClick}
                 >
                 <Icon name='new/envelope' size='1_25x' />
             </button>);
@@ -234,13 +264,14 @@ export default class Compose extends React.Component {
         return (
             <div className='msgs-compose'>
                 {
-                    !selectedMessagesCount ? rightItems : null
+                    (!selectedMessagesCount || stub) ? rightItems : null
                 }
 
-                {!selectedMessagesCount ? (<div className='msgs-compose-input-panel'>
-                    {quote}
-                    <TextareaAutosize
+                {(!selectedMessagesCount || stub) ? (<div className='msgs-compose-input-panel'>
+                    {stub ? null : quote}
+                    {(stub && stub.ui) ? stub.ui : <TextareaAutosize
                         className='msgs-compose-input'
+                        disabled={stub && stub.disabled}
                         placeholder={tt('messages.type_a_message')}
                         onKeyDown={this.onKeyDown}
                         onPaste={this.onPaste}
@@ -248,12 +279,12 @@ export default class Compose extends React.Component {
                         maxRows={14}
                         onHeightChange={this.onHeightChange}
                         onChange={e => this.onChange(e.target.value)}
-                    />
+                    />}
                 </div>) : null}
 
                 {sendButton}
 
-                {selectedMessagesCount ? (<div className='msgs-compose-panel'>
+                {(selectedMessagesCount && !stub) ? (<div className='msgs-compose-panel'>
                     {(selectedMessagesCount === 1) ? (<button className='button small' onClick={onPanelReplyClick}>
                         <Icon name='reply' />
                         <span>{tt('g.reply')}</span>
@@ -262,11 +293,11 @@ export default class Compose extends React.Component {
                         <Icon name='cross' />
                         <span>{tt('g.cancel')}</span>
                     </button>
-                    <button className='button hollow small alert delete-button' onClick={onPanelDeleteClick}>
+                    {selectedDeletables === selectedMessagesCount ? <button className='button hollow small alert delete-button' onClick={onPanelDeleteClick}>
                         <Icon name='ionicons/trash-outline' />
                         <span>{tt('g.delete') + ' (' + selectedMessagesCount + ')'}</span>
-                    </button>
-                    {(selectedMessagesCount === 1 && selectedEditablesCount === 1) ? (<button className='button hollow small edit-button' onClick={onPanelEditClick}>
+                    </button> : null}
+                    {(selectedMessagesCount === 1 && selectedEditables === 1) ? (<button className='button hollow small edit-button' onClick={onPanelEditClick}>
                         <Icon name='pencil' />
                         <span>{tt('g.edit')}</span>
                     </button>) : null}

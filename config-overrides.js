@@ -33,6 +33,7 @@ module.exports = function override(config, env) {
             'process.env.IS_APP': JSON.stringify(!!process.env.IS_APP),
             'process.env.DESKTOP_APP': JSON.stringify(!!process.env.DESKTOP_APP),
             'process.env.MOBILE_APP': JSON.stringify(!!process.env.MOBILE_APP),
+            //'process.env.NO_NOTIFY': JSON.stringify(true),
         }),
     )
 

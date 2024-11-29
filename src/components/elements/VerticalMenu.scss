@@ -55,6 +55,10 @@
       padding: 0 1rem 0 3.8rem;
       line-height: 50px;
 
+      @media screen and (max-width: 39.9375em) {
+        padding: 0 20px;
+      }
+
       .Icon {
         @include themify($themes) {
           fill: themed('textColorPrimary');

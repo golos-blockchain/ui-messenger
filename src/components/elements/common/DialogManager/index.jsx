@@ -132,7 +132,7 @@ export default class DialogManager extends React.PureComponent {
                 style={{ top }}
             >
                 <div
-                    className="DialogManager__dialog"
+                    className={"DialogManager__dialog" + (options.adaptive ? ' adaptive' : '')}
                     style={
                         i > 0
                             ? {

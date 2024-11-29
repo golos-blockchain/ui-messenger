@@ -11,8 +11,14 @@
   border-radius: 6px;
   background-color: #fff;
   box-shadow: 0 2px 12px 0 rgba(0,0,0,0.15), 0 2px 12px 0 rgba(0,0,0,0.15);
+  &.fade {
+    opacity: 0;
+    transition: opacity 100ms linear;
+  }
+  &.in {
+    opacity: 1;
+  }
 }
-
 
 div[role=dialog] {
   z-index: 500;

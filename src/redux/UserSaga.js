@@ -1,7 +1,7 @@
 import { Map, fromJS } from 'immutable'
 import { call, put, select, fork, takeLatest, takeEvery } from 'redux-saga/effects'
 import { auth, api, config } from 'golos-lib-js'
-import { Session, signData } from 'golos-lib-js/lib/auth'
+import { Session, PageSession, signData } from 'golos-lib-js/lib/auth'
 import { PrivateKey, Signature, hash } from 'golos-lib-js/lib/auth/ecc'
 
 import g from 'app/redux/GlobalReducer'
@@ -11,7 +11,8 @@ import uploadImageWatch from 'app/redux/UserSaga_UploadImage'
 import { authApiLogin, authApiLogout } from 'app/utils/AuthApiClient'
 import { notifyApiLogin, notifyApiLogout, notificationUnsubscribe } from 'app/utils/NotifyApiClient'
 
-const session = new Session('msgr_auth')
+export const session = new Session('msgr_auth')
+export const pageSession = new PageSession('msgr_auth')
 
 export function* userWatches() {
     yield fork(loginWatch)
@@ -133,10 +134,15 @@ function* usernamePasswordLogin(action) {
         yield put(user.actions.setUser({ username, private_keys, }))
     }
 
+    const { errorLogs } = window
+
     if (postingWif) {
         let alreadyAuthorized = false;
         try {
             const res = yield notifyApiLogin(username, localStorage.getItem('X-Auth-Session'));
+
+            errorLogs.push({ details: { notifyApiLogin1: res } })
+
             alreadyAuthorized = (res.status === 'ok');
         } catch(error) {
             // Does not need to be fatal
@@ -147,6 +153,9 @@ function* usernamePasswordLogin(action) {
             let authorized = false;
             try {
                 const res = yield authApiLogin(username, null);
+
+                errorLogs.push({ details: { authApiLogin1: res } })
+
                 if (!res.already_authorized) {
                     console.log('login_challenge', res.login_challenge);
 
@@ -155,6 +164,9 @@ function* usernamePasswordLogin(action) {
                         posting: postingWif,
                     });
                     const res2 = yield authApiLogin(username, signatures);
+
+                    errorLogs.push({ details: { authApiLogin2: res2 } })
+
                     if (res2.guid) {
                         localStorage.setItem('guid', res2.guid)
                     }
@@ -172,6 +184,8 @@ function* usernamePasswordLogin(action) {
             if (authorized)
                 try {
                     const res = yield notifyApiLogin(username, localStorage.getItem('X-Auth-Session'));
+
+                    errorLogs.push({ details: { notifyApiLogin2: res } })
 
                     if (res.status !== 'ok') {
                         throw new Error(res); 
@@ -244,7 +258,6 @@ function* getAccountHandler({ payload: { usernames, resolve, reject }}) {
     }
 
     const accounts = yield call([api, api.getAccountsAsync], usernames)
-
     for (let account of accounts) {
         yield put(g.actions.receiveAccount({ account }))
     }

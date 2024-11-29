@@ -4,12 +4,12 @@
     transition: all 0.1s;
 }
 
-.msgs-toolbar-button:hover {
+.msgs-toolbar-button:hover:not(.disabled) {
     cursor: pointer;
     color: #0063ce;
 }
 
-.msgs-toolbar-button:active {
+.msgs-toolbar-button:active:not(.disabled) {
     color: #007aff;
     opacity: 0.25;
 }
