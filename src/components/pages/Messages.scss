@@ -1,6 +1,11 @@
 .msgs-toolbar {
     height: 61px !important;
 }
+.conversation-list {
+    .msgs-toolbar {
+        top: -61px !important;
+    }
+}
 
 .msgs-back-btn {
     display: none;
