@@ -45,6 +45,11 @@
         background-color: rgba(40, 51, 54, 0.7) !important;
     }
 }
+@media screen and (max-width: 39.9375em) {
+    .GroupDropdown {
+        left: 10px !important;
+    }
+}
 
 .msgs-group-dropdown {
     .logo {

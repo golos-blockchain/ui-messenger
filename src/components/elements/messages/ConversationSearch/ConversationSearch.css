@@ -2,7 +2,19 @@
     padding: 10px;
     display: flex;
     flex-direction: column;
-    position: relative;
+    position: sticky;
+    top: 0px;
+
+    background-color: white;
+    border-bottom: 1px solid #eeeef1;
+}
+
+@supports (backdrop-filter: blur(20px)) {
+    .conversation-search {
+        border: none;
+        background-color: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(20px);
+    }
 }
 
 .conversation-search-input {
