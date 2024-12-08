@@ -39,6 +39,10 @@ function saveSession(response) {
         }
     }
     if (!session) return;
+    if (window.errorLogs) {
+        let xSess = session && session.substring && (session.substring(0, 5) + '...')
+        window.errorLogs.push({ details: { xsession: xSess } })
+    }
     localStorage.setItem('X-Session', session);
 }
 
@@ -330,9 +334,10 @@ export async function queueWatchWs(account, group, sidKey = '__subscriber_id') {
     if (!notifyWsHost()) return null
     const xSession = notifySession()
     return await new Promise(async (resolve, reject) => {
-        await notifyWsSend('queues/subscribe', {
+        await notifyWsSend('queues/watch', {
             account,
             'X-Session': xSession,
+            subscriber_id: window[sidKey],
             objects: {
                 [group]: {
                     type: 'group',

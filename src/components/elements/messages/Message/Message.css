@@ -179,3 +179,17 @@
 .msgs-message.mine .bubble-container.selected .quote-from {
     color: white;
 }
+
+.msgs-adds {
+    display: flex;
+}
+
+@media screen and (max-width: 39.9375em) {
+    .msgs-adds {
+        display: block;
+
+        .msgs-donating {
+            margin-left: 3px;
+        }
+    }
+}

@@ -181,7 +181,8 @@
     "members_list": "Members:",
     "image_wrong": "Cannot load this image.",
     "image_timeout": "Cannot load this image, it is loading too long...",
-    "add_member": "+ Add Member..."
+    "add_member": "+ Add Member...",
+    "add_member2": "+ Add..."
   },
   "my_groups_jsx": {
     "title": "My Groups",
@@ -192,12 +193,19 @@
     "create": "create",
     "create2": "your own one",
     "create_more": "+ Create a group",
+    "create_more2": "+ Create...", 
     "more_groups": "More groups...",
     "edit": "Edit",
     "login_hint_GROUP": "(delete \"%(GROUP)s\" group)",
     "members": "Members",
     "cancel_pending": "Cancel request",
-    "are_you_sure_cancel": "Do you sure you don't want to join"
+    "are_you_sure_cancel": "Do you sure you don't want to join",
+    "tab_pending": "Pending",
+    "tab_member": "Member",
+    "tab_moder": "Moder",
+    "tab_own": "Owner",
+    "tabs_title": "Your status in groups",
+    "total_MEMBERS": "Total: %(MEMBERS)s member(-s)."
   },
   "top_groups_jsx": {
     "title": "Popular Groups",
@@ -264,6 +272,9 @@
       "symbols": "Символы и знаки",
       "flags": "Флаги"
     }
+  },
+  "fatal_error_jsx": {
+    "render_error": ";( Render Error"
   },
   "stub_jsx": {
     "read_only": "Only members can post messages in this group.",
@@ -389,6 +400,7 @@
     "submit": "Submit",
     "unblock": "Unblock",
     "username_does_not_exist": "Username does not exist",
-    "wallet": "Wallet"
+    "wallet": "Wallet",
+    "you": "you"
   }
 }

@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import tt from 'counterpart'
 import cn from 'classnames'
 
@@ -53,7 +54,7 @@ class GroupMember extends React.Component {
     }
 
     render() {
-        const { member, username, currentGroup } = this.props
+        const { member, username, currentGroup, linkClick } = this.props
         const { account, member_type, joined } = member
         const { creatingNew, } = currentGroup
 
@@ -101,12 +102,12 @@ class GroupMember extends React.Component {
 
         return <tr key={account}>
             <td style={{ paddingBottom: '0px' }}>
-                <a href={'/@' + account} target='_blank' rel='noopener noreferrer'>
+                <Link to={'/@' + account} onClick={linkClick || undefined}>
                     <Userpic account={account} title={account} width={40} height={40} />
                     <span className='member-name'>
                         {account}
                     </span>
-                </a>
+                </Link>
             </td>
             <td>
                 {!isSmall && !creatingNew && <TimeAgoWrapper date={joined} />}

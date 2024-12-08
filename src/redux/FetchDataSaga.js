@@ -3,6 +3,7 @@ import golos, { api, auth } from 'golos-lib-js'
 import tt from 'counterpart'
 
 import g from 'app/redux/GlobalReducer'
+import { getRoleInGroup } from 'app/utils/groups'
 import { getSpaceInCache, saveToCache } from 'app/utils/Normalizators'
 
 export function* fetchDataWatches () {
@@ -129,8 +130,8 @@ export function* fetchState(location_change_action) {
                             }
                         })
                         if (hasErr) return 
-                        if (the_group[0] && the_group[0].name === path) {
-                            the_group = the_group[0]
+                        if (the_group && the_group.groups && the_group.groups[0] && the_group.groups[0].name === path) {
+                            the_group = the_group.groups[0]
                         } else {
                             the_group = null
                         }
@@ -226,7 +227,13 @@ export function* watchFetchMyGroups() {
 
 export function* fetchMyGroups({ payload: { account } }) {
     try {
-        const groupsOwn = yield call([api, api.getGroupsAsync], {
+        const stat = {
+            pending: 0,
+            member: 0,
+            moder: 0,
+            own: 0,
+        }
+        const groupsOwn = (yield call([api, api.getGroupsAsync], {
             member: account,
             member_types: [],
             start_group: '',
@@ -234,8 +241,9 @@ export function* fetchMyGroups({ payload: { account } }) {
             with_members: {
                 accounts: [account]
             }
-        })
-        let groups = yield call([api, api.getGroupsAsync], {
+        })).groups
+
+        let groups = (yield call([api, api.getGroupsAsync], {
             member: account,
             member_types: ['pending', 'member', 'moder'],
             start_group: '',
@@ -243,13 +251,39 @@ export function* fetchMyGroups({ payload: { account } }) {
             with_members: {
                 accounts: [account]
             }
-        })
+        })).groups
+
         groups = [...groupsOwn, ...groups]
+        for (const group of groups) {
+            const { amPending, amMember, amModer, amOwner } = getRoleInGroup(group, account)
+            if (amOwner) {
+                group.my_role = 'own'
+                stat.own++
+            } else if (amPending) {
+                group.my_role = 'pending'
+                stat.pending++
+            } else if (amMember) {
+                group.my_role = 'member'
+                stat.member++
+            } else if (amModer) {
+                group.my_role = 'moder'
+                stat.moder++
+            }
+        }
         groups.sort((a, b) => {
             return b.pendings - a.pendings
         })
 
-        yield put(g.actions.receiveMyGroups({ groups }))
+        let current = 'member'
+        if (stat.pending) {
+            current = 'pending'
+        } else {
+            if (stat.moder > stat[current]) current = 'moder'
+            if (stat.own > stat[current]) current = 'own'
+        }
+        stat.current = current
+
+        yield put(g.actions.receiveMyGroups({ groups, stat }))
     } catch (err) {
         console.error('fetchMyGroups', err)
     }
@@ -269,7 +303,7 @@ export function* fetchTopGroups({ payload: { account } }) {
                 groupsWithoutMe.pop()
             }
 
-            const groups = yield call([api, api.getGroupsAsync], {
+            const { groups } = yield call([api, api.getGroupsAsync], {
                 sort: 'by_popularity',
                 start_group,
                 limit: 100,
@@ -310,7 +344,7 @@ export function* fetchGroupMembers({ payload: { group, creatingNew, memberTypes,
 
         yield put(g.actions.receiveGroupMembers({ group, loading: true }))
 
-        const members = yield call([api, api.getGroupMembersAsync], {
+        const { members } = yield call([api, api.getGroupMembersAsync], {
             group,
             member_types: memberTypes,
             sort_conditions: sortConditions,

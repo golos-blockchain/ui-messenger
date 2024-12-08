@@ -19,10 +19,10 @@ export async function validateNameStep(values, errors) {
             for (let i = 0; i < 3; ++i) {
                 try {
                     console.time('group_exists')
-                    group = await api.getGroupsAsync({
+                    group = (await api.getGroupsAsync({
                         start_group: values.name,
                         limit: 1
-                    })
+                    })).groups
                     console.timeEnd('group_exists')
                     break
                 } catch (err) {
@@ -30,7 +30,7 @@ export async function validateNameStep(values, errors) {
                     errors.name = 'Blockchain unavailable :('
                 }
             }
-            if (group && group[0] && group[0].name === values.name) {
+            if (group[0] && group[0].name === values.name) {
                 errors.name = tt('create_group_jsx.group_already_exists')
             }
         }
