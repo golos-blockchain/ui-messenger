@@ -181,7 +181,8 @@
     "members_list": "Members:",
     "image_wrong": "Cannot load this image.",
     "image_timeout": "Cannot load this image, it is loading too long...",
-    "add_member": "+ Add Member..."
+    "add_member": "+ Add Member...",
+    "add_member2": "+ Add..."
   },
   "my_groups_jsx": {
     "title": "My Groups",
@@ -389,6 +390,7 @@
     "submit": "Submit",
     "unblock": "Unblock",
     "username_does_not_exist": "Username does not exist",
-    "wallet": "Wallet"
+    "wallet": "Wallet",
+    "you": "you"
   }
 }

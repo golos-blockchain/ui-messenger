@@ -1,5 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
+import { Link } from 'react-router-dom'
 import { Field, ErrorMessage, } from 'formik'
 import tt from 'counterpart'
 import { validateAccountName } from 'golos-lib-js/lib/utils'
@@ -11,8 +12,8 @@ import AccountName from 'app/components/elements/common/AccountName'
 import Input from 'app/components/elements/common/Input';
 import GroupMember from 'app/components/elements/groups/GroupMember'
 import LoadingIndicator from 'app/components/elements/LoadingIndicator'
-import MarkNotificationRead from 'app/components/elements/MarkNotificationRead'
 import { getRoleInGroup, getGroupMeta, getGroupTitle } from 'app/utils/groups'
+import isScreenSmall from 'app/utils/isScreenSmall'
 
 export async function validateMembersStep(values, errors) {
     // nothing yet...
@@ -149,7 +150,7 @@ class GroupMembers extends React.Component {
     }
 
     render() {
-        const { currentGroup, group, username } = this.props
+        const { currentGroup, group, username, closeMe } = this.props
         const loading = this.isLoading()
         let members = group && group.get('members')
         if (members) members = members.get('data')
@@ -160,6 +161,12 @@ class GroupMembers extends React.Component {
         if (creatingNew) {
             amOwner = true
             amModer = true
+        }
+
+        const isSmall = isScreenSmall()
+
+        const linkClick = () => {
+            if (closeMe) closeMe()
         }
 
         let mems
@@ -178,6 +185,7 @@ class GroupMembers extends React.Component {
                 mems.push(<GroupMember key={member.account} member={member}
                     username={username} currentGroup={currentGroup}
                     groupMember={groupMember} updateGroupMember={updateGroupMember}
+                    linkClick={linkClick}
                 />)
             }
 
@@ -197,7 +205,7 @@ class GroupMembers extends React.Component {
                 {amModer ? <div className='row' style={{ marginTop: '0.5rem', }}>
                     <div className='column small-12'>
                         <AccountName
-                            placeholder={tt('create_group_jsx.add_member')}
+                            placeholder={isSmall ? tt('create_group_jsx.add_member2') : tt('create_group_jsx.add_member')}
                             onChange={this.onAddAccount}
                             filterAccounts={filterAccs}
                             onAccountsLoad={(accs) => {
@@ -222,7 +230,7 @@ class GroupMembers extends React.Component {
                 </div>
             </div>
         } else {
-            const { name, json_metadata, pendings, banneds, } = currentGroup
+            const { name, owner, json_metadata, pendings, banneds, } = currentGroup
 
             const meta = getGroupMeta(json_metadata)
             let title = getGroupTitle(meta, name)
@@ -231,12 +239,31 @@ class GroupMembers extends React.Component {
 
             const { showPendings, showBanneds } = this.state
 
+            let ownerRight, ownerRow
+            let ownerBlock = <React.Fragment>
+                {tt('group_settings_jsx.owner') + ' - '}
+                {amOwner ? <b title={'@' + owner}>{tt('g.you')}</b> :
+                    <Link to={'/@' + owner} onClick={linkClick}>{('@' + owner)}</Link>}
+            </React.Fragment>
+            if (isSmall) {
+                ownerRow = <div className='row' style={{ marginTop: '0rem', marginBottom: '0.5rem' }}>
+                    <div className='column small-12'>
+                        {ownerBlock}
+                    </div>
+                </div>
+            } else {
+                ownerRight = <div style={{ float: 'right', }}>
+                    {ownerBlock}
+                </div>
+            }
+
             header = <div>
                 <div className='row' style={{ marginTop: '0rem' }}>
                     <div className='column small-12' style={{paddingTop: 5, fontSize: '110%'}}>
                         <h4>{title}</h4>
                     </div>
                 </div>
+                {ownerRow}
                 {amModer ? <div className='row' style={{ marginTop: '0rem' }}>
                     <div className='column small-12'>
                         <label style={{fontSize: '100%', display: 'inline-block'}} title={tt('group_members_jsx.check_pending_hint')}>
@@ -248,14 +275,14 @@ class GroupMembers extends React.Component {
                             <input type='checkbox' disabled={!banneds} checked={!!showBanneds} onChange={this.toggleBanneds} />
                             {tt('group_members_jsx.check_banned') + ' (' + banneds + ')'}
                         </label>
+                        {ownerRight}
                     </div>
                 </div> : <div className='row' style={{ marginTop: '0rem', marginBottom: '0.5rem' }}>
                     <div className='column small-12'>
                         {this._renderMemberTypeSwitch()}
+                        {ownerRight}
                     </div>
                 </div>}
-                {(username && showPendings) ? <MarkNotificationRead fields='join_request' account={username}
-                /> : null}
             </div>
         }
 

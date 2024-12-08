@@ -3,7 +3,7 @@ import { fetchEx } from 'golos-lib-js/lib/utils'
 export function getHost() {
     const { location, } = window;
     if (process.env.NODE_ENV === 'development') {
-        return location.protocol + '//'+ location.hostname + ':8080';
+        return location.protocol + '//'+ location.hostname + ':8088';
     }
     return location.origin;
 }

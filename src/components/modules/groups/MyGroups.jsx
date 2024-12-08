@@ -183,7 +183,7 @@ class MyGroups extends React.Component {
                             {(isSmall ? '' : tt('group_members_jsx.check_pending')) + ' (' + pendings + ')'}
                         </span>
                     </button> : null}
-                    <button className={cn('button', {
+                    <button className={cn('button force-white', {
                         'icon-only': (isSmall || pendings || amPending)
                     })} onClick={e => {
                         this.showGroupMembers(e, group)
@@ -265,7 +265,7 @@ class MyGroups extends React.Component {
                {button}
                {groups}
                {hasGroups ? <div style={{ height: '50px' }}></div> : null}
-                {username ? <MarkNotificationRead fields='group_member' account={username}
+                {username ? <MarkNotificationRead fields='group_member,join_request' account={username}
                 /> : null}
         </div>
     }

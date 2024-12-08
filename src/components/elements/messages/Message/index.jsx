@@ -33,6 +33,20 @@ class Message extends React.Component {
         event.stopPropagation();
     };
 
+    linkClicked = (event) => {
+        doNotSelectMessage(event)
+        if (process.env.MOBILE_APP) {
+            event.preventDefault()
+            let node, href
+            do {
+                node = node ? node.parentNode : event.target
+                if (!node) break
+                href = node.href
+            } while (!href)
+            window.open(href, '_blank')
+        }
+    }
+
     render() {
         let username
 
@@ -61,7 +75,7 @@ class Message extends React.Component {
             const previewWidth = message.previewWidth ? message.previewWidth + 'px' : 'auto';
             const previewHeight = message.previewHeight ? message.previewHeight + 'px' : 'auto';
 
-            content = (<a href={src} target='_blank' rel='noopener noreferrer' tabIndex='-1' onClick={this.doNotSelectMessage}>
+            content = (<a href={src} target='_blank' rel='noopener noreferrer' tabIndex='-1' onClick={this.linkClicked}>
                 <img src={srcPreview} alt={src} style={{width: previewWidth, height: previewHeight, objectFit: 'cover'}} />
             </a>);
         } else {
@@ -77,7 +91,7 @@ class Message extends React.Component {
                         if (!href.startsWith('http://') && !href.startsWith('https://')) {
                             href = 'http://' + href;
                         }
-                        spans.push(<a href={href} target='_blank' rel='noopener noreferrer' key={key} tabIndex='-1' onClick={this.doNotSelectMessage}>{word}</a>);
+                        spans.push(<a href={href} target='_blank' rel='noopener noreferrer' key={key} tabIndex='-1' onClick={this.linkClicked}>{word}</a>);
                         spans.push(' ');
                     } else if (word.length <= 2 && /(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/.test(word)) {
                         spans.push(<span key={key++} style={{fontSize: '20px'}}>{word}</span>);
@@ -130,12 +144,14 @@ class Message extends React.Component {
             if (startsSequence) {
                 author = <div className={cn('author', {
                     banned: isBanned
-                })} onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    this.dropdown.current.click()
-                }}>
-                    {from}
+                })}>
+                    <span onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        this.dropdown.current.click()
+                    }}>
+                        {from}
+                    </span>
                 </div>
 
                 avatar = <LinkWithDropdown
