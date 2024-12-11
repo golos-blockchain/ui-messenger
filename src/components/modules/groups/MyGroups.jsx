@@ -28,7 +28,11 @@ class MyGroups extends React.Component {
 
     refetch = () => {
         const { currentUser } = this.props
-        this.props.fetchMyGroups(currentUser)
+        this.setState({
+            currentTab: null,
+        }, () => {
+            this.props.fetchMyGroups(currentUser)
+        })
     }
 
     componentDidMount = async () => {
@@ -124,7 +128,7 @@ class MyGroups extends React.Component {
     }
 
     _renderGroup = (group) => {
-        const { name, json_metadata, pendings } = group
+        const { name, json_metadata, pendings, members, moders, } = group
 
         const meta = getGroupMeta(json_metadata)
 
@@ -156,6 +160,9 @@ class MyGroups extends React.Component {
             }, value: tt('msgs_group_dropdown.retire') })
         }
 
+
+        const noMembers = !pendings && !members && !moders
+
         return <tr key={name}>
             <Link to={'/' + name} onClick={this.onGoGroup}>
                 {this._renderGroupLogo(group, meta)}
@@ -183,8 +190,10 @@ class MyGroups extends React.Component {
                             {(isSmall ? '' : tt('group_members_jsx.check_pending')) + ' (' + pendings + ')'}
                         </span>
                     </button> : null}
-                    <button className={cn('button force-white', {
-                        'icon-only': (isSmall || pendings || amPending)
+                    <button className={cn('button', {
+                        'force-white': !noMembers,
+                        'icon-only': (isSmall || pendings || amPending),
+                        hollow: noMembers,
                     })} onClick={e => {
                         this.showGroupMembers(e, group)
                     }} title={(isSmall || pendings || amPending) ? tt('my_groups_jsx.members') : null}>
@@ -203,6 +212,28 @@ class MyGroups extends React.Component {
                 </td>
             </Link>
         </tr>
+    }
+
+    _renderGroupTypeSwitch = () => {
+        const { stat, } = this.props
+        let { currentTab } = this.state
+        currentTab = currentTab || stat.current
+        let tabs = []
+        for (const key of ['pending', 'member', 'moder', 'own']) {
+            if (!stat[key]) continue
+            tabs.push(<div key={key} className={cn('label', { checked: (key === currentTab) })}
+                onClick={e => {
+                    this.setState({
+                        currentTab: key
+                    })
+                }} >
+                {tt('my_groups_jsx.tab_' + key) + ' (' + stat[key] + ')'}
+            </div>)
+        }
+        if (tabs.length < 1) return null
+        return <div style={{ marginBottom: '1rem' }} title={tt('my_groups_jsx.tabs_title')}>
+            {tabs}
+        </div>
     }
 
     render() {
@@ -231,15 +262,24 @@ class MyGroups extends React.Component {
                 </div>
             } else {
                 hasGroups = true
+
+                const { stat, } = this.props
+                let { currentTab } = this.state
+                currentTab = currentTab || stat.current
+
                 groups = []
                 for (const g of my_groups) {
+                    if (currentTab && g.my_role !== currentTab) continue
                     groups.push(this._renderGroup(g))
                 }
-                groups = <table>
-                    <tbody>
-                        {groups}
-                    </tbody>
-                </table>
+                groups = <React.Fragment>
+                    {this._renderGroupTypeSwitch()}
+                    <table>
+                        <tbody>
+                            {groups}
+                        </tbody>
+                    </table>
+                </React.Fragment>
             }
         }
 
@@ -276,11 +316,13 @@ export default connect(
         const currentUser = state.user.getIn(['current'])
         const username = currentUser && currentUser.get('username')
         const my_groups = state.global.get('my_groups')
+        const my_groups_stat = state.global.get('my_groups_stat')
 
         return { ...ownProps,
             currentUser,
             username,
             my_groups,
+            stat: my_groups_stat ? my_groups_stat.toJS() : {},
         }
     },
     dispatch => ({

@@ -47,4 +47,23 @@
     .button.force-white {
         color: #fefefe !important;
     }
+    .label {
+        padding: 0.5rem;
+        transition: all .1s ease-in;
+        user-select: none;
+
+        margin-right: 0.5rem;
+
+        &:not(.disabled) { 
+            cursor: pointer;
+        }
+        &:not(.checked) {
+            background: #f4f4f8;
+            color: #333333;
+        }
+        &:hover:not(.disabled) {
+            background: #0078C4;
+            color: #fefefe;
+        }
+    }
 }

@@ -33,7 +33,7 @@
 }
 
 .conversation-info {
-    width: 100%;
+    max-width: 98%;
 }
 
 .conversation-snippet {
