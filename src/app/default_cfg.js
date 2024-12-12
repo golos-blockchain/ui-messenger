@@ -1,8 +1,17 @@
 module.exports = {
-    "app_version": "1.0.0",
+    "app_version": "1.0.1",
     "nodes": [
         {
             "address": "wss://apibeta.golos.today/ws"
+        },
+        {
+            "address": "wss://api.golos.id/ws"
+        },
+        {
+            "address": "wss://api.aleksw.space/ws"
+        },
+        {
+            "address": "wss://api-golos.blckchnd.com/ws"
         }
     ],
     "images": {
@@ -16,12 +25,16 @@ module.exports = {
         "custom_client": "blogs"
     },
     "notify_service": {
-        "host": "https://devnotify.golos.app"
+        "host": "https://devnotify.golos.app",
+        "host_ws": "wss://devnotify.golos.app/ws"
     },
     "blogs_service": {
         "host": "https://beta.golos.today"
     },
+    "wallet_service": {
+        "host": "https://devwallet.golos.today"
+    },
     "app_updater": {
-        "host": "https://files.golos.app"
+        "host": "https://devfiles.golos.app"
     }
 }
