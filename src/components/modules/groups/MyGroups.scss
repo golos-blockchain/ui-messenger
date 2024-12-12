@@ -19,6 +19,8 @@
     }
     .more-group {
         float: right;
+        padding-top: 0.725em;
+        padding-bottom: 0.725em;
         &:not(:hover) {
             border-color: transparent;
         }
@@ -46,13 +48,27 @@
     }
     .button.force-white {
         color: #fefefe !important;
+        fill: #fefefe !important;
     }
     .label {
         padding: 0.5rem;
+        padding-top: 0.6rem;
+        padding-bottom: 0.4rem;
+
         transition: all .1s ease-in;
         user-select: none;
 
         margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+
+        .label-text {
+            display: inline-block;
+            height: 16px;
+        }
+        .NotifiCounter {
+            margin-left: 0.35rem;
+            vertical-align: top;
+        }
 
         &:not(.disabled) { 
             cursor: pointer;

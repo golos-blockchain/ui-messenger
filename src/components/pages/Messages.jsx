@@ -878,11 +878,11 @@ class Messages extends React.Component {
                 >
                     <a href="#" onClick={e => e.preventDefault()}>
                         <div className='msgs-curruser-notify-sink' style={{ marginRight: '0.2rem' }}>
-                            <div style={{ marginRight: '0.5rem' }}>
+                            <div style={{ marginRight: '0.5rem', paddingLeft: '0.2rem' }}>
                             <Icon name="new/more" />
                             </div>
                             <div className='TopRightMenu__notificounter'>
-                                <NotifiCounter fields='mention,donate,send,receive,fill_order,delegate_vs,new_sponsor,sponsor_inactive,nft_receive,nft_token_sold,nft_buy_offer,referral,join_request,group_member' />
+                                <NotifiCounter fields='mention,donate,send,receive,fill_order,delegate_vs,new_sponsor,sponsor_inactive,nft_receive,nft_token_sold,nft_buy_offer,referral,join_request_own,join_request_mod,group_member_mod,group_member_mem' />
                             </div>
                         </div>
                     </a>
@@ -940,7 +940,7 @@ class Messages extends React.Component {
         }
 
         let user_menu = [
-            {link: '#', onClick: openMyGroups, icon: 'voters', value: tt('g.groups') + (isSmall ? (' @' + username) : ''), addon: <NotifiCounter fields='join_request,group_member' /> },
+            {link: '#', onClick: openMyGroups, icon: 'voters', value: tt('g.groups') + (isSmall ? (' @' + username) : ''), addon: <NotifiCounter fields='join_request_own,join_request_mod,group_member_mod,group_member_mem' /> },
             {link: accountLink, extLink: 'blogs', icon: 'new/blogging', value: tt('g.blog'), addon: <NotifiCounter fields='new_sponsor,sponsor_inactive,referral' />},
             {link: mentionsLink, extLink: 'blogs', icon: 'new/mention', value: tt('g.mentions'), addon: <NotifiCounter fields='mention' />},
             {link: donatesLink, extLink: 'wallet', icon: 'editor/coin', value: tt('g.rewards'), addon: <NotifiCounter fields='donate' />},
@@ -982,7 +982,7 @@ class Messages extends React.Component {
                     <div className='msgs-curruser-notify-sink'>
                         <Userpic account={username} title={isSmall ? username : null} width={40} height={40} />
                         <div className='TopRightMenu__notificounter'>
-                            <NotifiCounter fields='mention,donate,send,receive,fill_order,delegate_vs,new_sponsor,sponsor_inactive,nft_receive,nft_token_sold,nft_buy_offer,referral,join_request,group_member' />
+                            <NotifiCounter fields='mention,donate,send,receive,fill_order,delegate_vs,new_sponsor,sponsor_inactive,nft_receive,nft_token_sold,nft_buy_offer,referral,join_request_own,join_request_mod,group_member_mod,group_member_mem' />
                         </div>
                     </div>
                     {!isSmall ? <div className='msgs-curruser-name'>

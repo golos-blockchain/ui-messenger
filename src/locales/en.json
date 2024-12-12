@@ -193,6 +193,7 @@
     "create": "create",
     "create2": "your own one",
     "create_more": "+ Create a group",
+    "create_more2": "+ Create...", 
     "more_groups": "More groups...",
     "edit": "Edit",
     "login_hint_GROUP": "(delete \"%(GROUP)s\" group)",

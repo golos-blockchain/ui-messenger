@@ -2,6 +2,7 @@ import React from 'react';
 import {connect} from 'react-redux'
 import { Fade } from 'react-foundation-components/lib/global/fade'
 import { LinkWithDropdown } from 'react-foundation-components/lib/global/dropdown'
+import { withRouter } from 'react-router'
 import { Link } from 'react-router-dom'
 import tt from 'counterpart';
 import cn from 'classnames'
@@ -43,7 +44,17 @@ class Message extends React.Component {
                 if (!node) break
                 href = node.href
             } while (!href)
-            window.open(href, '_blank')
+            try {
+                let url = new URL(href)
+                if (url.host === location.host) {
+                    const { history } = this.props
+                    history.push(url.pathname)
+                    return
+                }
+            } catch (err) {
+                console.error(err)
+            }
+            window.open(href, '_system')
         }
     }
 
@@ -195,14 +206,14 @@ class Message extends React.Component {
                         { quoteHeader }
                         { content }
                     </div>
-                    {!isMine ? adds : null}
+                    {!isMine ? <div className='msgs-adds'>{adds}</div> : null}
                 </div>
             </div>
         );
     }
 }
 
-export default connect(
+export default withRouter(connect(
     (state, ownProps) => {
         const accounts = state.global.get('accounts')
 
@@ -215,4 +226,4 @@ export default connect(
     },
     dispatch => ({
     }),
-)(Message)
+)(Message))
