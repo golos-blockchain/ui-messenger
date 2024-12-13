@@ -323,6 +323,7 @@ class Messages extends React.Component {
         this.notifyErrorsClear()
         const ping = async (firstCall = false) => {
             if (!firstCall) {
+                window.errorLogs.push({ details: { ping: Date.now() } })
                 try {
                     await notifyWsPing()
                     if (this.state.notifyErrors) {
@@ -340,6 +341,7 @@ class Messages extends React.Component {
             }
             setTimeout(ping, 10000)
         }
+        ping(true)
         this.watchGroup(this.props.to)
     }
 
@@ -956,7 +958,25 @@ class Messages extends React.Component {
         ]
 
         if (process.env.MOBILE_APP) {
-            user_menu.push({link: '#', onClick: this.props.openSettings, icon: 'new/setting', value: tt('g.settings')})
+            user_menu.push({link: '#', onClick: this.props.openSettings, icon: 'new/setting', value: tt('g.settings'),
+                onTouchStart: (e) => {
+                    window.settingsTouch = setTimeout(() => {
+                        try {
+                            const { errorLogs } = window
+                            let msg = ''
+                            for (const err of errorLogs) {
+                                msg += (err.err ? err.err.toString() : '') + '\n' + JSON.stringify(err.details) + '\n\n'
+                            }
+                            alert(msg)
+                        } catch (err) {
+                            alert('Cannot display error logs, due to: ' + (err && err.toString()))
+                        }
+                    }, 3000)
+                },
+                onTouchEnd: (e) => {
+                    clearTimeout(window.settingsTouch)
+                }
+            })
         }
 
         user_menu.push({link: '#', icon: 'new/logout', onClick: logout, value: tt('g.logout')})

@@ -39,6 +39,10 @@ function saveSession(response) {
         }
     }
     if (!session) return;
+    if (window.errorLogs) {
+        let xSess = session && session.substring && (session.substring(0, 5) + '...')
+        window.errorLogs.push({ details: { xsession: xSess } })
+    }
     localStorage.setItem('X-Session', session);
 }
 
