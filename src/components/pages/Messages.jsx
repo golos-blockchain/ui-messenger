@@ -256,8 +256,10 @@ class Messages extends React.Component {
             return false
         }
         try {
+            window.errorLogs.push({ details: { watchGroup: to } })
             await queueWatch(username, to)
             console.log('watchGroup - ', to)
+            window.errorLogs.push({ details: { watchGroup: 'ok' } })
             return true
         } catch (err) {
             console.error('watchGroup - ', to, err)
@@ -905,7 +907,7 @@ class Messages extends React.Component {
     };
 
     _renderMessagesTopCenter = ({ isSmall }) => {
-        const { fetchState, to } = this.props
+        const { fetchState, loginUser, to } = this.props
         const toAcc = this.getToAcc()
         const { notifyErrors, } = this.state
 
@@ -916,6 +918,7 @@ class Messages extends React.Component {
             notifyErrors={notifyErrors}
             errorLogs={window.errorLogs}
             fetchState={fetchState}
+            loginUser={loginUser}
         />
     };
 

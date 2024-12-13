@@ -248,10 +248,13 @@ class MessagesTopCenter extends React.Component {
         this.setState({ refreshing: true })
         e.preventDefault()
         e.stopPropagation()
-        this.props.fetchState(this.props.to) 
+        this.props.loginUser()
         setTimeout(() => {
-            this.setState({ refreshing: false })
-        }, 500)
+            this.props.fetchState(this.props.to) 
+            setTimeout(() => {
+                this.setState({ refreshing: false })
+            }, 500)
+        }, 1000)
     }
 
     render() {
