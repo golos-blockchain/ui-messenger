@@ -34,7 +34,7 @@ import { getProfileImage, } from 'app/utils/NormalizeProfile';
 import { normalizeContacts, normalizeMessages, cacheMyOwnMsg } from 'app/utils/Normalizators';
 import { fitToPreview } from 'app/utils/ImageUtils';
 import { notificationSubscribe, notificationSubscribeWs, notifyWsPing,
-    notificationShallowUnsubscribe, notificationTake, queueWatch, sendOffchainMessage, notifyWsHost, notifyUrl } from 'app/utils/NotifyApiClient';
+    notificationShallowUnsubscribe, notificationTake, queueWatchWs, sendOffchainMessage, notifyWsHost, notifyUrl } from 'app/utils/NotifyApiClient';
 import { flash, unflash } from 'app/components/elements/messages/FlashTitle';
 import { addShortcut } from 'app/utils/app/ShortcutUtils'
 import { hideSplash } from 'app/utils/app/SplashUtils'
@@ -252,17 +252,17 @@ class Messages extends React.Component {
 
         const {username} = this.props
         if (!username) {
-            console.log('watchGroup -', to, ' - no username')
+            console.log('watchGroupWs -', to, ' - no username')
             return false
         }
         try {
             window.errorLogs.push({ details: { watchGroup: to } })
-            await queueWatch(username, to)
-            console.log('watchGroup - ', to)
+            await queueWatchWs(username, to)
+            console.log('watchGroupWs - ', to)
             window.errorLogs.push({ details: { watchGroup: 'ok' } })
             return true
         } catch (err) {
-            console.error('watchGroup - ', to, err)
+            console.error('watchGroupWs - ', to, err)
             this.notifyErrorsInc(30, err, {watchGroup: notifyUrl()})
         }
         return false

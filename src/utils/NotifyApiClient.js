@@ -334,9 +334,10 @@ export async function queueWatchWs(account, group, sidKey = '__subscriber_id') {
     if (!notifyWsHost()) return null
     const xSession = notifySession()
     return await new Promise(async (resolve, reject) => {
-        await notifyWsSend('queues/subscribe', {
+        await notifyWsSend('queues/watch', {
             account,
             'X-Session': xSession,
+            subscriber_id: window[sidKey],
             objects: {
                 [group]: {
                     type: 'group',
