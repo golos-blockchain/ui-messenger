@@ -106,8 +106,8 @@
     "new_message234": " notifications",
     "new_message5": " notifications",
     "invalid_message": "(This message could not be displayed in Golos Messenger)",
-    "sync_error": "Sync error. To receive new messages please refresh the page.",
-    "sync_error_short": "Sync error. ",
+    "sync_error": "Connecting... To receive new messages please refresh the page.",
+    "sync_error_short": "Connecting... ",
     "blocked_BY": "You are blocked by @%(BY)s.",
     "do_not_bother_BY": "@%(BY)s wants to not be bothered by low-reputation users."
   },
