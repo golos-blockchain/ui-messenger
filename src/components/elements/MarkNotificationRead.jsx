@@ -11,6 +11,7 @@ class MarkNotificationRead extends React.Component {
         account: PropTypes.string,
         update: PropTypes.func,
         interval: PropTypes.number,
+        delay: PropTypes.number,
     };
 
     shouldComponentUpdate(nextProps) {
@@ -37,12 +38,19 @@ class MarkNotificationRead extends React.Component {
     }
 
     componentDidMount() {
-        const { account, fields, update, interval } = this.props;
+        const { account, fields, update, interval, delay } = this.props;
         this.fields_array = fields.replace(/\s/g,'').split(',');
-        if (interval)
+        const firstMark = () => {
+            markNotificationRead(account, this.fields_array).then(nc => update(nc))
+        }
+        if (delay) {
+            setTimeout(firstMark, delay)
+        }
+        if (interval) {
             this._activateInterval(interval);
-        else
-            markNotificationRead(account, this.fields_array).then(nc => update(nc));
+        } else if (!delay) {
+            firstMark()
+        }
     }
 
     componentDidUpdate() {

@@ -10,7 +10,7 @@ class AccountName extends React.Component {
         super(props)
         this.state = {
             defaultOptions: [],
-            isLoading: true,
+            isLoading: false,
         }
         this.ref = React.createRef()
     }

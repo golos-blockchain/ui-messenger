@@ -18,6 +18,7 @@ import AppSettings, { openAppSettings } from 'app/components/pages/app/AppSettin
 import Themifier from 'app/Themifier'
 import Translator from 'app/Translator'
 import initConfig from 'app/utils/initConfig'
+import RenderError from 'app/utils/RenderError'
 import { getShortcutIntent, onShortcutIntent } from 'app/utils/app/ShortcutUtils'
 
 import 'app/App.scss'
@@ -68,6 +69,20 @@ class App extends React.Component {
         })
     }
 
+    componentDidCatch(err, info) {
+        console.error('Render error:', err, info)
+        const errStr = (err && err.toString()) ? err.toString() : JSON.stringify(err)
+        const infoStr = (info && info.componentStack) || JSON.stringify(info)
+        this.setState({
+            fatalErr: {
+                errStr,
+                infoStr
+            }
+        })
+        //alert(';( Ошибка рендеринга\n\n' + errStr + '\n' + infoStr)
+        //throw err
+    }
+
     showAppReminder = () => {
         if (process.env.MOBILE_APP || process.env.DESKTOP_APP) {
             return
@@ -87,10 +102,11 @@ class App extends React.Component {
             </div>
         }
         const reminder = this.showAppReminder() ? <AppReminder /> : null
+        const { fatalErr } = this.state
         return (
             <Provider store={store}>
                 <Translator>
-                    <ConnectedRouter history={history}>
+                    {fatalErr ? <RenderError error={fatalErr} /> : <ConnectedRouter history={history}>
                         <Switch>
                             <Route path='/__app_settings'>
                                 <Themifier>
@@ -110,7 +126,7 @@ class App extends React.Component {
                                 </Themifier>}
                             </Route>
                         </Switch>
-                    </ConnectedRouter>
+                    </ConnectedRouter>}
                 </Translator>
             </Provider>
         )

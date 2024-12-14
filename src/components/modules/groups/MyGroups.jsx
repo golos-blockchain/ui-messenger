@@ -14,6 +14,7 @@ import DropdownMenu from 'app/components/elements/DropdownMenu'
 import Icon from 'app/components/elements/Icon'
 import LoadingIndicator from 'app/components/elements/LoadingIndicator'
 import MarkNotificationRead from 'app/components/elements/MarkNotificationRead'
+import NotifiCounter from 'app/components/elements/NotifiCounter'
 import { showLoginDialog } from 'app/components/dialogs/LoginDialog'
 import { getGroupLogo, getGroupMeta, getRoleInGroup } from 'app/utils/groups'
 import isScreenSmall from 'app/utils/isScreenSmall'
@@ -28,7 +29,11 @@ class MyGroups extends React.Component {
 
     refetch = () => {
         const { currentUser } = this.props
-        this.props.fetchMyGroups(currentUser)
+        this.setState({
+            currentTab: null,
+        }, () => {
+            this.props.fetchMyGroups(currentUser)
+        })
     }
 
     componentDidMount = async () => {
@@ -124,7 +129,7 @@ class MyGroups extends React.Component {
     }
 
     _renderGroup = (group) => {
-        const { name, json_metadata, pendings } = group
+        const { name, json_metadata, pendings, members, moders, } = group
 
         const meta = getGroupMeta(json_metadata)
 
@@ -156,6 +161,9 @@ class MyGroups extends React.Component {
             }, value: tt('msgs_group_dropdown.retire') })
         }
 
+
+        const noMembers = !pendings && !members && !moders
+
         return <tr key={name}>
             <Link to={'/' + name} onClick={this.onGoGroup}>
                 {this._renderGroupLogo(group, meta)}
@@ -175,7 +183,7 @@ class MyGroups extends React.Component {
                         <Icon name='cross' size='0_95x' />
                         <span className='btn-title'>{amPending ? tt('msgs_group_dropdown.cancel') : tt('msgs_group_dropdown.retire')}</span>
                     </button> : null}
-                    {(amModer && pendings) ? <button className='button hollow' onClick={e => {
+                    {(amModer && pendings) ? <button className='button hollow alert' onClick={e => {
                         this.showGroupMembers(e, group, true)
                     }} title={tt('group_members_jsx.check_pending_hint')}>
                         <Icon name='voters' size='0_95x' />
@@ -184,7 +192,9 @@ class MyGroups extends React.Component {
                         </span>
                     </button> : null}
                     <button className={cn('button', {
-                        'icon-only': (isSmall || pendings || amPending)
+                        'force-white': !noMembers,
+                        'icon-only': (isSmall || pendings || amPending),
+                        hollow: noMembers,
                     })} onClick={e => {
                         this.showGroupMembers(e, group)
                     }} title={(isSmall || pendings || amPending) ? tt('my_groups_jsx.members') : null}>
@@ -203,6 +213,39 @@ class MyGroups extends React.Component {
                 </td>
             </Link>
         </tr>
+    }
+
+    _renderGroupTypeSwitch = () => {
+        const { stat, } = this.props
+        let { currentTab } = this.state
+        currentTab = currentTab || stat.current
+        let tabs = []
+        for (const key of ['pending', 'member', 'moder', 'own']) {
+            if (!stat[key]) continue
+            let counter
+            if (key === 'member') {
+                counter = 'group_member_mem'
+            } else if (key === 'moder') {
+                counter = 'join_request_mod,group_member_mod'
+            } else if (key === 'own') {
+                counter = 'join_request_own'
+            }
+            tabs.push(<div key={key} className={cn('label', { checked: (key === currentTab) })}
+                onClick={e => {
+                    this.setState({
+                        currentTab: key
+                    })
+                }} >
+                <span className='label-text'>
+                    {tt('my_groups_jsx.tab_' + key) + ' (' + stat[key] + ')'}
+                </span>
+                {counter && <NotifiCounter fields={counter} />}
+            </div>)
+        }
+        if (tabs.length < 1) return null
+        return <div style={{ marginBottom: '0.5rem' }} title={tt('my_groups_jsx.tabs_title')}>
+            {tabs}
+        </div>
     }
 
     render() {
@@ -231,23 +274,33 @@ class MyGroups extends React.Component {
                 </div>
             } else {
                 hasGroups = true
+
+                const { stat, } = this.props
+                let { currentTab } = this.state
+                currentTab = currentTab || stat.current
+
                 groups = []
                 for (const g of my_groups) {
+                    if (currentTab && g.my_role !== currentTab) continue
                     groups.push(this._renderGroup(g))
                 }
-                groups = <table>
-                    <tbody>
-                        {groups}
-                    </tbody>
-                </table>
+                groups = <React.Fragment>
+                    {this._renderGroupTypeSwitch()}
+                    <table>
+                        <tbody>
+                            {groups}
+                        </tbody>
+                    </table>
+                </React.Fragment>
             }
         }
 
         let button
         if (hasGroups) {
+            const isSmall = isScreenSmall()
             button = <div>
                 <button className='button hollow create-group' onClick={this.createGroup}>
-                    {tt('my_groups_jsx.create_more')}
+                    {isSmall ? tt('my_groups_jsx.create_more2') : tt('my_groups_jsx.create_more')}
                 </button>
                 <button className='button hollow more-group' onClick={this.showTopGroups}>
                     <Icon name='search' />
@@ -265,7 +318,7 @@ class MyGroups extends React.Component {
                {button}
                {groups}
                {hasGroups ? <div style={{ height: '50px' }}></div> : null}
-                {username ? <MarkNotificationRead fields='group_member' account={username}
+                {username ? <MarkNotificationRead delay={3000} interval={5000} fields='join_request_own,join_request_mod,group_member_mod,group_member_mem' account={username}
                 /> : null}
         </div>
     }
@@ -276,11 +329,13 @@ export default connect(
         const currentUser = state.user.getIn(['current'])
         const username = currentUser && currentUser.get('username')
         const my_groups = state.global.get('my_groups')
+        const my_groups_stat = state.global.get('my_groups_stat')
 
         return { ...ownProps,
             currentUser,
             username,
             my_groups,
+            stat: my_groups_stat ? my_groups_stat.toJS() : {},
         }
     },
     dispatch => ({

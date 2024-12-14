@@ -16,6 +16,7 @@ import LoginForm from 'app/components/modules/LoginForm';
 import AppDownload from 'app/components/modules/app/AppDownload'
 import user from 'app/redux/UserReducer'
 //import tr from 'app/redux/Transaction';
+import isScreenSmall from 'app/utils/isScreenSmall'
 
 let keyIndex = 0;
 
@@ -76,10 +77,15 @@ class Modals extends React.Component {
             return n;
         }) : [];
 
-        const modalStyle = {
-            borderRadius: '8px',
-            boxShadow: '0 0 19px 3px rgba(0,0,0, 0.2)',
-            overflow: 'hidden',
+        let modalStyle = {
+            overflowX: 'hidden',
+        }
+        if (!isScreenSmall()) {
+            modalStyle = {
+                borderRadius: '8px',
+                boxShadow: '0 0 19px 3px rgba(0,0,0, 0.2)',
+                ...modalStyle,
+            }
         }
 
         const doHideLogin = (e) => {

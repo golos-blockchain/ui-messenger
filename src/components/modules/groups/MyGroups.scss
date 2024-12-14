@@ -19,6 +19,8 @@
     }
     .more-group {
         float: right;
+        padding-top: 0.725em;
+        padding-bottom: 0.725em;
         &:not(:hover) {
             border-color: transparent;
         }
@@ -42,6 +44,42 @@
     .button.icon-only {
         .btn-title {
             display: none;
+        }
+    }
+    .button.force-white {
+        color: #fefefe !important;
+        fill: #fefefe !important;
+    }
+    .label {
+        padding: 0.5rem;
+        padding-top: 0.6rem;
+        padding-bottom: 0.4rem;
+
+        transition: all .1s ease-in;
+        user-select: none;
+
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+
+        .label-text {
+            display: inline-block;
+            height: 16px;
+        }
+        .NotifiCounter {
+            margin-left: 0.35rem;
+            vertical-align: top;
+        }
+
+        &:not(.disabled) { 
+            cursor: pointer;
+        }
+        &:not(.checked) {
+            background: #f4f4f8;
+            color: #333333;
+        }
+        &:hover:not(.disabled) {
+            background: #0078C4;
+            color: #fefefe;
         }
     }
 }

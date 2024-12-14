@@ -70,6 +70,7 @@ export default createModule({
                 })
                 let new_state = state.set('messages', List());
                 new_state = new_state.set('contacts', List());
+                new_state = new_state.delete('the_group');
                 new_state = new_state.mergeDeep(payload)
                 return new_state
             },
@@ -366,8 +367,10 @@ export default createModule({
         },
         {
             action: 'RECEIVE_MY_GROUPS',
-            reducer: (state, { payload: { groups } }) => {
-                return state.set('my_groups', fromJS(groups))
+            reducer: (state, { payload: { groups, stat } }) => {
+                let new_state = state.set('my_groups', fromJS(groups))
+                new_state = new_state.set('my_groups_stat', fromJS(stat))
+                return new_state
             },
         },
         {
