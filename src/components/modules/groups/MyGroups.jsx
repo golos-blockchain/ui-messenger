@@ -117,10 +117,10 @@ class MyGroups extends React.Component {
         this.props.showGroupSettings({ group })
     }
 
-    showGroupMembers = (e, group, show_pendings) => {
+    showGroupMembers = (e, group, current_tab) => {
         e.preventDefault()
         const { name } = group
-        this.props.showGroupMembers({ group: name, show_pendings })
+        this.props.showGroupMembers({ group: name, current_tab })
     }
 
     onGoGroup = (e) => {
@@ -155,12 +155,11 @@ class MyGroups extends React.Component {
                 this.deleteGroup(e, group, titleShr)
             }, value: tt('g.delete') })
         }
-        if (amMember || (amModer && !amOwner)) {
+        if (amMember/* || (amModer && !amOwner)*/) {
             kebabItems.push({ link: '#', onClick: e => {
                 this.retireCancel(e, group, titleShr, amPending)
             }, value: tt('msgs_group_dropdown.retire') })
         }
-
 
         const noMembers = !pendings && !members && !moders
 
@@ -184,7 +183,7 @@ class MyGroups extends React.Component {
                         <span className='btn-title'>{amPending ? tt('msgs_group_dropdown.cancel') : tt('msgs_group_dropdown.retire')}</span>
                     </button> : null}
                     {(amModer && pendings) ? <button className='button hollow alert' onClick={e => {
-                        this.showGroupMembers(e, group, true)
+                        this.showGroupMembers(e, group, 'pending')
                     }} title={tt('group_members_jsx.check_pending_hint')}>
                         <Icon name='voters' size='0_95x' />
                         <span className='btn-title'>
@@ -193,11 +192,11 @@ class MyGroups extends React.Component {
                     </button> : null}
                     <button className={cn('button', {
                         'force-white': !noMembers,
-                        'icon-only': (isSmall || pendings || amPending),
+                        'icon-only': (isSmall || (amModer && pendings) || amPending),
                         hollow: noMembers,
                     })} onClick={e => {
                         this.showGroupMembers(e, group)
-                    }} title={(isSmall || pendings || amPending) ? tt('my_groups_jsx.members') : null}>
+                    }} title={(isSmall || (amModer && pendings) || amPending) ? tt('my_groups_jsx.members') : null}>
                         <Icon name='voters' size='0_95x' />
                         <span className='btn-title'>{tt('my_groups_jsx.members')}</span>
                     </button>
@@ -215,21 +214,25 @@ class MyGroups extends React.Component {
         </tr>
     }
 
-    _renderGroupTypeSwitch = () => {
+    _renderTabs = () => {
         const { stat, } = this.props
         let { currentTab } = this.state
         currentTab = currentTab || stat.current
+        let markRead = []
         let tabs = []
         for (const key of ['pending', 'member', 'moder', 'own']) {
-            if (!stat[key]) continue
-            let counter
+            let counter = []
             if (key === 'member') {
-                counter = 'group_member_mem'
+                counter = ['group_member_mem']
             } else if (key === 'moder') {
-                counter = 'join_request_mod,group_member_mod'
+                counter = ['join_request_mod', 'group_member_mod']
             } else if (key === 'own') {
-                counter = 'join_request_own'
+                counter = ['join_request_own']
             }
+            if (currentTab === key || !stat[key]) {
+                markRead.push(counter)
+            }
+            if (!stat[key]) continue
             tabs.push(<div key={key} className={cn('label', { checked: (key === currentTab) })}
                 onClick={e => {
                     this.setState({
@@ -239,27 +242,36 @@ class MyGroups extends React.Component {
                 <span className='label-text'>
                     {tt('my_groups_jsx.tab_' + key) + ' (' + stat[key] + ')'}
                 </span>
-                {counter && <NotifiCounter fields={counter} />}
+                {counter.length ? <NotifiCounter fields={counter.join(',')} /> : null}
             </div>)
         }
-        if (tabs.length < 1) return null
-        return <div style={{ marginBottom: '0.5rem' }} title={tt('my_groups_jsx.tabs_title')}>
+        if (tabs.length < 1) return { markRead, tabs: null }
+        tabs = <div style={{ marginBottom: '0.5rem' }} title={tt('my_groups_jsx.tabs_title')}>
             {tabs}
         </div>
+        return { markRead, tabs }
     }
 
     render() {
         let groups, hasGroups
 
-        let { my_groups } = this.props
+        let { my_groups, username } = this.props
 
         if (!my_groups) {
             groups = <LoadingIndicator type='circle' />
         } else {
             my_groups = my_groups.toJS()
 
+            let { tabs, markRead } = this._renderTabs()
+
+            const reader = (username && markRead.length) ?
+            <MarkNotificationRead delay={2500} interval={5000} fields={markRead.join(',')} account={username}
+            /> : null
+
             if (!my_groups.length) {
                 groups = <div>
+                    {tabs}
+                    {reader}
                     {tt('my_groups_jsx.empty')}
                     {tt('my_groups_jsx.empty2')}
                     <a href='#' onClick={this.showTopGroups}>
@@ -284,8 +296,10 @@ class MyGroups extends React.Component {
                     if (currentTab && g.my_role !== currentTab) continue
                     groups.push(this._renderGroup(g))
                 }
+
                 groups = <React.Fragment>
-                    {this._renderGroupTypeSwitch()}
+                    {tabs}
+                    {reader}
                     <table>
                         <tbody>
                             {groups}
@@ -309,8 +323,6 @@ class MyGroups extends React.Component {
             </div>
         }
 
-        const { username } = this.props
-
         return <div className='MyGroups'>
                <div className='row'>
                    <h3>{tt('my_groups_jsx.title')}</h3>
@@ -318,8 +330,6 @@ class MyGroups extends React.Component {
                {button}
                {groups}
                {hasGroups ? <div style={{ height: '50px' }}></div> : null}
-                {username ? <MarkNotificationRead delay={3000} interval={5000} fields='join_request_own,join_request_mod,group_member_mod,group_member_mem' account={username}
-                /> : null}
         </div>
     }
 }
@@ -353,8 +363,8 @@ export default connect(
         showGroupSettings({ group }) {
             dispatch(user.actions.showGroupSettings({ group }))
         },
-        showGroupMembers({ group, show_pendings }) {
-            dispatch(user.actions.showGroupMembers({ group: ['my_groups', group], show_pendings }))
+        showGroupMembers({ group, current_tab }) {
+            dispatch(user.actions.showGroupMembers({ group: ['my_groups', group], current_tab }))
         },
         deleteGroup: ({ owner, name, password,
         onSuccess, onError }) => {

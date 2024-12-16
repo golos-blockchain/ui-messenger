@@ -23,8 +23,7 @@ class GroupMembers extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            showModers: false,
-            showPendings: !!props.showPendings,
+            currentTab: props.current_tab || 'member',
         }
     }
 
@@ -47,28 +46,25 @@ class GroupMembers extends React.Component {
     init = (force = false) => {
         const { initialized } = this.state
         if (!initialized || force) {
-            const { currentGroup } = this.props
+            const { currentGroup, username } = this.props
             if (currentGroup) {
                 const group = currentGroup
 
-                const memberTypes = ['moder']
+                let { amModer } = getRoleInGroup(group, username)
+
+                const memberTypes = []
                 const sortConditions = []
-                const { showPendings, showBanneds, showModers } = this.state
-                if (!showModers) memberTypes.push('member')
-                if (showPendings) {
-                    memberTypes.push('pending')
-                    sortConditions.push({
-                        member_type: 'pending',
-                        direction: 'up'
-                    })
+                const { currentTab } = this.state
+                if (!amModer && currentTab === 'member') {
+                    memberTypes.push('moder')
+                    memberTypes.push('member')
+                } else if (currentTab) {
+                    memberTypes.push(currentTab)
                 }
-                if (showBanneds) {
-                    memberTypes.push('banned')
-                    sortConditions.push({
-                        member_type: 'banned',
-                        direction: 'up'
-                    })
-                }
+                // sortConditions.push({
+                //     member_type: 'banned',
+                //     direction: 'up'
+                // })
 
                 this.props.fetchGroupMembers(group, memberTypes, sortConditions)
                 this.setState({
@@ -78,37 +74,12 @@ class GroupMembers extends React.Component {
         }
     }
 
-    toggleModers = (e) => {
-        this.setState({
-            showModers: !this.state.showModers
-        }, () => {
-            this.init(true)
-        })
-    }
-
-    togglePendings = (e) => {
-        const { checked } = e.target
-        this.setState({
-            showPendings: checked
-        }, () => {
-            this.init(true)
-        })
-    }
-
-    toggleBanneds = (e) => {
-        const { checked } = e.target
-        this.setState({
-            showBanneds: checked
-        }, () => {
-            this.init(true)
-        })
-    }
-
     onAddAccount = (e) => {
         try {
             const { value } = e.target
             const member = value
-            const member_type = 'member'
+            const { currentTab } = this.state
+            const member_type = currentTab
 
             const { username, currentGroup } = this.props
             const { creatingNew } = currentGroup
@@ -133,20 +104,39 @@ class GroupMembers extends React.Component {
         }
     }
 
-    _renderMemberTypeSwitch = () => {
+    _renderMemberTypeSwitch = (amModer, ownerRight) => {
         const { currentGroup, } = this.props
         const { moders, members, } = currentGroup
-        const { showModers } = this.state
-        const disabled = !moders
-        return <React.Fragment>
-            <div className={cn('label', { checked: !showModers, disabled })} onClick={!disabled && this.toggleModers}>
-                {tt('group_members_jsx.all') + ' (' + (moders + members) + ')'}
-            </div>
-            <span style={{ width: '0.5rem', display: 'inline-block' }}></span>
-            <div className={cn('label moders', { checked: showModers, disabled })} onClick={!disabled && this.toggleModers}>
-                {tt('group_members_jsx.moders') + ' (' + moders + ')'}
-            </div>
-        </React.Fragment>
+        const { currentTab } = this.state
+        const disabled = !amModer && !moders
+        let tabs = []
+
+        let memTypes = ['member', 'moder']
+        if (amModer) {
+            memTypes.unshift('pending')
+            memTypes.push('banned')
+        }
+        for (const key of memTypes) {
+            let title
+            if (!amModer && key === 'member') {
+                title = tt('group_members_jsx.all') + ' (' + (moders + members) + ')'
+            } else {
+                title = tt('group_members_jsx.' + key + 's') + ' (' + (currentGroup[key + 's']) + ')'
+            }
+            tabs.push(<div key={key} className={cn('label', { checked: (currentTab === key), disabled })} onClick={!disabled ? (e) => {
+                this.setState({
+                    currentTab: key
+                }, () => {
+                    this.init(true)
+                })
+            } : undefined}>
+                {title}
+            </div>)
+        }
+        return <div>
+            {tabs}
+            {ownerRight}
+        </div>
     }
 
     render() {
@@ -189,6 +179,7 @@ class GroupMembers extends React.Component {
                 />)
             }
 
+            const isEmpty = !mems.length
             mems = <table>
                 <tbody>
                     {mems}
@@ -201,6 +192,8 @@ class GroupMembers extends React.Component {
                 filterAccs.add(m.account)
             }
 
+            const { currentTab } = this.state
+
             mems = <div>
                 {amModer ? <div className='row' style={{ marginTop: '0.5rem', }}>
                     <div className='column small-12'>
@@ -211,12 +204,14 @@ class GroupMembers extends React.Component {
                             onAccountsLoad={(accs) => {
                                 this.props.receiveAccounts(accs)
                             }}
+                            isDisabled={currentTab === 'pending'}
                         />
                     </div>
                 </div> : null}
                 <div className='row' style={{ marginTop: '0.5rem', marginBottom: '2rem' }}>
                     <div className='column small-12'>
-                        {mems}
+                        {!isEmpty ? mems : <div style={{ textAlign: 'center', paddingTop: '1rem' }}>
+                            {tt('group_members_jsx.empty')}</div>}
                     </div>
                 </div>
             </div>
@@ -236,8 +231,6 @@ class GroupMembers extends React.Component {
             let title = getGroupTitle(meta, name)
 
             title = tt('group_members_jsx.title') + title + tt('group_members_jsx.title2')
-
-            const { showPendings, showBanneds } = this.state
 
             let ownerRight, ownerRow
             let ownerBlock = <React.Fragment>
@@ -264,25 +257,11 @@ class GroupMembers extends React.Component {
                     </div>
                 </div>
                 {ownerRow}
-                {amModer ? <div className='row' style={{ marginTop: '0rem' }}>
+                <div className='row' style={{ marginTop: '0rem', marginBottom: '0.5rem' }}>
                     <div className='column small-12'>
-                        <label style={{fontSize: '100%', display: 'inline-block'}} title={tt('group_members_jsx.check_pending_hint')}>
-                            <input type='checkbox' disabled={!pendings} checked={!!showPendings} onChange={this.togglePendings} />
-                            {tt('group_members_jsx.check_pending') + ' (' + pendings + ')'}
-                        </label>
-                        <span style={{ width: '1rem', display: 'inline-block' }}></span>
-                        <label style={{fontSize: '100%', display: 'inline-block'}}>
-                            <input type='checkbox' disabled={!banneds} checked={!!showBanneds} onChange={this.toggleBanneds} />
-                            {tt('group_members_jsx.check_banned') + ' (' + banneds + ')'}
-                        </label>
-                        {ownerRight}
+                        {this._renderMemberTypeSwitch(amModer, ownerRight)}
                     </div>
-                </div> : <div className='row' style={{ marginTop: '0rem', marginBottom: '0.5rem' }}>
-                    <div className='column small-12'>
-                        {this._renderMemberTypeSwitch()}
-                        {ownerRight}
-                    </div>
-                </div>}
+                </div>
             </div>
         }
 
@@ -300,14 +279,14 @@ export default connect(
         const username = currentUser && currentUser.get('username')
 
         const { newGroup } = ownProps
-        let currentGroup, showPendings
+        let currentGroup, current_tab
         if (newGroup) {
             currentGroup = newGroup
         } else {
             const options = state.user.get('group_members_modal')
             if (options) {
                 currentGroup = options.get('group')
-                showPendings = options.get('show_pendings')
+                current_tab = options.get('current_tab')
             }
             if (currentGroup) {
                 const [ path, name ] = currentGroup
@@ -325,7 +304,7 @@ export default connect(
             username,
             currentGroup,
             group,
-            showPendings,
+            current_tab,
         }
     },
     dispatch => ({

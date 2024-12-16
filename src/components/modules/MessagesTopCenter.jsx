@@ -132,7 +132,7 @@ class MessagesTopCenter extends React.Component {
                 btnType = 'join'
             } else if (isModer) {
                 myStatus = tt('msgs_group_dropdown.moder')
-                btnType = 'retire'
+                //btnType = 'retire'
             } else if (isMember) {
                 btnType = 'retire'
             } else if (member_type === 'banned') {

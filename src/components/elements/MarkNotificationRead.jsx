@@ -15,18 +15,21 @@ class MarkNotificationRead extends React.Component {
     };
 
     shouldComponentUpdate(nextProps) {
-        if (this.props.interval !== nextProps.interval) {
+        if (this.props.interval !== nextProps.interval ||
+            this.props.fields !== nextProps.fields) {
             return true
         }
         return false;
     }
 
+    _markIt = () => {
+        const { account, update } = this.props
+        markNotificationRead(account, this.fields_array).then(nc => update(nc))
+    }
+
     _activateInterval = (interval) => {
         if (!this.interval) {
-            const { account, update } = this.props;
-            this.interval = setInterval(() => {
-                markNotificationRead(account, this.fields_array).then(nc => update(nc));
-            }, interval);
+            this.interval = setInterval(this._markIt, interval)
         }
     }
 
@@ -38,23 +41,26 @@ class MarkNotificationRead extends React.Component {
     }
 
     componentDidMount() {
-        const { account, fields, update, interval, delay } = this.props;
-        this.fields_array = fields.replace(/\s/g,'').split(',');
-        const firstMark = () => {
-            markNotificationRead(account, this.fields_array).then(nc => update(nc))
-        }
+        const { fields, interval, delay } = this.props;
+        this.fields_array = fields.replace(/\s/g,'').split(',')
         if (delay) {
-            setTimeout(firstMark, delay)
+            setTimeout(this._markIt, delay)
         }
         if (interval) {
             this._activateInterval(interval);
         } else if (!delay) {
-            firstMark()
+            this._markIt()
         }
     }
 
-    componentDidUpdate() {
-        const { interval } = this.props
+    componentDidUpdate(prevProps) {
+        const { interval, delay, fields } = this.props
+        if (prevProps.fields !== fields) {
+            this.fields_array = fields.replace(/\s/g,'').split(',')
+            if (delay) {
+                setTimeout(this._markIt, delay)
+            }
+        }
         if (interval) {
             this._activateInterval(interval);
         } else {
