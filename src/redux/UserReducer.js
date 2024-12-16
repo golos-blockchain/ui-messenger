@@ -149,11 +149,11 @@ export default createModule({
             return state
         }},
         { action: 'HIDE_GROUP_SETTINGS', reducer: state => state.set('show_group_settings_modal', false) },
-        { action: 'SHOW_GROUP_MEMBERS', reducer: (state, { payload: { group, show_pendings }}) => {
+        { action: 'SHOW_GROUP_MEMBERS', reducer: (state, { payload: { group, current_tab }}) => {
             state = state.set('show_group_members_modal', true)
             state = state.set('group_members_modal', fromJS({
                 group,
-                show_pendings,
+                current_tab,
             }))
             return state
         }},

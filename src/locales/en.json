@@ -106,8 +106,8 @@
     "new_message234": " notifications",
     "new_message5": " notifications",
     "invalid_message": "(This message could not be displayed in Golos Messenger)",
-    "sync_error": "Sync error. To receive new messages please refresh the page.",
-    "sync_error_short": "Sync error. ",
+    "sync_error": "Connecting... To receive new messages please refresh the page.",
+    "sync_error_short": "Connecting... ",
     "blocked_BY": "You are blocked by @%(BY)s.",
     "do_not_bother_BY": "@%(BY)s wants to not be bothered by low-reputation users."
   },
@@ -181,7 +181,7 @@
     "members_list": "Members:",
     "image_wrong": "Cannot load this image.",
     "image_timeout": "Cannot load this image, it is loading too long...",
-    "add_member": "+ Add Member...",
+    "add_member": "+ Add Account...",
     "add_member2": "+ Add..."
   },
   "my_groups_jsx": {
@@ -223,7 +223,10 @@
     "check_pending_hint": "Pending Group Join Requests",
     "check_banned": "Blocked",
     "all": "All",
+    "pendings": "Pendings",
     "moders": "Moderators",
+    "members": "Members",
+    "banneds": "Ban",
     "member": "Member",
     "moder": "Moderator",
     "owner": "Group Owner",
@@ -231,7 +234,8 @@
     "make_moder": "Make Moderator",
     "ban": "Ban",
     "unban": "Unban",
-    "banned": "Banned"
+    "banned": "Banned",
+    "empty": "No such yet..."
   },
   "group_settings_jsx": {
     "title_GROUP": "%(GROUP)s Group",

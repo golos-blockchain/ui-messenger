@@ -226,6 +226,11 @@ class Messages extends React.Component {
     onResume = () => {
         this.paused = false
         if (this.pausedTime) {
+            const { username } = this.props
+            if (username) {
+                // re-subscribe
+                this.setCallback(username)
+            }
             const elapsed = Date.now() - this.pausedTime
             if (elapsed > 60*1000) {
                 const { to, contacts, account, nodeError } = this.props
