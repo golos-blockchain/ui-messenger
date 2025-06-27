@@ -63,8 +63,7 @@
     "fs-extra": "^11.3.0",
     "gls-messenger-native-core": "file:native_core",
     "nodemon": "^3.1.10",
-    "react-app-rewired": "^2.1.11",
-    "react-scripts": "^5.0.0"
+    "react-app-rewired": "^2.1.11"
   },
   "gitDependencies": {
     "formik": "https://github.com/golos-blockchain/formik/tree/master/packages/formik#3b21166c33ade760d562091e1fa0b71d172a7aaf",
