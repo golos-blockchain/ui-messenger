@@ -1,5 +1,5 @@
 @import "./foundation-settings";
-@import "~foundation-sites/scss/foundation";
+@import "../node_modules/foundation-sites/scss/foundation";
 
 @include foundation-everything(true);
 

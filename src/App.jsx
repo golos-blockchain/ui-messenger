@@ -4,7 +4,6 @@ import {
     Switch,
     Route
 } from 'react-router-dom'
-import { browserHistory } from 'react-router'
 import { Provider } from 'react-redux'
 import { ConnectedRouter } from 'connected-react-router'
 

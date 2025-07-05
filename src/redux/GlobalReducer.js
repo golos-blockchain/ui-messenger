@@ -1,4 +1,4 @@
-import { Map, List, fromJS, fromJSGreedy } from 'immutable';
+import { Map, List, fromJS } from 'immutable';
 import createModule from 'redux-modules'
 import { Asset } from 'golos-lib-js/lib/utils'
 

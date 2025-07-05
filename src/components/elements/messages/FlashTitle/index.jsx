@@ -3,7 +3,7 @@ var _ft_title;
 var _ft_interval;
 var _ft_state;
 
-function flash(title, interval = 1000) {
+export function flash(title, interval = 1000) {
     if (!_ft_interval) {
         _ft_originalTitle = document.title;
     }
@@ -22,14 +22,9 @@ function flash(title, interval = 1000) {
     }, interval);
 }
 
-function unflash() {
+export function unflash() {
     if (_ft_interval) {
         clearInterval(_ft_interval);
         document.title = _ft_originalTitle;
     }
-}
-
-module.exports = {
-    flash,
-    unflash,
 }
