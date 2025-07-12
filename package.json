@@ -67,6 +67,7 @@
     "gls-messenger-native-core": "file:native_core",
     "nodemon": "^3.1.10",
     "vite": "^7.0.0",
+    "vite-plugin-html": "^3.2.2",
     "vite-plugin-node-polyfills": "^0.23.0"
   },
   "gitDependencies": {
@@ -76,16 +77,15 @@
   "scripts": {
     "preinstall": "node git-install.js",
     "cordova": "cordova",
-    "dev0": "cross-env react-app-rewired start",
     "dev": "vite --host",
     "dev:server": "nodemon server",
     "build": "vite build",
     "prod": "NODE_ENV=production node server/index.js",
     "prebuild:mobile": "cross-env NODE_CONFIG_ENV=production,mobile node ./prebuild_mobile.js",
-    "build:mobile": "cross-env IS_APP=1 MOBILE_APP=1 react-app-rewired build",
+    "build:mobile": "cross-env IS_APP=1 MOBILE_APP=1 vite build",
     "postbuild:mobile": "cross-env NODE_CONFIG_ENV=production,mobile node ./postbuild_mobile.js && cd cordova && cordova prepare && cordova run android",
-    "build:desktop": "cross-env IS_APP=1 DESKTOP_APP=1 react-app-rewired build",
-    "dev:desktop": "cross-env IS_APP=1 DESKTOP_APP=1 BROWSER=none react-app-rewired start"
+    "build:desktop": "cross-env IS_APP=1 DESKTOP_APP=1 vite build",
+    "dev:desktop": "cross-env IS_APP=1 DESKTOP_APP=1 BROWSER=none vite dev"
   },
   "browserslist": {
     "production": [

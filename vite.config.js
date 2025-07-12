@@ -17,7 +17,13 @@ export default defineConfig({
         }
     },
     define: {
-        'process.env': {}
+        'process.env': {
+            BROWSER: true,
+            IS_APP: !!process.env.IS_APP,
+            DESKTOP_APP: !!process.env.DESKTOP_APP,
+            MOBILE_APP: !!process.env.MOBILE_APP,
+            //NO_NOTIFY: 1,
+        }
     },
     resolve: {
         alias: {
