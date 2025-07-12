@@ -1,4 +1,4 @@
-function fitToPreview(goodWidth, goodHeight, width, height) {
+export function fitToPreview(goodWidth, goodHeight, width, height) {
     let previewWidth;
     let previewHeight;
 
@@ -21,8 +21,4 @@ function fitToPreview(goodWidth, goodHeight, width, height) {
         previewWidth = Math.round(previewHeight * proportion);
     }
     return { previewWidth, previewHeight };
-}
-
-module.exports = {
-    fitToPreview
 }

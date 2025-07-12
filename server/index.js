@@ -1,7 +1,7 @@
 const koa = require('koa')
 const compress = require('koa-compress')
 const helmet = require('koa-helmet')
-const koaRouter = require('koa-router')
+const koaRouter = require('@koa/router')
 const static = require('koa-static')
 const cors = require('@koa/cors')
 const coBody = require('co-body')
@@ -85,7 +85,7 @@ if (env === 'production') {
         }
         await next()
     })
-    const cacheOpts = { maxage: 0, gzip: true }
+    const cacheOpts = { maxage: 1*60*60*1000, gzip: true }
     app.use(static(buildPath, cacheOpts))
 }
 
