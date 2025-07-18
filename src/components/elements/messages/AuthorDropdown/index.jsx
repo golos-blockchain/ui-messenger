@@ -66,7 +66,7 @@ class AuthorDropdown extends React.Component {
                 alert: !isBanned,
                 banned: isBanned,
                 disabled: isOwner,
-            })} disabled={isOwner} onClick={e => this.btnClick(e, isBanned)} disabled={this.state.submitting}>
+            })} onClick={e => this.btnClick(e, isBanned)} disabled={this.state.submitting}>
                 <Icon name='ionicons/ban' />
                 <span className='title'>{isBanned ? tt('group_members_jsx.unban') :
                     tt('group_members_jsx.ban')}</span>
