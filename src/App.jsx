@@ -23,6 +23,7 @@ import { getShortcutIntent, onShortcutIntent } from 'app/utils/app/ShortcutUtils
 import 'app/App.scss'
 
 const store = configureStore()
+window._reduxStore = store
 
 const APP_REMINDER_INTERVAL = 30*24*60*60*1000
 

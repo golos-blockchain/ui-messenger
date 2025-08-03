@@ -45,7 +45,7 @@ function* logoutWatch() {
 */
 function* usernamePasswordLogin(action) {
     let { username, password, saveLogin,
-        operationType, afterLoginRedirectToWelcome, authType } = action.payload
+        operationType, fromLoginForm, authType } = action.payload
 
     let saved = false
     let postingWif, memoWif
@@ -135,8 +135,29 @@ function* usernamePasswordLogin(action) {
     }
 
     const { errorLogs } = window
-
     if (postingWif) {
+        const loginTm = setTimeout(async () => {
+            const message = 'Вход выполняется дольше обычного.\nВозможно, вам стоит попробовать другое устройство или другой интернет (например, Wi-Fi вместо мобильной сети).'
+            if (fromLoginForm) {
+                alert(message)
+            } else if (window._reduxStore) {
+                const now = Date.now();
+                const lbnKey = 'last_bad_item';
+                const lastBadNet = parseInt(localStorage.getItem(lbnKey) || 0);
+                if (now - lastBadNet >= 10*60*1000) {
+                    localStorage.setItem(lbnKey, now);
+                    window._reduxStore.dispatch({
+                        type: 'ADD_NOTIFICATION',
+                        payload: {
+                            key: 'bad_net_' + Date.now(),
+                            message,
+                            dismissAfter: 5000
+                        }
+                    })
+                }
+            }
+        }, 2000);
+
         let alreadyAuthorized = false;
         try {
             const res = yield notifyApiLogin(username, localStorage.getItem('X-Auth-Session'));
@@ -194,6 +215,8 @@ function* usernamePasswordLogin(action) {
                     // Does not need to be fatal
                     console.error('Notify Login Error', error);
                 }
+
+            clearTimeout(loginTm)
         }
     }
 
