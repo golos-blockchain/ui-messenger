@@ -156,7 +156,7 @@ function* usernamePasswordLogin(action) {
                     })
                 }
             }
-        }, 2000);
+        }, fromLoginForm ? 3000 : 10000);
 
         let alreadyAuthorized = false;
         try {
@@ -215,9 +215,8 @@ function* usernamePasswordLogin(action) {
                     // Does not need to be fatal
                     console.error('Notify Login Error', error);
                 }
-
-            clearTimeout(loginTm)
         }
+        clearTimeout(loginTm)
     }
 
     if (!saved && !operationType) {
