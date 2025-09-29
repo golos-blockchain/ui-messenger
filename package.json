@@ -62,7 +62,7 @@
     "cordova-plugin-badge": "^0.8.8",
     "cordova-plugin-device": "^2.1.0",
     "cordova-plugin-file": "^7.0.0",
-    "cross-env": "^7.0.3",
+    "cross-env": "^10.0.0",
     "fs-extra": "^11.3.0",
     "gls-messenger-native-core": "file:native_core",
     "nodemon": "^3.1.10",
