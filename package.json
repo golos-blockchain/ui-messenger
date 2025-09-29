@@ -20,7 +20,7 @@
     "events": "^3.3.0",
     "formik": "./git-deps/formik/packages/formik",
     "git-rev-sync": "^3.0.2",
-    "golos-lib-js": "^0.9.79",
+    "golos-lib-js": "^0.9.80",
     "helmet": "^8.1.0",
     "history": "4.10.1",
     "immutable": "^4.0.0",

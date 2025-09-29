@@ -1401,12 +1401,10 @@ balanced-match@^1.0.0:
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.2.tgz#e83e3a7e3f300b34cb9d87f615fa0cbf357690ee"
   integrity sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==
 
-base-x@^3.0.2:
-  version "3.0.11"
-  resolved "https://registry.yarnpkg.com/base-x/-/base-x-3.0.11.tgz#40d80e2a1aeacba29792ccc6c5354806421287ff"
-  integrity sha512-xz7wQ8xDhdyP7tQxwdteLYeFfS68tSMNCZ/Y37WJ4bhGfKPpqEIlmIyueQHqOyoPhE6xNUqjzRr8ra0eF9VRvA==
-  dependencies:
-    safe-buffer "^5.0.1"
+base-x@^5.0.0:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/base-x/-/base-x-5.0.1.tgz#16bf35254be1df8aca15e36b7c1dda74b2aa6b03"
+  integrity sha512-M7uio8Zt++eg3jPj+rHMfCC+IuygQHHCOU+IYsVtik6FWjuYpVt/+MRKcgsAMHh8mMFAwnB+Bs+mTrFiXjMzKg==
 
 base64-js@^1.3.1, base64-js@^1.5.1:
   version "1.5.1"
@@ -1564,12 +1562,12 @@ browserslist@^4.24.0:
     node-releases "^2.0.19"
     update-browserslist-db "^1.1.3"
 
-bs58@^4.0.0:
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/bs58/-/bs58-4.0.1.tgz#be161e76c354f6f788ae4071f63f34e8c4f0a42a"
-  integrity sha512-Ok3Wdf5vOIlBrgCvTq96gBkJw+JUEzdBgyaza5HLtPm7yTHkjRy8+JzNyHF7BHa0bNWOQIp3m5YF0nnFcOIKLw==
+bs58@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/bs58/-/bs58-6.0.0.tgz#a2cda0130558535dd281a2f8697df79caaf425d8"
+  integrity sha512-PD0wEnEYg6ijszw/u8s+iI3H17cTymlrwkKhDhPZq+Sokl3AU4htyBFTjAeNAlCCmg0f53g6ih3jATyCKftTfw==
   dependencies:
-    base-x "^3.0.2"
+    base-x "^5.0.0"
 
 buffer-from@^1.0.0:
   version "1.1.2"
@@ -1988,9 +1986,9 @@ core-js@^2.4.0:
   integrity sha512-Kb2wC0fvsWfQrgk8HU5lW6U/Lcs8+9aaYcy4ZFc6DDlo4nZ7n70dEgE5rtR0oG6ufKDUnrwfWL1mXR5ljDatrQ==
 
 core-js@^3.41.0:
-  version "3.43.0"
-  resolved "https://registry.yarnpkg.com/core-js/-/core-js-3.43.0.tgz#f7258b156523208167df35dea0cfd6b6ecd4ee88"
-  integrity sha512-N6wEbTTZSYOY2rYAn85CuvWWkCK6QweMn7/4Nr3w+gDBeBhk/x4EJeY6FPo4QzDoJZxVTv8U7CMvgWk6pOHHqA==
+  version "3.45.1"
+  resolved "https://registry.yarnpkg.com/core-js/-/core-js-3.45.1.tgz#5810e04a1b4e9bc5ddaa4dd12e702ff67300634d"
+  integrity sha512-L4NPsJlCfZsPeXukyzHFlg/i7IIVwHSItR0wg0FLNqYClJ4MQYTYLbC7EkjKYRLZF2iof2MUgN0EGy7MdQFChg==
 
 core-util-is@~1.0.0:
   version "1.0.3"
@@ -2843,22 +2841,21 @@ globals@^11.1.0:
 "gls-messenger-native-core@file:native_core":
   version "1.0.0"
 
-golos-lib-js@^0.9.79:
-  version "0.9.79"
-  resolved "https://registry.yarnpkg.com/golos-lib-js/-/golos-lib-js-0.9.79.tgz#be2a4e334e9263b0349de22f21925f44141701cc"
-  integrity sha512-NnRSfauI24mhbCpiGgYYv8hOfUvmnWlit5nESC1EgK6l2Nhof/XLXS4wyR1oyxViw8tG5PjxL/w+7q0wpyWFTw==
+golos-lib-js@^0.9.80:
+  version "0.9.80"
+  resolved "https://registry.yarnpkg.com/golos-lib-js/-/golos-lib-js-0.9.80.tgz#e22df48beae1cf1b34fd3fa46488fb2b123e732c"
+  integrity sha512-XhoFYaN+HprkZ/VH/tQEqTXxanuKHdOfBdkVRr+WHh9Fwq6dDmv4W61ISdKduU0RLDivlXduoc5DmEwcpaH1vw==
   dependencies:
     abort-controller "^3.0.0"
     assert "^2.0.0"
     bigi "^1.4.2"
     browserify-aes "^1.0.6"
-    bs58 "^4.0.0"
+    bs58 "^6.0.0"
     buffer "^6.0.3"
     bytebuffer "^5.0.1"
     core-js "^3.41.0"
     create-hash "^1.1.2"
     create-hmac "^1.1.4"
-    cross-env "^7.0.3"
     cross-fetch "^4.1.0"
     debug "^2.6.8"
     detect-node "^2.0.3"
