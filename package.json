@@ -7,7 +7,7 @@
   "license": "MIT",
   "dependencies": {
     "@formatjs/intl-utils": "^3.8.4",
-    "@koa/cors": "^3.1.0",
+    "@koa/cors": "^5.0.0",
     "@koa/router": "^13.1.1",
     "browserify-zlib": "^0.2.0",
     "buffer": "^6.0.3",
@@ -24,7 +24,7 @@
     "helmet": "^8.1.0",
     "history": "4.10.1",
     "immutable": "^4.0.0",
-    "koa": "^3.0.0",
+    "koa": "^3.0.1",
     "koa-compress": "^5.1.1",
     "koa-helmet": "^8.0.1",
     "koa-static": "^5.0.0",
