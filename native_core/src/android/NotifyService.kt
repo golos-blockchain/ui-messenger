@@ -107,11 +107,11 @@ class NotifyService() : Service() {
                     hasChanges = true
                 }
             }, rti)
-            newRTI = takeRes.removeTaskIds
+            newRTI = takeRes!!.removeTaskIds
 
             if (Thread.interrupted()) return
 
-            prefs.lastTake = takeRes.lastTake
+            prefs.lastTake = takeRes!!.lastTake
             ServiceHelper.savePrefs(applicationContext, prefs)
 
             if (hasChanges) {
