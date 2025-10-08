@@ -1985,6 +1985,11 @@ cordova-plugin-file@^7.0.0:
   resolved "https://registry.yarnpkg.com/cordova-plugin-file/-/cordova-plugin-file-7.0.0.tgz#40e72468e09439c402c81ff063d6ee74fffd763a"
   integrity sha512-mSwy9GE5pHq2ZHhu/wYk/VhrwR5VLk+XQsk3+IiiFmDgcPsrVIyELkM2FZKX09cC6i+bJVTFVKUlwteSStj3ow==
 
+cordova-plugin-native-logs@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/cordova-plugin-native-logs/-/cordova-plugin-native-logs-1.0.5.tgz#43665b44de2f613d381bdc9352d53e4edd0890cb"
+  integrity sha512-X+l78oqw1U+eZoBF1nikRSa1vUlWw8QzNRPQWQ4VHFfjPUsfC0uvoDr2Spgn0tuUe+0kJ0ovRNeVpgWWb5LN2A==
+
 core-js@^2.4.0:
   version "2.6.12"
   resolved "https://registry.yarnpkg.com/core-js/-/core-js-2.6.12.tgz#d9333dfa7b065e347cc5682219d6f690859cc2ec"

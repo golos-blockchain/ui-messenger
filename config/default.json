@@ -27,7 +27,8 @@
     "custom_client": "blogs"
   },
   "notify_service": {
-    "host": "https://notify.golos.app"
+    "host": "https://notify.golos.app",
+    "host_ws": "https://notify.golos.app"
   },
   "blogs_service": {
     "host": "https://golos.id"

@@ -5,8 +5,37 @@ import { Formik, Field } from 'formik'
 import AppUpdateChecker from 'app/components/elements/app/AppUpdateChecker'
 import BackButtonController from 'app/components/elements/app/BackButtonController'
 import Icon from 'app/components/elements/Icon'
+import AppLogs from 'app/components/elements/app/AppLogs'
+
+const mockLogs = () => {
+    // mock for tests
+    if (typeof(NativeLogs) === 'undefined') {
+        window.NativeLogs = {
+            getLog: (limit, some, callback) => {
+                let logs = '';
+                for (let i = 0; i < limit; ++i) {
+                    const level = ((i % 10 === 0) ? 'E' : 'W');
+                    let line = 'Log line #' + i;
+                    if (i % 4 === 0) {
+                        for (let j = 0; j < 5; ++j) {
+                            line = (line + ' ' + line);
+                        }
+                    }
+                    if (i % 3 === 0) {
+                        line = '      ' + line;
+                    }
+                    line = '10-07 20:32:02.522 6440 6440 ' + level + ' ' + line;
+                    logs += line + '\n';
+                }
+                callback(logs);
+            }
+        }
+    }
+};
 
 class AppSettings extends React.Component {
+    state = {};
+
     makeInitialValues() {
         let initialValues = {
             current_node: $GLS_Config.current_node,
@@ -87,7 +116,21 @@ class AppSettings extends React.Component {
         window.location.href = '/'
     }
 
+    showLogs = (limit = 200) => {
+        mockLogs();
+        NativeLogs.getLog(
+            limit,
+            false,
+            logs => {
+                this.setState({ logs, logLimit: limit });
+            }
+        )
+    }
+
     render() {
+        //const { MOBILE_APP } = process.env
+        let MOBILE_APP = 1;
+        const { logs, logLimit } = this.state
         return <div>
             <BackButtonController handle={() => window.location.href = '/'} />
             <div className='row'>
@@ -194,11 +237,25 @@ class AppSettings extends React.Component {
                                 <button type='submit' className='button'>
                                     {tt('app_settings.save')}
                                 </button>
+                                {MOBILE_APP ? <span className='float-right'>
+                                    {tt('app_settings.version') + ' ' + $GLS_Config.app_version}
+                                    <a href='#' style={{ marginLeft: '5px' }} onClick={e => {
+                                        e.preventDefault();
+                                        this.showLogs();
+                                    }}>
+                                        {tt('app_settings.logs')}
+                                    </a>
+                                </span> : null}
                             </div>
                         </div>
                     </div>
                 </form>
             )}</Formik>
+            {logs && <AppLogs logs={logs} logLimit={logLimit} showLogs={this.showLogs} hideMe={() => {
+                this.setState({
+                    logs: null
+                });
+            }} />}
         </div>
     }
 }

@@ -1,6 +1,9 @@
 package gls.messenger.core
 
 import android.content.Context
+import android.os.Build
+import android.Manifest
+import android.util.Log
 import org.apache.cordova.CordovaPlugin
 import org.apache.cordova.CallbackContext
 
@@ -9,9 +12,22 @@ import org.json.JSONException
 import org.json.JSONObject
 
 class CorePlugin : CordovaPlugin() {
+    companion object {
+        private const val TAG = "GLS/CorePlugin"
+    }
+
     override fun execute(action: String, args: JSONArray, callbackContext: CallbackContext) : Boolean {
         val ctx = this.cordova.getContext()
-        if (action.equals("startService")) {
+        if (action.equals("initNativeCore")) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                Log.e(TAG, "Checking notification permission");
+                if (!this.cordova.hasPermission(Manifest.permission.POST_NOTIFICATIONS)) {
+                    Log.e(TAG, "Requesting notification permission");
+                    this.cordova.requestPermission(this, 1001, Manifest.permission.POST_NOTIFICATIONS);
+                }
+            }
+            callbackContext.success()
+        } else if (action.equals("startService")) {
             var prefs = AppPrefs()
             prefs.account = args.getString(0)
             prefs.session = args.getString(1)
