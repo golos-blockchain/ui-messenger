@@ -6,7 +6,7 @@ import DropZone from 'react-dropzone';
 import DialogFrame from 'app/components/dialogs/DialogFrame';
 import DialogManager from 'app/components/elements/common/DialogManager';
 import Input from 'app/components/elements/common/Input';
-import PictureSvg from 'app/assets/icons/editor-toolbar/picture.svg';
+import PictureSvg from 'app/assets/icons/editor-toolbar/picture.svg?raw';
 import keyCodes from 'app/utils/keyCodes';
 
 export default class AddImageDialog extends React.PureComponent {

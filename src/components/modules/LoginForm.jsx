@@ -28,7 +28,7 @@ class LoginForm extends Component {
     };
 
     static defaultProps = {
-        afterLoginRedirectToWelcome: false
+        fromLoginForm: true
     }
 
     constructor(props) {
@@ -121,7 +121,7 @@ class LoginForm extends Component {
             </div>;
         }
 
-        const { loginBroadcastOperation, loginDefault, loginLoading, dispatchSubmit, afterLoginRedirectToWelcome, msg} = this.props;
+        const { loginBroadcastOperation, loginDefault, loginLoading, dispatchSubmit, fromLoginForm, msg} = this.props;
         const {username, password, saveLogin} = this.state;
         const {submitting, valid, handleSubmit} = this.state.login;
         const {usernameOnChange, onCancel, /*qrReader*/} = this;
@@ -191,7 +191,7 @@ class LoginForm extends Component {
             <center>
             <form onSubmit={handleSubmit(({data}) => {
                 this.state.password.props.onChange('');
-                return dispatchSubmit(data, loginBroadcastOperation, afterLoginRedirectToWelcome, authType)
+                return dispatchSubmit(data, loginBroadcastOperation, fromLoginForm, authType)
             })}
                 onChange={this.props.clearError}
                 method="post"
@@ -327,7 +327,7 @@ export default connect(
 
     // mapDispatchToProps
     dispatch => ({
-        dispatchSubmit: (data, loginBroadcastOperation, afterLoginRedirectToWelcome, authType) => {
+        dispatchSubmit: (data, loginBroadcastOperation, fromLoginForm, authType) => {
             const {password, saveLogin} = data
             const username = data.username.trim().toLowerCase()
             if (loginBroadcastOperation) {
@@ -340,10 +340,10 @@ export default connect(
                 };
                 dispatch(transaction.actions.broadcastOperation({type, operation, trx, username, password, successCallback: authSaver, errorCallback}))
                 // Avoid saveLogin, this could be a user-provided content page and the login might be an active key.  Security will reject that...
-                dispatch(user.actions.usernamePasswordLogin({username, password, saveLogin: true, afterLoginRedirectToWelcome, operationType: type}))
+                dispatch(user.actions.usernamePasswordLogin({username, password, saveLogin: true, fromLoginForm, operationType: type}))
                 dispatch(user.actions.closeLogin())*/
             } else {
-                dispatch(user.actions.usernamePasswordLogin({username, password, saveLogin, afterLoginRedirectToWelcome, authType}))
+                dispatch(user.actions.usernamePasswordLogin({username, password, saveLogin, fromLoginForm, authType}))
             }
         },
         /*clearError: () => { if (hasError) dispatch(user.actions.loginError({error: null})) },

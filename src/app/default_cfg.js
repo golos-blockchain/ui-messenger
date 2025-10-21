@@ -35,6 +35,6 @@ export default {
         "host": "https://devwallet.golos.today"
     },
     "app_updater": {
-        "host": "https://devfiles.golos.app"
+        "host": "https://files.golos.app"
     }
 }

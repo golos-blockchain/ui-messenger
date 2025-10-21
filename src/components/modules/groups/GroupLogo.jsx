@@ -5,7 +5,7 @@ import { Field, ErrorMessage, } from 'formik'
 import tt from 'counterpart'
 
 import Input from 'app/components/elements/common/Input';
-import PictureSvg from 'app/assets/icons/editor-toolbar/picture.svg';
+import PictureSvg from 'app/assets/icons/editor-toolbar/picture.svg?raw';
 import DialogManager from 'app/components/elements/common/DialogManager'
 import LoadingIndicator from 'app/components/elements/LoadingIndicator'
 import { delay } from 'app/utils/misc'
