@@ -57,6 +57,7 @@ class Messages extends React.Component {
         this.windowFocused = true;
         this.newMessages = {}
         if (process.env.MOBILE_APP) {
+            this.initNativeCore()
             this.stopService()
         }
         this.composeRef = React.createRef()
@@ -241,7 +242,15 @@ class Messages extends React.Component {
         }
         this.stopService()
     }
-    
+
+    initNativeCore = () => {
+        cordova.exec((winParam) => {
+            console.log('initNativeCore ok', winParam)
+        }, (err) => {
+            console.error('initNativeCore err', err)
+        }, 'CorePlugin', 'initNativeCore', [])
+    }
+
     stopService = () => {
         cordova.exec((winParam) => {
             console.log('resume ok', winParam)
