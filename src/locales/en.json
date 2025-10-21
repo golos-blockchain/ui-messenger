@@ -339,7 +339,9 @@
     "node_error_NODE2": " page.",
     "node_error_NODE3": "Or set another GOLOS node in the ",
     "node_error_NODE3b": "to set another GOLOS node in the ",
-    "to_save_click_button": "To save settings, click \"Save\" button at bottom."
+    "to_save_click_button": "To save settings, click \"Save\" button at bottom.",
+    "logs": "Logs",
+    "version": "App Version"
   },
   "app_update": {
     "notify": "Here is a new version",
@@ -380,6 +382,7 @@
     "blocked": "Blocked",
     "blog": "Blog",
     "cancel": "Cancel",
+    "close": "Close",
     "delete": "Delete",
     "dismiss": "Dismiss",
     "edit": "Edit",
@@ -387,6 +390,7 @@
     "feed": "Feed",
     "incorrect_password": "Incorrect password",
     "posting_not_memo": "Use posting key now, not memo",
+    "load_more": "Load more",
     "login": "Login",
     "logout": "Logout",
     "mentions": "Mentions",
