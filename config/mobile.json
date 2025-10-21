@@ -3,7 +3,7 @@
     "nodes": [
       { "address": "wss://api.golos.id/ws" },
       { "address": "wss://api.aleksw.space/ws" },
-      { "address": "wss://api-golos.blckchnd.com/ws" }
+      { "address": "wss://golos.lexai.top/ws" }
     ],
     "site_domain": "chat.golos.app",
     "images": {
