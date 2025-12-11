@@ -157,7 +157,7 @@ function* usernamePasswordLogin(action) {
                 }
             }
         }, fromLoginForm ? 3000 : 10000);
-
+alert('notify/auth')
         let alreadyAuthorized = false;
         try {
             const res = yield notifyApiLogin(username, localStorage.getItem('X-Auth-Session'));
@@ -217,6 +217,7 @@ function* usernamePasswordLogin(action) {
                 }
         }
         clearTimeout(loginTm)
+        alert('notify/auth2')
     }
 
     if (!saved && !operationType) {

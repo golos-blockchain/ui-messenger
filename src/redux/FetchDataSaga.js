@@ -82,9 +82,11 @@ export function* fetchState(location_change_action) {
                 const conCache = getSpaceInCache(null, 'contacts')
 
                 if (path.startsWith('@') || !path) {
+                    alert('withNodeLogin0');
                     if (window._perfo) console.time('prof: getContactsAsync')
                     const con = yield call([auth, 'withNodeLogin'], { account, keys: { posting },
                         call: async (loginData) => {
+                            alert('withNodeLogin00');
                             return await api.getContactsAsync({
                                 ...loginData,
                                 owner: account, limit: 100,
@@ -94,6 +96,7 @@ export function* fetchState(location_change_action) {
                             })
                         }
                     })
+                    alert('withNodeLogin1');
                     if (window._perfo) console.log('procc:' + con._dec_processed)
                     state.contacts = con.contacts
                     if (hasErr) return

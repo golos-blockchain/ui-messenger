@@ -19,5 +19,7 @@
 		<preference name="Orientation" value="portrait" />
 
         <resource-file src="res/msgs_setting.png" target="app/src/main/res/drawable/msgs_setting.png" />
+
+        <preference name="GradlePluginGoogleServicesEnabled" value="true" />
     </platform>
 </widget>

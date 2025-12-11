@@ -58,6 +58,7 @@ class Messages extends React.Component {
         this.newMessages = {}
         if (process.env.MOBILE_APP) {
             this.initNativeCore()
+            this.fcmGetToken()
             this.stopService()
         }
         this.composeRef = React.createRef()
@@ -257,6 +258,25 @@ class Messages extends React.Component {
         }, (err) => {
             console.error('resume err', err)
         }, 'CorePlugin', 'stopService', [])
+    }
+
+    fcmGetToken = () => {
+        alert('fcmGetToken')
+        document.addEventListener('CoreFCMToken', (event) => {
+            const token = event.detail;
+            alert('event token ' + token);
+        });
+        document.addEventListener('CoreFCMMessage', (event) => {
+            const data = event.detail;
+            alert('event data ' + JSON.stringify(data));
+        });
+        cordova.exec((winParam) => {
+            alert('fcmGetToken ok ' + winParam);
+            console.log('fcmGetToken ok', winParam)
+        }, (err) => {
+            alert('fcmGetToken err ' + err);
+            console.error('fcmGetToken err', err)
+        }, 'CorePlugin', 'fcmGetToken', [])
     }
 
     async watchGroup(to) {

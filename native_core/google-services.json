@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "972057369532",
+    "project_id": "glstest-messenger",
+    "storage_bucket": "glstest-messenger.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:972057369532:android:fdcd55ad4de76923aaa9b9",
+        "android_client_info": {
+          "package_name": "gls.messenger"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAKVkoZCVpiepOzxQa-Ysbhtx04blaiL3A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

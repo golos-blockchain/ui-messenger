@@ -29,9 +29,10 @@ class AppLogs extends React.Component {
                     {line}
                 </div>
             })}
-            {logLimit !== 1000 ? <button className='button hollow'
+            {logLimit < 1000 ? <button className='button hollow'
                 onClick={e => {
-                    showLogs(1000);
+                    const many = !confirm(tt('app_settings.logs_large'));
+                    showLogs(many ? 5000 : 1000);
                 }}>
                 {tt('g.load_more')}
             </button>

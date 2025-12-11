@@ -1,5 +1,5 @@
 export default {
-    "app_version": "1.0.1",
+    "app_version": "1.1.0",
     "nodes": [
         {
             "address": "wss://api.golos.id/ws"
@@ -8,7 +8,7 @@ export default {
             "address": "wss://api.aleksw.space/ws"
         },
         {
-            "address": "wss://api-golos.blckchnd.com/ws"
+            "address": "wss://golos.lexai.top/ws"
         }
     ],
     "images": {
