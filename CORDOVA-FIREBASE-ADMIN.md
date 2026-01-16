@@ -1,3 +1,7 @@
+# Настройка уведомлений Firebase (FCM)
+
+Чтобы в данном приложении Android работали уведомления, нужно подключить приложение к Firebase FCM, и также связать Golos Notify Service с приложением в Firebase. При этом от Firebase нужно получить два файла с ключами - google-services.json (зашивается в приложение) и service account (вставляется в конфиг Golos Notify). Ниже - полная инструкция, как все это сделать.
+
 1. Заходим в консоль Firebase:
 https://console.firebase.google.com/
 
@@ -38,9 +42,9 @@ yarn add file:native_core
 
 15. Нажмите Continue to console.
 
-16. Подключите приложение к Golos Notify Service.
+16. Подключите приложение к Golos Notify Service. Для этого:
 
-16.1. Зайдите в настройки приложения (значок шестеренка)
+16.1. В консоли Firebase зайдите в настройки приложения (значок шестеренка)
 
 16.2. Зайдите на вкладку Service accounts
 
