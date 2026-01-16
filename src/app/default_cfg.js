@@ -2,6 +2,9 @@ export default {
     "app_version": "1.1.0",
     "nodes": [
         {
+            "address": "wss://apibeta.golos.today/ws"
+        },
+        {
             "address": "wss://api.golos.id/ws"
         },
         {
@@ -18,18 +21,18 @@ export default {
         "client_id": "6c09ebf8c548126"
     },
     "auth_service": {
-        "host": "https://golos.app",
+        "host": "https://dev.golos.app",
         "custom_client": "blogs"
     },
     "notify_service": {
-        "host": "https://notify.golos.app",
-        "host_ws": "wss://notify.golos.app/ws"
+        "host": "https://devnotify.golos.app",
+        "host_ws": "wss://devnotify.golos.app/ws"
     },
     "blogs_service": {
-        "host": "https://golos.id"
+        "host": "https://beta.golos.today"
     },
     "wallet_service": {
-        "host": "https://wallet.golos.id"
+        "host": "https://devwallet.golos.today"
     },
     "app_updater": {
         "host": "https://files.golos.app"

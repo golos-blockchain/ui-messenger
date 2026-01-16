@@ -31,13 +31,6 @@
                     <action android:name="android.intent.action.BOOT_COMPLETED"/>
                 </intent-filter>
             </receiver>
-            <service
-                android:name=".core.CoreFirebaseService"
-                android:exported="false">
-                <intent-filter>
-                    <action android:name="com.google.firebase.MESSAGING_EVENT"/>
-                </intent-filter>
-            </service>
         </config-file>
 
         <source-file src="src/android/ApiClient.kt" target-dir="java/gls/messenger/core" />

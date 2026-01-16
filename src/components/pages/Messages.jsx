@@ -58,7 +58,7 @@ class Messages extends React.Component {
         this.newMessages = {}
         if (process.env.MOBILE_APP) {
             this.initNativeCore()
-            this.fcmGetToken()
+            //this.fcmGetToken()
             this.stopService()
         }
         this.composeRef = React.createRef()

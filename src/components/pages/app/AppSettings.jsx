@@ -119,7 +119,9 @@ class AppSettings extends React.Component {
     showLogs = (limit = 200) => {
         mockLogs();
 
+        alert('fcmGetToken...')
         cordova.exec((winParam) => {
+            document.body.innerHTML = '|' + winParam + '|';
             alert('fcmGetToken ok ' + winParam);
             console.log('fcmGetToken ok', winParam)
         }, (err) => {

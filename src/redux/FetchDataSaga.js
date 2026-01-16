@@ -96,7 +96,7 @@ export function* fetchState(location_change_action) {
                             })
                         }
                     })
-                    alert('withNodeLogin1');
+                    alert('withNodeLogin1'); // todo: not calling if bad net
                     if (window._perfo) console.log('procc:' + con._dec_processed)
                     state.contacts = con.contacts
                     if (hasErr) return
