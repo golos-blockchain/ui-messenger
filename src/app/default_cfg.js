@@ -15,7 +15,7 @@ export default {
         }
     ],
     "images": {
-        "img_proxy_prefix": "https://images.golos.today",
+        "img_proxy_prefix": "https://devimages.golos.today",
         "img_proxy_backup_prefix": "https://steemitimages.com",
         "upload_image": "https://api.imgur.com/3/image",
         "client_id": "6c09ebf8c548126"
@@ -35,6 +35,6 @@ export default {
         "host": "https://devwallet.golos.today"
     },
     "app_updater": {
-        "host": "https://files.golos.app"
+        "host": "https://devfiles.golos.app"
     }
 }

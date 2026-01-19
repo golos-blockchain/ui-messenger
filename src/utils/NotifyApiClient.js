@@ -9,6 +9,8 @@ const request_base = {
     }
 };
 
+const FIREBASE_APP = 'msg_android'
+
 const notifyAvailable = () => {
     return typeof($GLS_Config) !== 'undefined'
         && $GLS_Config.notify_service && $GLS_Config.notify_service.host;
@@ -258,6 +260,44 @@ export async function notificationUnsubscribe(account, sidKey = '__subscriber_id
     }
 }
 
+export async function firebaseRegisterWs(account, token, scopes = 'message') {
+    if (!notifyWsHost()) throw new Error('No notify_service host_ws in config')
+    const xSession = notifySession()
+    return await new Promise(async (resolve, reject) => {
+        await notifyWsSend('firebase/register', {
+            account,
+            'X-Session': xSession,
+            app: FIREBASE_APP,
+            token,
+            scopes,
+        }, (err, res) => {
+            if (err) {
+                reject(err)
+                return
+            }
+            resolve(res)
+        })
+    })
+}
+
+export async function firebaseUnregisterWs(account, token) {
+    if (!notifyWsHost()) throw new Error('No notify_service host_ws in config')
+    const xSession = notifySession()
+    return await new Promise(async (resolve, reject) => {
+        await notifyWsSend('firebase/unregister', {
+            account,
+            'X-Session': xSession,
+            token,
+        }, (err, res) => {
+            if (err) {
+                reject(err)
+                return
+            }
+            resolve(res)
+        })
+    })
+}
+
 export function notificationShallowUnsubscribe(sidKey = '__subscriber_id') {
     window[sidKey] = null
 }
@@ -385,6 +425,8 @@ export async function sendOffchainMessage(op) {
     window.markNotificationRead = markNotificationRead;
     window.notificationSubscribe = notificationSubscribe;
     window.notificationSubscribeWs = notificationSubscribeWs
+    window.firebaseRegisterWs = firebaseRegisterWs
+    window.firebaseUnregisterWs = firebaseUnregisterWs
     window.notificationUnsubscribe = notificationUnsubscribe;
     window.notificationShallowUnsubscribe = notificationShallowUnsubscribe
     window.notificationTake = notificationTake;

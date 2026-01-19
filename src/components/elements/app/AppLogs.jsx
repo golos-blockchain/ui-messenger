@@ -4,6 +4,11 @@ import tt from 'counterpart'
 import CloseButton from 'react-foundation-components/lib/global/close-button';
 
 class AppLogs extends React.Component {
+    componentDidCatch(error, info) {
+        alert(error?.toString())
+        console.error(error, info)
+    }
+
     render() {
         const { logs, logLimit, showLogs, hideMe } = this.props;
         const lines = logs.split('\n');

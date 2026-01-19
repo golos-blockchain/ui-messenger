@@ -119,24 +119,12 @@ class AppSettings extends React.Component {
     showLogs = (limit = 200) => {
         mockLogs();
 
-        alert('fcmGetToken...')
-        cordova.exec((winParam) => {
-            document.body.innerHTML = '|' + winParam + '|';
-            alert('fcmGetToken ok ' + winParam);
-            console.log('fcmGetToken ok', winParam)
-        }, (err) => {
-            alert('fcmGetToken err ' + err);
-            console.error('fcmGetToken err', err)
-        }, 'CorePlugin', 'fcmGetToken', [])
-
-        alert('sl1');
         setTimeout(() => {
-        alert('sl2');
             NativeLogs.getLog(
                 limit,
                 false,
                 logs => {
-                    alert(JSON.stringify(logs));
+                    //alert(JSON.stringify(logs));
                     this.setState({ logs, logLimit: limit });
                 }
             )

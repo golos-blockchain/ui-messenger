@@ -34,6 +34,7 @@ import { getProfileImage, } from 'app/utils/NormalizeProfile';
 import { normalizeContacts, normalizeMessages, cacheMyOwnMsg } from 'app/utils/Normalizators';
 import { fitToPreview } from 'app/utils/ImageUtils';
 import { notificationSubscribe, notificationSubscribeWs, notifyWsPing,
+    firebaseRegisterWs,
     notificationShallowUnsubscribe, notificationTake, queueWatchWs, sendOffchainMessage, notifyWsHost, notifyUrl } from 'app/utils/NotifyApiClient';
 import { flash, unflash } from 'app/components/elements/messages/FlashTitle';
 import { addShortcut } from 'app/utils/app/ShortcutUtils'
@@ -58,8 +59,8 @@ class Messages extends React.Component {
         this.newMessages = {}
         if (process.env.MOBILE_APP) {
             this.initNativeCore()
-            //this.fcmGetToken()
-            this.stopService()
+            // pre-Firebase
+            // this.stopService()
         }
         this.composeRef = React.createRef()
     }
@@ -212,17 +213,19 @@ class Messages extends React.Component {
     onPause = () => {
         this.paused = true
         this.pausedTime = Date.now()
-        const { username } = this.props
-        const session = localStorage.getItem('X-Session')
-        const notifyHost = $GLS_Config.notify_service.host
-        if (username && session) {
-            const lastTake = window.__lastTake || 0
-            cordova.exec((winParam) => {
-                console.log('pause ok', winParam)
-            }, (err) => {
-                console.error('pause err', err)
-            }, 'CorePlugin', 'startService', [username, session, lastTake, notifyHost])
-        }
+        // before-Firebase:
+        //
+        // const { username } = this.props
+        // const session = localStorage.getItem('X-Session')
+        // const notifyHost = $GLS_Config.notify_service.host
+        // if (username && session) {
+        //     const lastTake = window.__lastTake || 0
+        //     cordova.exec((winParam) => {
+        //         console.log('pause ok', winParam)
+        //     }, (err) => {
+        //         console.error('pause err', err)
+        //     }, 'CorePlugin', 'startService', [username, session, lastTake, notifyHost])
+        // }
     }
 
     onResume = () => {
@@ -260,23 +263,39 @@ class Messages extends React.Component {
         }, 'CorePlugin', 'stopService', [])
     }
 
-    fcmGetToken = () => {
-        alert('fcmGetToken')
-        document.addEventListener('CoreFCMToken', (event) => {
-            const token = event.detail;
-            alert('event token ' + token);
-        });
-        document.addEventListener('CoreFCMMessage', (event) => {
-            const data = event.detail;
-            alert('event data ' + JSON.stringify(data));
-        });
-        cordova.exec((winParam) => {
-            alert('fcmGetToken ok ' + winParam);
-            console.log('fcmGetToken ok', winParam)
-        }, (err) => {
-            alert('fcmGetToken err ' + err);
-            console.error('fcmGetToken err', err)
-        }, 'CorePlugin', 'fcmGetToken', [])
+    fcmGetToken = async () => {
+        return new Promise((resolve, reject) => {
+            cordova.exec((winParam) => {
+                console.log('fcmGetToken:', winParam)
+                resolve(winParam)
+            }, (err) => {
+                console.error('fcmGetToken err', err)
+                reject(err)
+            }, 'CorePlugin', 'fcmGetToken', [])
+        })
+    }
+
+    registerFCM = async (username) => {
+        //alert('registerFCM... ' + window._fcmToken)
+        let token
+        try {
+            token = await this.fcmGetToken()
+        } catch (err) {
+            this.props.showError(tt('messages.cloud_error') + 'Firebase: ' + (err?.message))
+            return
+        }
+        //alert(token)
+        let reg
+        try {
+            reg = await firebaseRegisterWs(username, token)
+            window._fcmToken = token
+            window._fcmAcc = username
+        } catch (err) {
+            this.props.showError(tt('messages.cloud_error') + (err?.message))
+            return
+        }
+        console.log('GNS-Firebase - registered:', reg)
+        //alert('registerFCM OK ' + JSON.stringify(reg))
     }
 
     async watchGroup(to) {
@@ -306,7 +325,9 @@ class Messages extends React.Component {
         if (process.env.NO_NOTIFY) { // config-overrides.js, yarn run dev
             return
         }
-        if (this.checkLoggedOut(username)) return
+        if (this.checkLoggedOut(username)) {
+            return
+        }
         if (this.paused) {
             setTimeout(() => {
                 this.setCallback(username, removeTaskIds)
@@ -357,6 +378,9 @@ class Messages extends React.Component {
             return
         }
         this.notifyErrorsClear()
+        if (process.env.MOBILE_APP) {
+            await this.registerFCM(username)
+        }
         const ping = async (firstCall = false) => {
             if (!firstCall) {
                 window.errorLogs.push({ details: { ping: Date.now() } })
