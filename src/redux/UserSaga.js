@@ -9,7 +9,7 @@ import user from 'app/redux/UserReducer'
 import { getAccount } from 'app/redux/SagaShared'
 import uploadImageWatch from 'app/redux/UserSaga_UploadImage'
 import { authApiLogin, authApiLogout } from 'app/utils/AuthApiClient'
-import { notifyApiLogin, notifyApiLogout, notificationUnsubscribe } from 'app/utils/NotifyApiClient'
+import { notifyApiLogin, notifyApiLogout, notificationUnsubscribe, firebaseUnregisterWs } from 'app/utils/NotifyApiClient'
 
 export const session = new Session('msgr_auth')
 export const pageSession = new PageSession('msgr_auth')
@@ -157,10 +157,12 @@ function* usernamePasswordLogin(action) {
                 }
             }
         }, fromLoginForm ? 3000 : 10000);
-
         let alreadyAuthorized = false;
         try {
             const res = yield notifyApiLogin(username, localStorage.getItem('X-Auth-Session'));
+            if (process.env.MOBILE_APP) {
+                console.warn('notifyApiLogin', res)
+            }
 
             errorLogs.push({ details: { notifyApiLogin1: res } })
 
@@ -205,6 +207,9 @@ function* usernamePasswordLogin(action) {
             if (authorized)
                 try {
                     const res = yield notifyApiLogin(username, localStorage.getItem('X-Auth-Session'));
+                    if (process.env.MOBILE_APP) {
+                        console.warn('notifyApiLogin', res)
+                    }
 
                     errorLogs.push({ details: { notifyApiLogin2: res } })
 
@@ -260,15 +265,31 @@ function* logout() {
     } catch (err) {
         console.error('Cannot unsubscribe', err)
     }
+    if (window._fcmToken) {
+        let unreg
+        try {
+            unreg = yield firebaseUnregisterWs(username, window._fcmToken)
+            window._fcmToken = null
+            window._fcmAcc = null
+        } catch (err) {
+            console.error('firebaseUnregisterWs', err)
+            alert(err?.message)
+        }
+        if (unreg) {
+            console.log('Firebase logout:', unreg)
+            //alert('unregisterFCM: ' + JSON.stringify(unreg))
+        }
+    }
     session.clear()
     notifyApiLogout()
     authApiLogout()
     if (process.env.MOBILE_APP) {
-        cordova.exec((winParam) => {
-            console.log('logout ok', winParam)
-        }, (err) => {
-            console.error('logout err', err)
-        }, 'CorePlugin', 'logout', [])
+        // before-Firebase:
+        // cordova.exec((winParam) => {
+        //     console.log('logout ok', winParam)
+        // }, (err) => {
+        //     console.error('logout err', err)
+        // }, 'CorePlugin', 'logout', [])
     }
 }
 

@@ -118,13 +118,17 @@ class AppSettings extends React.Component {
 
     showLogs = (limit = 200) => {
         mockLogs();
-        NativeLogs.getLog(
-            limit,
-            false,
-            logs => {
-                this.setState({ logs, logLimit: limit });
-            }
-        )
+
+        setTimeout(() => {
+            NativeLogs.getLog(
+                limit,
+                false,
+                logs => {
+                    //alert(JSON.stringify(logs));
+                    this.setState({ logs, logLimit: limit });
+                }
+            )
+        }, 3000);
     }
 
     render() {

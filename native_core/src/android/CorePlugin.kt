@@ -4,20 +4,50 @@ import android.content.Context
 import android.os.Build
 import android.Manifest
 import android.util.Log
+import org.apache.cordova.CordovaInterface
 import org.apache.cordova.CordovaPlugin
+import org.apache.cordova.CordovaWebView
 import org.apache.cordova.CallbackContext
 
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 
+import com.google.firebase.messaging.FirebaseMessaging
+
 class CorePlugin : CordovaPlugin() {
     companion object {
         private const val TAG = "GLS/CorePlugin"
+
+        private var cordovaInterface: CordovaInterface? = null
+        private var webViewRef: CordovaWebView? = null
+ 
+        fun sendMessageToJs(data: JSONObject) {
+            val js = "var e = new CustomEvent('CoreFCMMessage', {detail: ${data.toString()}}); document.dispatchEvent(e);"
+            cordovaInterface?.activity?.runOnUiThread {
+                webViewRef?.loadUrl("javascript:$js")
+            }
+            Log.d("CorePlugin", "Sent message to JS: $data")
+        }
+ 
+        fun sendTokenToJs(token: String) {
+            val js = "var e = new CustomEvent('CoreFCMToken', {detail: '$token'}); document.dispatchEvent(e);"
+            cordovaInterface?.activity?.runOnUiThread {
+                webViewRef?.loadUrl("javascript:$js")
+            }
+            Log.d("CorePlugin", "Sent token to JS: $token")
+        }
+    }
+ 
+    override fun initialize(cordova: org.apache.cordova.CordovaInterface?, webView: CordovaWebView?) {
+        super.initialize(cordova, webView)
+        cordovaInterface = cordova
+        webViewRef = webView
     }
 
     override fun execute(action: String, args: JSONArray, callbackContext: CallbackContext) : Boolean {
         val ctx = this.cordova.getContext()
+        Log.e(TAG, "execute");
         if (action.equals("initNativeCore")) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 Log.e(TAG, "Checking notification permission");
@@ -42,7 +72,24 @@ class CorePlugin : CordovaPlugin() {
             callbackContext.success()
         } else if (action.equals("logout")) {
             ServiceHelper.clearPrefs(ctx)
+        } else if (action.equals("fcmGetToken")) {
+            Log.w(TAG, "fcmGetToken");
+            getToken(callbackContext)
+            return true
         }
         return false
+    }
+
+    private fun getToken(callbackContext: CallbackContext?) {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w(TAG, "Fetching FCM registration token failed", task.exception)
+                callbackContext?.error("Failed to get token")
+                return@addOnCompleteListener
+            }
+            Log.e(TAG, "Fetching FCM registration token ok");
+            val token = task.result
+            callbackContext?.success(token)
+        }
     }
 }

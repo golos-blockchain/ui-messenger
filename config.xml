@@ -19,5 +19,12 @@
 		<preference name="Orientation" value="portrait" />
 
         <resource-file src="res/msgs_setting.png" target="app/src/main/res/drawable/msgs_setting.png" />
+
+        <preference name="GradlePluginGoogleServicesEnabled" value="true" />
+
+        <!-- <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application" xmlns:android="http://schemas.android.com/apk/res/android">
+            <application android:usesCleartextTraffic="true" />
+        </edit-config> -->
     </platform>
+    <!-- <preference name="scheme" value="http" /> -->
 </widget>
