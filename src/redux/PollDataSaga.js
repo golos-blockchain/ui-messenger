@@ -1,6 +1,7 @@
-import { fork, call, put, select } from 'redux-saga/effects'
+import { fork, call, put, select } from 'redux-saga/effects';
 
-import { getNotifications } from 'app/utils/NotifyApiClient'
+import { getNotifications } from 'app/utils/NotifyApiClient';
+import { updateNotificounters } from 'app/redux/AppSlice';
 
 const wait = ms => (
     new Promise(resolve => {
@@ -26,7 +27,7 @@ export default function* pollData() {
                     console.error('getNotifications', error);
                 }
                 if (counters)
-                    yield put({type: 'UPDATE_NOTIFICOUNTERS', payload: counters});
+                    yield put(updateNotificounters(counters));
                 yield call(wait, 5000);
             } else {
                 yield call(wait, 1000);

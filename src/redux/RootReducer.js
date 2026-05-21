@@ -1,7 +1,7 @@
 import { combineReducers } from 'redux'
 import { connectRouter } from 'connected-react-router'
 
-import appReducer from './AppReducer'
+import appReducer from './AppSlice';
 import globalReducerModule from './GlobalReducer'
 import transactionReducerModule from './TransactionReducer'
 import userReducerModule from './UserReducer'

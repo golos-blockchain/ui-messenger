@@ -14,6 +14,7 @@ import TopGroups from 'app/components/modules/groups/TopGroups'
 import Donate from 'app/components/modules/Donate'
 import LoginForm from 'app/components/modules/LoginForm';
 import AppDownload from 'app/components/modules/app/AppDownload'
+import { addNotification, removeNotification } from 'app/redux/AppSlice';
 import user from 'app/redux/UserReducer'
 //import tr from 'app/redux/Transaction';
 import isScreenSmall from 'app/utils/isScreenSmall'
@@ -68,8 +69,8 @@ class Modals extends React.Component {
             removeNotification,
         } = this.props;
 
-        const notifications_array = notifications ? notifications.toArray().map(kv => {
-            const n = kv[1]
+        const notifications_array = notifications ? Object.entries(notifications).map(kv => {
+            const n = { ...kv[1] };
             if (!n.key) {
                 n.key = ++keyIndex;
             }
@@ -165,7 +166,7 @@ export default withRouter(connect(
             show_group_members_modal: state.user.get('show_group_members_modal'),
             show_app_download_modal: state.user.get('show_app_download_modal'),
             loginUnclosable,
-            notifications: state.app.get('notifications'),
+            notifications: state.app.notifications,
         }
     },
     dispatch => ({
@@ -205,8 +206,8 @@ export default withRouter(connect(
             dispatch(user.actions.hideAppDownload())
         },
         
-        // example: addNotification: ({key, message}) => dispatch({type: 'ADD_NOTIFICATION', payload: {key, message}}),
-        removeNotification: (key) => dispatch({type: 'REMOVE_NOTIFICATION', payload: {key}}),
+        // example: addNotification: ({key, message}) => dispatch(addNotification({key, message})),
+        removeNotification: (key) => dispatch(removeNotification({key})),
 
     })
 )(Modals))

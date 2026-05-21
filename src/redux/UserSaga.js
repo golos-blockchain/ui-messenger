@@ -4,6 +4,7 @@ import { auth, api, config } from 'golos-lib-js'
 import { Session, PageSession, signData } from 'golos-lib-js/lib/auth'
 import { PrivateKey, Signature, hash } from 'golos-lib-js/lib/auth/ecc'
 
+import { addNotification } from 'app/redux/AppSlice';
 import g from 'app/redux/GlobalReducer'
 import user from 'app/redux/UserReducer'
 import { getAccount } from 'app/redux/SagaShared'
@@ -146,14 +147,13 @@ function* usernamePasswordLogin(action) {
                 const lastBadNet = parseInt(localStorage.getItem(lbnKey) || 0);
                 if (now - lastBadNet >= 10*60*1000) {
                     localStorage.setItem(lbnKey, now);
-                    window._reduxStore.dispatch({
-                        type: 'ADD_NOTIFICATION',
-                        payload: {
+                    window._reduxStore.dispatch(
+                        addNotification({
                             key: 'bad_net_' + Date.now(),
                             message,
                             dismissAfter: 5000
-                        }
-                    })
+                        })
+                    )
                 }
             }
         }, fromLoginForm ? 3000 : 10000);

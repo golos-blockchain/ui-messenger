@@ -25,6 +25,7 @@ import Userpic from 'app/components/elements/Userpic'
 import VerticalMenu from 'app/components/elements/VerticalMenu'
 import Messenger from 'app/components/modules/messages/Messenger'
 import MessagesTopCenter from 'app/components/modules/MessagesTopCenter'
+import { addNotification } from 'app/redux/AppSlice';
 import g from 'app/redux/GlobalReducer'
 import transaction from 'app/redux/TransactionReducer'
 import user from 'app/redux/UserReducer'
@@ -1485,14 +1486,11 @@ export default withRouter(connect(
             });
         },
         showError(error, dismissAfter = 5000, key = 'error') {
-            dispatch({
-                type: 'ADD_NOTIFICATION',
-                payload: {
-                    message: error,
-                    dismissAfter,
-                    key,
-                },
-            });
+            dispatch(addNotification({
+                message: error,
+                dismissAfter,
+                key,
+            }));
         },
         changeLanguage: (currentLanguage) => {
             let language = 'en-US'

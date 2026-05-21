@@ -1,9 +1,10 @@
 
 import { routerMiddleware } from 'connected-react-router'
 import { createBrowserHistory } from 'history'
+import { isImmutable } from 'immutable';
 //import logger from 'redux-logger'
 import createSagaMiddleware from 'redux-saga'
-import { configureStore } from '@reduxjs/toolkit';
+import { configureStore, isImmutableDefault } from '@reduxjs/toolkit';
 
 import createRootReducer from './RootReducer'
 import rootSaga from './RootSaga';
@@ -17,6 +18,9 @@ export default function configureMyStore() {
         middleware: (getDefaultMiddleware) => 
             getDefaultMiddleware({
                 serializableCheck: false, 
+                immutableCheck: {
+                    isImmutable: (value) => isImmutable(value) || isImmutableDefault(value),
+                },
             }).concat(
                 routerMiddleware(history),
                 sagaMiddleware,
