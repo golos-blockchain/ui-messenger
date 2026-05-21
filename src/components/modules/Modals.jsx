@@ -15,7 +15,7 @@ import Donate from 'app/components/modules/Donate'
 import LoginForm from 'app/components/modules/LoginForm';
 import AppDownload from 'app/components/modules/app/AppDownload'
 import { addNotification, removeNotification } from 'app/redux/AppSlice';
-import user from 'app/redux/UserReducer'
+import { hideAppDownload, hideCreateGroup, hideDonate, hideGroupMembers, hideGroupSettings, hideLogin, hideMyGroups, hideTopGroups } from 'app/redux/UserSlice';
 //import tr from 'app/redux/Transaction';
 import isScreenSmall from 'app/utils/isScreenSmall'
 
@@ -154,17 +154,17 @@ class Modals extends React.Component {
 
 export default withRouter(connect(
     state => {
-        const loginDefault = state.user.get('loginDefault');
-        const loginUnclosable = loginDefault && loginDefault.get('unclosable');
+        const loginDefault = state.user.loginDefault;
+        const loginUnclosable = loginDefault && loginDefault.unclosable;
         return {
-            show_login_modal: state.user.get('show_login_modal'),
-            show_donate_modal: state.user.get('show_donate_modal'),
-            show_create_group_modal: state.user.get('show_create_group_modal'),
-            show_my_groups_modal: state.user.get('show_my_groups_modal'),
-            show_top_groups_modal: state.user.get('show_top_groups_modal'),
-            show_group_settings_modal: state.user.get('show_group_settings_modal'),
-            show_group_members_modal: state.user.get('show_group_members_modal'),
-            show_app_download_modal: state.user.get('show_app_download_modal'),
+            show_login_modal: state.user.show_login_modal,
+            show_donate_modal: state.user.show_donate_modal,
+            show_create_group_modal: state.user.show_create_group_modal,
+            show_my_groups_modal: state.user.show_my_groups_modal,
+            show_top_groups_modal: state.user.show_top_groups_modal,
+            show_group_settings_modal: state.user.show_group_settings_modal,
+            show_group_members_modal: state.user.show_group_members_modal,
+            show_app_download_modal: state.user.show_app_download_modal,
             loginUnclosable,
             notifications: state.app.notifications,
         }
@@ -175,35 +175,35 @@ export default withRouter(connect(
             if (goBack) {
                 goBack()
             }
-            dispatch(user.actions.hideLogin())
+            dispatch(hideLogin())
         },
         hideDonate: e => {
             if (e) e.preventDefault()
-            dispatch(user.actions.hideDonate())
+            dispatch(hideDonate())
         },
         hideCreateGroup: e => {
             if (e) e.preventDefault()
-            dispatch(user.actions.hideCreateGroup())
+            dispatch(hideCreateGroup())
         },
         hideMyGroups: e => {
             if (e) e.preventDefault()
-            dispatch(user.actions.hideMyGroups())
+            dispatch(hideMyGroups())
         },
         hideTopGroups: e => {
             if (e) e.preventDefault()
-            dispatch(user.actions.hideTopGroups())
+            dispatch(hideTopGroups())
         },
         hideGroupSettings: e => {
             if (e) e.preventDefault()
-            dispatch(user.actions.hideGroupSettings())
+            dispatch(hideGroupSettings())
         },
         hideGroupMembers: e => {
             if (e) e.preventDefault()
-            dispatch(user.actions.hideGroupMembers())
+            dispatch(hideGroupMembers())
         },
         hideAppDownload: e => {
             if (e) e.preventDefault()
-            dispatch(user.actions.hideAppDownload())
+            dispatch(hideAppDownload())
         },
         
         // example: addNotification: ({key, message}) => dispatch(addNotification({key, message})),

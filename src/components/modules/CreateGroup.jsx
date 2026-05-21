@@ -7,8 +7,7 @@ import { Asset, Price, AssetEditor } from 'golos-lib-js/lib/utils'
 import tt from 'counterpart'
 
 import g from 'app/redux/GlobalReducer'
-import transaction from 'app/redux/TransactionReducer'
-import user from 'app/redux/UserReducer'
+import { broadcastOperation } from 'app/redux/TransactionSlice';
 import ExtLink from 'app/components/elements/ExtLink'
 import Icon from 'app/components/elements/Icon'
 import LoadingIndicator from 'app/components/elements/LoadingIndicator'
@@ -135,7 +134,7 @@ class CreateGroup extends React.Component {
 
     _onSubmit = (data, actions) => {
         const { currentUser, redirectAfter } = this.props
-        const creator = currentUser.get('username')
+        const creator = currentUser.username
         data.creator = creator
 
         this.setState({
@@ -303,8 +302,8 @@ class CreateGroup extends React.Component {
 
 export default connect(
     (state, ownProps) => {
-        const currentUser = state.user.getIn(['current'])
-        const currentAccount = currentUser && state.global.getIn(['accounts', currentUser.get('username')])
+        const currentUser = state.user.current
+        const currentAccount = currentUser && state.global.getIn(['accounts', currentUser.username])
 
         const groups = state.global.get('groups')
 
@@ -312,7 +311,7 @@ export default connect(
             currentUser,
             currentAccount,
             groups,
-            redirectAfter: state.user.get('create_group_redirect_after'),
+            redirectAfter: state.user.create_group_redirect_after,
         }
     },
     dispatch => ({
@@ -347,7 +346,7 @@ export default connect(
                 json,
             }])
 
-            dispatch(transaction.actions.broadcastOperation({
+            dispatch(broadcastOperation({
                 type: 'custom_json',
                 trx,
                 username: creator,
@@ -382,7 +381,7 @@ export default connect(
                 }])
             }
 
-            dispatch(transaction.actions.broadcastOperation({
+            dispatch(broadcastOperation({
                 type: 'custom_json',
                 trx,
                 username: requester,

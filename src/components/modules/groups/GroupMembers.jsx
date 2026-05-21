@@ -7,7 +7,7 @@ import { validateAccountName } from 'golos-lib-js/lib/utils'
 import cn from 'classnames'
 
 import g from 'app/redux/GlobalReducer'
-import transaction from 'app/redux/TransactionReducer'
+import { broadcastOperation } from 'app/redux/TransactionSlice';
 import AccountName from 'app/components/elements/common/AccountName'
 import Input from 'app/components/elements/common/Input';
 import GroupMember from 'app/components/elements/groups/GroupMember'
@@ -275,15 +275,15 @@ class GroupMembers extends React.Component {
 export default connect(
     // mapStateToProps
     (state, ownProps) => {
-        const currentUser = state.user.get('current')
-        const username = currentUser && currentUser.get('username')
+        const currentUser = state.user.current
+        const username = currentUser && currentUser.username
 
         const { newGroup } = ownProps
         let currentGroup, current_tab
         if (newGroup) {
             currentGroup = newGroup
         } else {
-            const options = state.user.get('group_members_modal')
+            const options = state.user.group_members_modal
             if (options) {
                 currentGroup = options.get('group')
                 current_tab = options.get('current_tab')
@@ -335,7 +335,7 @@ export default connect(
             const plugin = 'private_message'
             const json = JSON.stringify(['private_group_member', opData])
 
-            dispatch(transaction.actions.broadcastOperation({
+            dispatch(broadcastOperation({
                 type: 'custom_json',
                 operation: {
                     id: plugin,

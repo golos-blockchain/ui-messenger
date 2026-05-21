@@ -5,7 +5,7 @@ import tt from 'counterpart'
 import DialogManager from 'app/components/elements/common/DialogManager'
 import VerticalMenu from 'app/components/elements/VerticalMenu'
 import g from 'app/redux/GlobalReducer'
-import transaction from 'app/redux/TransactionReducer'
+import { broadcastOperation } from 'app/redux/TransactionSlice';
 import { maxDateStr, isBlockedByMe } from 'app/utils/misc'
 
 class AccountDropdown extends React.Component {
@@ -69,7 +69,7 @@ class AccountDropdown extends React.Component {
 
 export default connect(
     (state, ownProps) => {
-        const username = state.user.getIn(['current', 'username'])
+        const username = state.user.current && state.user.current.username
         const messages = state.global.get('messages')
         const contacts = state.global.get('contacts')
         const accounts = state.global.get('accounts')
@@ -82,7 +82,7 @@ export default connect(
     },
     dispatch => ({
         updateBlock: ({ blocker, blocking, block, onError }) => {
-            dispatch(transaction.actions.broadcastOperation({
+            dispatch(broadcastOperation({
                 type: 'account_setup',
                 operation: {
                     account: blocker,
@@ -116,7 +116,7 @@ export default connect(
                     delete_contact
                 }]]
             }])
-            dispatch(transaction.actions.broadcastOperation({
+            dispatch(broadcastOperation({
                 type: 'custom_json',
                 operation: {
                     id: 'private_message',

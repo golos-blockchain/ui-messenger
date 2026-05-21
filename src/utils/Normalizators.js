@@ -120,12 +120,12 @@ export async function normalizeContacts(contacts, accounts, currentUser, cachedP
     if (!currentUser || !accounts)
         return [];
 
-    const currentAcc = accounts[currentUser.get('username')];
+    const currentAcc = accounts[currentUser.username];
     if (!currentAcc)
         return [];
 
-    const posting = currentUser.getIn(['private_keys', 'posting_private'])
-    const private_memo = currentUser.getIn(['private_keys', 'memo_private']);
+    const posting = currentUser && currentUser.private_keys.posting_private;
+    const private_memo = currentUser && currentUser.private_keys.memo_private;
 
     const tt_invalid_message = tt('messages.invalid_message');
 
@@ -202,12 +202,12 @@ export async function normalizeMessages(messages, accounts, currentUser, to) {
 
     let id = 0;
     try {
-        let currentAcc = accounts[currentUser.get('username')];
+        let currentAcc = accounts[currentUser.username];
 
         const tt_invalid_message = tt('messages.invalid_message');
 
-        const posting = currentUser.getIn(['private_keys', 'posting_private'])
-        const privateMemo = currentUser.getIn(['private_keys', 'memo_private']);
+        const posting = currentUser && currentUser.private_keys.posting_private
+        const privateMemo = currentUser && currentUser.private_keys.memo_private
 
         if (window._perfo) console.log('ttt', Date.now())
         const decoded = await decodeMsgs({ msgs: messagesCopy,

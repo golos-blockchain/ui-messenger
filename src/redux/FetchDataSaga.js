@@ -73,9 +73,9 @@ export function* fetchState(location_change_action) {
 
             let accounts = new Set()
 
-            const account = yield select(state => state.user.getIn(['current', 'username']));
+            const account = yield select(state => state.user.current && state.user.current.username);
             if (account) {
-                const posting = yield select(state => state.user.getIn(['current', 'private_keys', 'posting_private']))
+                const posting = yield select(state => state.user.current.private_keys.posting_private)
 
                 const path = parts[1]
 

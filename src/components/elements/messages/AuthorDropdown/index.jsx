@@ -7,7 +7,7 @@ import cn from 'classnames'
 
 import Icon from 'app/components/elements/Icon'
 import TimeAgoWrapper from 'app/components/elements/TimeAgoWrapper'
-import transaction from 'app/redux/TransactionReducer'
+import { broadcastOperation } from 'app/redux/TransactionSlice';
 import { getRoleInGroup } from 'app/utils/groups'
 import { getLastSeen } from 'app/utils/NormalizeProfile'
 
@@ -90,7 +90,7 @@ class AuthorDropdown extends React.Component {
 
 export default withRouter(connect(
     (state, ownProps) => {
-        const currentUser = state.user.get('current')
+        const currentUser = state.user.current
         const accounts = state.global.get('accounts')
 
         let authorAcc = accounts.get(ownProps.author)
@@ -99,13 +99,13 @@ export default withRouter(connect(
         let the_group = state.global.get('the_group')
         if (the_group && the_group.toJS) the_group = the_group.toJS()
 
-        const username = state.user.getIn(['current', 'username'])
+        const username = state.user.current && state.user.current.username
 
         return {
             username,
             authorAcc,
             the_group,
-            account: currentUser && accounts && accounts.toJS()[currentUser.get('username')],
+            account: currentUser && accounts && accounts.toJS()[currentUser.username],
         }
     },
     dispatch => ({
@@ -123,7 +123,7 @@ export default withRouter(connect(
             const plugin = 'private_message'
             const json = JSON.stringify(['private_group_member', opData])
 
-            dispatch(transaction.actions.broadcastOperation({
+            dispatch(broadcastOperation({
                 type: 'custom_json',
                 operation: {
                     id: plugin,

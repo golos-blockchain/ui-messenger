@@ -8,8 +8,8 @@ import cn from 'classnames'
 
 import DialogManager from 'app/components/elements/common/DialogManager'
 import g from 'app/redux/GlobalReducer'
-import transaction from 'app/redux/TransactionReducer'
-import user from 'app/redux/UserReducer'
+import { broadcastOperation } from 'app/redux/TransactionSlice';
+import { showCreateGroup, showGroupMembers, showGroupSettings, showTopGroups } from 'app/redux/UserSlice';
 import DropdownMenu from 'app/components/elements/DropdownMenu'
 import Icon from 'app/components/elements/Icon'
 import LoadingIndicator from 'app/components/elements/LoadingIndicator'
@@ -336,8 +336,8 @@ class MyGroups extends React.Component {
 
 export default connect(
     (state, ownProps) => {
-        const currentUser = state.user.getIn(['current'])
-        const username = currentUser && currentUser.get('username')
+        const currentUser = state.user.current
+        const username = currentUser && currentUser.username
         const my_groups = state.global.get('my_groups')
         const my_groups_stat = state.global.get('my_groups_stat')
 
@@ -351,20 +351,20 @@ export default connect(
     dispatch => ({
         fetchMyGroups: (currentUser) => {
             if (!currentUser) return
-            const account = currentUser.get('username')
+            const account = currentUser.username
             dispatch(g.actions.fetchMyGroups({ account }))
         },
         showCreateGroup() {
-            dispatch(user.actions.showCreateGroup({ redirectAfter: false }))
+            dispatch(showCreateGroup({ redirectAfter: false }))
         },
         showTopGroups(account) {
-            dispatch(user.actions.showTopGroups({ account }))
+            dispatch(showTopGroups({ account }))
         },
         showGroupSettings({ group }) {
-            dispatch(user.actions.showGroupSettings({ group }))
+            dispatch(showGroupSettings({ group }))
         },
         showGroupMembers({ group, current_tab }) {
-            dispatch(user.actions.showGroupMembers({ group: ['my_groups', group], current_tab }))
+            dispatch(showGroupMembers({ group: ['my_groups', group], current_tab }))
         },
         deleteGroup: ({ owner, name, password,
         onSuccess, onError }) => {
@@ -376,7 +376,7 @@ export default connect(
 
             const json = JSON.stringify(['private_group_delete', opData])
 
-            dispatch(transaction.actions.broadcastOperation({
+            dispatch(broadcastOperation({
                 type: 'custom_json',
                 operation: {
                     id: 'private_message',
@@ -406,7 +406,7 @@ export default connect(
             const plugin = 'private_message'
             const json = JSON.stringify(['private_group_member', opData])
 
-            dispatch(transaction.actions.broadcastOperation({
+            dispatch(broadcastOperation({
                 type: 'custom_json',
                 operation: {
                     id: plugin,

@@ -2,11 +2,14 @@ import tt from 'counterpart';
 import { select, takeEvery } from 'redux-saga/effects';
 import { signData } from 'golos-lib-js/lib/auth'
 import { Signature, hash } from 'golos-lib-js/lib/auth/ecc/index';
+import {
+    uploadImage,
+} from 'app/redux/UserSlice';
 
 const MAX_UPLOAD_IMAGE_SIZE = 1024 * 1024;
 
 export default function* uploadImageWatch() {
-    yield takeEvery('user/UPLOAD_IMAGE', uploadImage);
+    yield takeEvery(uploadImage, handleUploadImage);
 }
 
 const ERRORS_MATCH = [
@@ -30,7 +33,7 @@ const ERRORS_MATCH = [
     ],
 ];
 
-function* uploadImage(action) {
+function* handleUploadImage(action) {
     const { file, dataUrl, filename = 'image.txt', progress, useGolosImages = false } = action.payload;
 
     function onError(txt) {

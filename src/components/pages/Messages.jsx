@@ -27,8 +27,8 @@ import Messenger from 'app/components/modules/messages/Messenger'
 import MessagesTopCenter from 'app/components/modules/MessagesTopCenter'
 import { addNotification } from 'app/redux/AppSlice';
 import g from 'app/redux/GlobalReducer'
-import transaction from 'app/redux/TransactionReducer'
-import user from 'app/redux/UserReducer'
+import { broadcastOperation } from 'app/redux/TransactionSlice';
+import { changeLanguage, logout, showLogin, showMyGroups, toggleNightmode, usernamePasswordLogin } from 'app/redux/UserSlice';
 import { getRoleInGroup, opGroup } from 'app/utils/groups'
 import { parseMentions } from 'app/utils/mentions'
 import { getProfileImage, } from 'app/utils/NormalizeProfile';
@@ -581,7 +581,7 @@ class Messages extends React.Component {
         if (!message.length) return;
         const { account, accounts, currentUser, messages, the_group } = this.props;
         const to = this.getToAcc()
-        const private_key = currentUser.getIn(['private_keys', 'memo_private']);
+        const private_key = currentUser && currentUser.private_keys.memo_private;
 
         let editInfo;
         if (this.editNonce) {
@@ -818,7 +818,7 @@ class Messages extends React.Component {
 
             const { account, accounts, the_group, currentUser, messages } = this.props;
             const to = this.getToAcc()
-            const private_key = currentUser.getIn(['private_keys', 'memo_private']);
+            const private_key = currentUser && currentUser.private_keys.memo_private;
             this.props.sendMessage({
                 senderAcc: account, memoKey: private_key, toAcc: accounts[to],
                 group: this.isGroup() && the_group,
@@ -987,7 +987,7 @@ class Messages extends React.Component {
             return null
         }
 
-        const username = currentUser.get('username')
+        const username = currentUser.username
         const accountLink = `/@${username}`
         const mentionsLink = `/@${username}/mentions`
         const donatesLink = `/@${username}/donates-to`
@@ -1052,7 +1052,7 @@ class Messages extends React.Component {
         if (!menuItems) return null
 
         const { currentUser } = this.props
-        const username = currentUser.get('username')
+        const username = currentUser.username
 
         return (<LinkWithDropdown
                 closeOnClickOutside
@@ -1241,7 +1241,7 @@ class Messages extends React.Component {
 
 export default withRouter(connect(
     (state, ownProps) => {
-        const currentUser = state.user.get('current')
+        const currentUser = state.user.current
         const accounts = state.global.get('accounts')
         const contacts = state.global.get('contacts')
         const messages = state.global.get('messages')
@@ -1249,16 +1249,16 @@ export default withRouter(connect(
         const fetched = state.global.get('fetched')
 
         const messages_update = state.global.get('messages_update')
-        const username = state.user.getIn(['current', 'username'])
+        const username = state.user.current && state.user.current.username
 
         let to = ownProps.match.params.to
 
         let memo_private = null
         if (currentUser) {
-            memo_private = currentUser.getIn(['private_keys', 'memo_private'])
+            memo_private = currentUser && currentUser.private_keys.memo_private;
         }
 
-        const locale = state.user.get('locale')
+        const locale = state.user.locale
 
         let the_group = state.global.get('the_group')
         if (the_group && the_group.toJS) the_group = the_group.toJS()
@@ -1269,7 +1269,7 @@ export default withRouter(connect(
             messages: messages,
             messages_update,
             the_group,
-            account: currentUser && accounts && accounts.toJS()[currentUser.get('username')],
+            account: currentUser && accounts && accounts.toJS()[currentUser.username],
             currentUser,
             memo_private,
             accounts: accounts ?  accounts.toJS() : {},
@@ -1280,22 +1280,22 @@ export default withRouter(connect(
         }
     },
     dispatch => ({
-        loginUser: () => dispatch(user.actions.usernamePasswordLogin()),
+        loginUser: () => dispatch(usernamePasswordLogin({})),
 
         checkAuth: (currentUser, memoNeed) => {
             if (!currentUser) {
                 hideSplash()
-                dispatch(user.actions.showLogin({
+                dispatch(showLogin({
                     loginDefault: { cancelIsRegister: true, unclosable: true }
                 }));
                 return false;
             }
             if (memoNeed) {
-                const private_key = currentUser.getIn(['private_keys', 'memo_private'])
+                const private_key = currentUser.private_keys.memo_private
                 if (!private_key) {
                     hideSplash()
-                    dispatch(user.actions.showLogin({
-                        loginDefault: { username: currentUser.get('username'), authType: 'memo', }
+                    dispatch(showLogin({
+                        loginDefault: { username: currentUser.username, authType: 'memo', }
                     }));
                     return false
                 }
@@ -1303,7 +1303,7 @@ export default withRouter(connect(
             return true;
         },
 
-        showMyGroups: () => dispatch(user.actions.showMyGroups()),
+        showMyGroups: () => dispatch(showMyGroups()),
 
         fetchState: (to) => {
             const pathname = '/' + (to || '')
@@ -1317,7 +1317,7 @@ export default withRouter(connect(
         sendOperations: (senderAcc, toAcc, OPERATIONS, onError = null) => {
             if (!OPERATIONS.length) return;
             dispatch(
-                transaction.actions.broadcastOperation({
+                broadcastOperation({
                     type: 'custom_json',
                     trx: OPERATIONS,
                     successCallback: null,
@@ -1408,7 +1408,7 @@ export default withRouter(connect(
             }
 
             const json = JSON.stringify(['private_message', opData]);
-            dispatch(transaction.actions.broadcastOperation({
+            dispatch(broadcastOperation({
                 type: 'custom_json',
                 operation: {
                     id: 'private_message',
@@ -1496,7 +1496,7 @@ export default withRouter(connect(
             let language = 'en-US'
             if (currentLanguage === language)
                 language = 'ru-RU'
-            dispatch(user.actions.changeLanguage(language))
+            dispatch(changeLanguage(language))
             localStorage.setItem('locale', language)
         },
         openSettings: (e) => {
@@ -1505,10 +1505,10 @@ export default withRouter(connect(
         },
         toggleNightmode: (e) => {
             if (e) e.preventDefault();
-            dispatch(user.actions.toggleNightmode());
+            dispatch(toggleNightmode());
         },
         logout: async (username) => {
-            dispatch(user.actions.logout());
+            dispatch(logout());
         },
     }),
 )(Messages))

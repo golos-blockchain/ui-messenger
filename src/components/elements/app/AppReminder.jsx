@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 
 import CloseButton from 'react-foundation-components/lib/global/close-button'
 
-import user from 'app/redux/UserReducer'
+import { showAppDownload } from 'app/redux/UserSlice';
 
 class AppReminder extends React.Component {
     state = {
@@ -47,7 +47,7 @@ export default connect(
     },
     dispatch => ({
         showModal: () => {
-            dispatch(user.actions.showAppDownload())
+            dispatch(showAppDownload())
         }
     })
 )(AppReminder)

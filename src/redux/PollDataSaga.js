@@ -18,7 +18,7 @@ export default function* pollData() {
     }
     while(true) {
         if (document.visibilityState !== 'hidden') {
-            const username = yield select(state => state.user.getIn(['current', 'username']));
+            const username = yield select(state => state.user.current && state.user.current.username);
             if (username) {
                 let counters = null;
                 try {

@@ -95,8 +95,8 @@ class GroupFinal extends React.Component {
 export default connect(
     // mapStateToProps
     (state, ownProps) => {
-        const currentUser = state.user.getIn(['current'])
-        const username = currentUser && currentUser.get('username')
+        const currentUser = state.user.current
+        const username = currentUser && currentUser.username
 
         const { newGroup } = ownProps
         let currentGroup

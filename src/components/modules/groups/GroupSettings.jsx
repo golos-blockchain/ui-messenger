@@ -7,8 +7,7 @@ import { api, formatter } from 'golos-lib-js'
 import tt from 'counterpart'
 
 import g from 'app/redux/GlobalReducer'
-import transaction from 'app/redux/TransactionReducer'
-import user from 'app/redux/UserReducer'
+import { broadcastOperation } from 'app/redux/TransactionSlice';
 import DropdownMenu from 'app/components/elements/DropdownMenu'
 import ExtLink from 'app/components/elements/ExtLink'
 import Icon from 'app/components/elements/Icon'
@@ -104,7 +103,7 @@ class GroupSettings extends React.Component {
 
     _onSubmit = async (values, actions) => {
         const { currentUser } = this.props
-        const creator = currentUser.get('username')
+        const creator = currentUser.username
 
         this.setState({
             submitError: ''
@@ -276,13 +275,13 @@ class GroupSettings extends React.Component {
 
 export default connect(
     (state, ownProps) => {
-        const currentUser = state.user.getIn(['current'])
-        const currentAccount = currentUser && state.global.getIn(['accounts', currentUser.get('username')])
+        const currentUser = state.user.current
+        const currentAccount = currentUser && state.global.getIn(['accounts', currentUser.username])
 
         return { ...ownProps,
             currentUser,
             currentAccount,
-            currentGroup: state.user.get('current_group'),
+            currentGroup: state.user.current_group,
         }
     },
     dispatch => ({
@@ -313,7 +312,7 @@ export default connect(
 
             const json = JSON.stringify(['private_group', opData])
 
-            dispatch(transaction.actions.broadcastOperation({
+            dispatch(broadcastOperation({
                 type: 'custom_json',
                 operation: {
                     id: 'private_message',

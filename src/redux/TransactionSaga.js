@@ -3,7 +3,7 @@ import { List, fromJS } from 'immutable'
 import golos from 'golos-lib-js'
 
 import g from 'app/redux/GlobalReducer'
-import user from 'app/redux/UserReducer'
+import { broadcastOperation } from 'app/redux/TransactionSlice';
 import { messageOpToObject } from 'app/utils/Normalizators'
 import { translateError } from 'app/utils/translateError'
 
@@ -12,7 +12,7 @@ export function* transactionWatches() {
 }
 
 export function* watchForBroadcast() {
-    yield takeEvery('transaction/BROADCAST_OPERATION', broadcastOperation)
+    yield takeEvery(broadcastOperation.type, handleBroadcastOperation)
 }
 
 const hook = {
@@ -126,7 +126,7 @@ function* preBroadcast_custom_json({operation}) {
 }
 
 /** Keys, username, and password are not needed for the initial call.  This will check the login and may trigger an action to prompt for the password / key. */
-function* broadcastOperation(
+function* handleBroadcastOperation(
     {payload:
         {type, operation, trx, confirm, warning, keys, username, password, hideErrors, successCallback, errorCallback}}) {
     if (trx && !trx.length) {
@@ -137,7 +137,7 @@ function* broadcastOperation(
     keys = [...new Set(keys)] // remove duplicate
     const idxP = keys.indexOf('posting')
     if (idxP !== -1) {
-        const posting = yield select(state => state.user.getIn(['current', 'private_keys', 'posting_private']));
+        const posting = yield select(state => state.user.current.private_keys.posting_private);
         if (!posting) {
             alert('Not authorized')
         }
