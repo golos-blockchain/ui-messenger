@@ -9,6 +9,7 @@
     "@formatjs/intl-utils": "^3.8.4",
     "@koa/cors": "^5.0.0",
     "@koa/router": "^13.1.1",
+    "@reduxjs/toolkit": "^2.12.0",
     "browserify-zlib": "^0.2.0",
     "buffer": "^6.0.3",
     "classnames": "^2.3.1",
