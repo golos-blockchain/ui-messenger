@@ -3,7 +3,6 @@ import { auth, api, config } from 'golos-lib-js'
 import { Session, PageSession, signData } from 'golos-lib-js/lib/auth'
 import { PrivateKey, Signature, hash } from 'golos-lib-js/lib/auth/ecc'
 
-import { addNotification } from 'app/redux/AppSlice';
 import { receiveAccount } from 'app/redux/GlobalSlice';
 import uploadImageWatch from 'app/redux/UserSaga_UploadImage'
 import {
@@ -13,6 +12,7 @@ import {
     usernamePasswordLogin,
 } from 'app/redux/UserSlice';
 import { authApiLogin, authApiLogout } from 'app/utils/AuthApiClient'
+import { addNotification } from 'app/utils/NotificationService';
 import { notifyApiLogin, notifyApiLogout, notificationUnsubscribe, firebaseUnregisterWs } from 'app/utils/NotifyApiClient'
 
 export const session = new Session('msgr_auth')
@@ -151,13 +151,11 @@ function* handleUsernamePasswordLogin(action) {
                 const lastBadNet = parseInt(localStorage.getItem(lbnKey) || 0);
                 if (now - lastBadNet >= 10*60*1000) {
                     localStorage.setItem(lbnKey, now);
-                    window._reduxStore.dispatch(
-                        addNotification({
-                            key: 'bad_net_' + Date.now(),
-                            message,
-                            dismissAfter: 5000
-                        })
-                    )
+                    addNotification({
+                        key: 'bad_net_' + Date.now(),
+                        message,
+                        dismissAfter: 5000
+                    })
                 }
             }
         }, fromLoginForm ? 3000 : 10000);

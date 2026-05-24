@@ -15,6 +15,7 @@ import { validateLogoStep } from 'app/components/modules/groups/GroupLogo'
 import { broadcastOperation } from 'app/redux/TransactionSlice';
 import { uploadImage, } from 'app/redux/UserSlice';
 import { getGroupMeta, getGroupTitle } from 'app/utils/groups'
+import { addNotification } from 'app/utils/NotificationService';
 import { proxifyImageUrlWithStrip } from 'app/utils/ProxifyUrl'
 
 class GroupSettings extends React.Component {
@@ -56,7 +57,7 @@ class GroupSettings extends React.Component {
     }
 
     uploadLogo = (file, name, { applyFieldValue }) => {
-        const { uploadImage } = this.props
+        const { notify, uploadImage } = this.props
         this.setState({ uploading: true })
         uploadImage(file, progress => {
             if (progress.url) {
@@ -64,7 +65,7 @@ class GroupSettings extends React.Component {
             }
             if (progress.error) {
                 const { error } = progress;
-                notify(error, 10000)
+                notify(error, 1000000)
             }
             this.setState({ uploading: false })
         })
@@ -324,6 +325,13 @@ export default connect(
                     if (onError) onError(err, errStr)
                 },
             }));
+        },
+        notify: (message, dismiss = 3000) => {
+            addNotification({
+                key: 'group_logo_' + Date.now(),
+                message,
+                dismissAfter: dismiss
+            });
         }
     })
 )(GroupSettings)

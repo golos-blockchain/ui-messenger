@@ -25,7 +25,7 @@ import Userpic from 'app/components/elements/Userpic'
 import VerticalMenu from 'app/components/elements/VerticalMenu'
 import Messenger from 'app/components/modules/messages/Messenger'
 import MessagesTopCenter from 'app/components/modules/MessagesTopCenter'
-import { addNotification } from 'app/redux/AppSlice';
+import { addNotification } from 'app/utils/NotificationService';
 import { messageDeleted, messageDonated, messageEdited, messageRead, messaged } from 'app/redux/GlobalSlice';
 import { broadcastOperation } from 'app/redux/TransactionSlice';
 import { uploadImage, } from 'app/redux/UserSlice';
@@ -1467,25 +1467,26 @@ export default withRouter(connect(
                     if (data && data.error) {
                         try {
                             const error = JSON.parse(data.error).data.error;
-                            this.showError(error.message || error);
+                            this.showError(error.message || error, 5000, 'progress');
                         } catch (ex) {
                             // unknown error format
-                            this.showError(data.error);
+                            this.showError(data.error, 5000, 'progress');
                         }
                     } else if (data && data.message && typeof data.message === 'string') {
-                        this.showError(data.message, 5000, 'progress');
+                        this.showError(data.message, 5000, 'progress', 'loading');
                     }
 
                     progress(data);
                 },
             }));
         },
-        showError(error, dismissAfter = 5000, key = 'error') {
-            dispatch(addNotification({
+        showError(error, dismissAfter = 5000, key = 'error', type = 'error') {
+            addNotification({
                 message: error,
+                type,
                 dismissAfter,
                 key,
-            }));
+            });
         },
         changeLanguage: (currentLanguage) => {
             let language = 'en-US'

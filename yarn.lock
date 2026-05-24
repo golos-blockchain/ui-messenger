@@ -2145,6 +2145,11 @@ csstype@^3.0.2:
   resolved "https://registry.yarnpkg.com/csstype/-/csstype-3.0.10.tgz#2ad3a7bed70f35b965707c092e5f30b327c290e5"
   integrity sha512-2u44ZG2OcNUO9HDp/Jl8C07x6pU/eTR3ncV91SiK3dhG9TWvRVsCoJw14Ckx5DgWkzGA3waZWO3d7pgqpUI/XA==
 
+csstype@^3.1.3:
+  version "3.2.3"
+  resolved "https://registry.yarnpkg.com/csstype/-/csstype-3.2.3.tgz#ec48c0f3e993e50648c86da559e2610995cf989a"
+  integrity sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==
+
 date-names@^0.1.11:
   version "0.1.13"
   resolved "https://registry.yarnpkg.com/date-names/-/date-names-0.1.13.tgz#c4358f6f77c8056e2f5ea68fdbb05f0bf1e53bd0"
@@ -2871,6 +2876,11 @@ golos-lib-js@^0.9.80:
     secure-random "^1.1.1"
     stream-browserify "^3.0.0"
     ws "^8.18.1"
+
+goober@^2.1.16:
+  version "2.1.19"
+  resolved "https://registry.yarnpkg.com/goober/-/goober-2.1.19.tgz#a4b4dcdbba9325b8c4d7380099f9f281f27c6a6f"
+  integrity sha512-U7veizMqxyKlM58+Z5j2ngJBH/r9siDmxpvNxSw0PylF6WQvrASJEZrxh1hidRBJc2jqoBVSyOban5u8m+6Rxg==
 
 gopd@^1.0.1, gopd@^1.2.0:
   version "1.2.0"
@@ -4229,6 +4239,14 @@ react-foundation-components@./git-deps/react-foundation-components:
     uncontrollable "^5.1.0"
     underscore.string "^3.3.5"
 
+react-hot-toast@^2.6.0:
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/react-hot-toast/-/react-hot-toast-2.6.0.tgz#4ada6ed3c75c5e42a90d562f55665ff37ee1442b"
+  integrity sha512-bH+2EBMZ4sdyou/DPrfgIouFpcRLCJ+HoCA32UoAYHn6T3Ur5yfcDCeSr5mwldl6pFOsiocmrXMuoCJ1vV8bWg==
+  dependencies:
+    csstype "^3.1.3"
+    goober "^2.1.16"
+
 react-intl@^5.24.6:
   version "5.24.6"
   resolved "https://registry.yarnpkg.com/react-intl/-/react-intl-5.24.6.tgz#d3dcd07ff967f804504cfdfd5dfa4ee1f64b4f80"
@@ -4254,13 +4272,6 @@ react-is@^17.0.2:
   version "17.0.2"
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-17.0.2.tgz#e691d4a8e9c789365655539ab372762b0efb54f0"
   integrity sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==
-
-react-notification@^6.8.5:
-  version "6.8.5"
-  resolved "https://registry.yarnpkg.com/react-notification/-/react-notification-6.8.5.tgz#7ea90a633bb2a280d899e30c93cf372265cce4f0"
-  integrity sha512-3pJPhSsWNYizpyeMeWuC+jVthqE9WKqQ6rHq2naiiP4fLGN4irwL2Xp2Q8Qn7agW/e4BIDxarab6fJOUp1cKUw==
-  dependencies:
-    prop-types "^15.6.2"
 
 react-overlays@^0.7.0:
   version "0.7.4"

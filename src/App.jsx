@@ -6,6 +6,7 @@ import {
 } from 'react-router-dom'
 import { Provider } from 'react-redux'
 import { ConnectedRouter } from 'connected-react-router'
+import { Toaster } from 'react-hot-toast';
 
 import configureStore, { history}  from './redux/store'
 import AppReminder from 'app/components/elements/app/AppReminder'
@@ -93,6 +94,19 @@ class App extends React.Component {
         return !reminded || (now - reminded > APP_REMINDER_INTERVAL)
     }
 
+    _renderToaster = () => {
+        return <Toaster
+            position='bottom-left' 
+            containerStyle={{
+                bottom: 30,
+                left: 30,
+            }}
+            toastOptions={{
+                className: 'gls-toast'
+            }}
+        />;
+    }
+
     render() {
         if (!this.state.config) {
             return <div style={{ marginTop: '2rem' }}>
@@ -112,16 +126,19 @@ class App extends React.Component {
                                 <Themifier>
                                     <AppSettings />
                                     <DialogManager />
+                                    {this._renderToaster()}
                                 </Themifier>
                             </Route>
                             <Route path='/:to?'>
                                 {this.appSettings ? <Themifier>
                                         <AppSettings />
                                         <DialogManager />
+                                        {this._renderToaster()}
                                     </Themifier> : <Themifier>
                                         <Messages />
                                         <Modals />
                                         <DialogManager />
+                                        {this._renderToaster()}
                                         {reminder}
                                 </Themifier>}
                             </Route>

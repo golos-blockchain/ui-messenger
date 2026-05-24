@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types'
-import {NotificationStack} from 'react-notification'
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router'
 import CloseButton from 'react-foundation-components/lib/global/close-button';
@@ -14,7 +13,6 @@ import TopGroups from 'app/components/modules/groups/TopGroups'
 import Donate from 'app/components/modules/Donate'
 import LoginForm from 'app/components/modules/LoginForm';
 import AppDownload from 'app/components/modules/app/AppDownload'
-import { addNotification, removeNotification } from 'app/redux/AppSlice';
 import { hideAppDownload, hideCreateGroup, hideDonate, hideGroupMembers, hideGroupSettings, hideLogin, hideMyGroups, hideTopGroups } from 'app/redux/UserSlice';
 //import tr from 'app/redux/Transaction';
 import isScreenSmall from 'app/utils/isScreenSmall'
@@ -33,8 +31,6 @@ class Modals extends React.Component {
         show_app_download_modal: PropTypes.bool,
         hideDonate: PropTypes.func.isRequired,
         hideAppDownload: PropTypes.func.isRequired,
-        notifications: PropTypes.object,
-        removeNotification: PropTypes.func,
     };
 
     onLoginBackdropClick = (e) => {
@@ -65,18 +61,7 @@ class Modals extends React.Component {
             hideGroupSettings,
             hideGroupMembers,
             hideAppDownload,
-            notifications,
-            removeNotification,
         } = this.props;
-
-        const notifications_array = notifications ? Object.entries(notifications).map(kv => {
-            const n = { ...kv[1] };
-            if (!n.key) {
-                n.key = ++keyIndex;
-            }
-            n.onClick = () => removeNotification(n.key);
-            return n;
-        }) : [];
 
         let modalStyle = {
             overflowX: 'hidden',
@@ -142,11 +127,6 @@ class Modals extends React.Component {
                     <CloseButton onClick={hideAppDownload} />
                     <AppDownload />
                 </Reveal>}
-                <NotificationStack
-                    style={false}
-                    notifications={notifications_array}
-                    onDismiss={n => removeNotification(n.key)}
-                />
             </div>
         );
     }
@@ -166,7 +146,6 @@ export default withRouter(connect(
             show_group_members_modal: state.user.show_group_members_modal,
             show_app_download_modal: state.user.show_app_download_modal,
             loginUnclosable,
-            notifications: state.app.notifications,
         }
     },
     dispatch => ({
@@ -205,9 +184,6 @@ export default withRouter(connect(
             if (e) e.preventDefault()
             dispatch(hideAppDownload())
         },
-        
-        // example: addNotification: ({key, message}) => dispatch(addNotification({key, message})),
-        removeNotification: (key) => dispatch(removeNotification({key})),
 
     })
 )(Modals))

@@ -8,7 +8,7 @@ import Input from 'app/components/elements/common/Input';
 import PictureSvg from 'app/assets/icons/editor-toolbar/picture.svg?raw';
 import DialogManager from 'app/components/elements/common/DialogManager'
 import LoadingIndicator from 'app/components/elements/LoadingIndicator'
-import { addNotification } from 'app/redux/AppSlice';
+import { addNotification } from 'app/utils/NotificationService';
 import { uploadImage, } from 'app/redux/UserSlice';
 import { delay } from 'app/utils/misc'
 import { proxifyImageUrlWithStrip } from 'app/utils/ProxifyUrl';
@@ -209,11 +209,11 @@ export default connect(
             dispatch(uploadImage({ file, progress }));
         },
         notify: (message, dismiss = 3000) => {
-            dispatch(addNotification({
+            addNotification({
                 key: 'group_logo_' + Date.now(),
                 message,
                 dismissAfter: dismiss
-            }));
+            });
         }
     })
 )(GroupLogo)
