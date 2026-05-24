@@ -1,5 +1,6 @@
 import golos from 'golos-lib-js'
 import tt from 'counterpart'
+import cloneDeep from 'lodash/cloneDeep';
 
 import { getGroupLogo } from 'app/utils/groups'
 import { getProfileImage } from 'app/utils/NormalizeProfile';
@@ -129,7 +130,7 @@ export async function normalizeContacts(contacts, accounts, currentUser, cachedP
 
     const tt_invalid_message = tt('messages.invalid_message');
 
-    let contactsCopy = contacts ? [...contacts.toJS()] : [];
+    let contactsCopy = contacts ? cloneDeep(contacts) : [];
     let messages = []
     for (let contact of contactsCopy) {
         let account = accounts && accounts[contact.contact];
@@ -198,7 +199,7 @@ export async function normalizeMessages(messages, accounts, currentUser, to) {
         return [];
     }
 
-    let messagesCopy = messages ? [...messages.toJS()] : [];
+    let messagesCopy = messages ? cloneDeep(messages) : [];
 
     let id = 0;
     try {

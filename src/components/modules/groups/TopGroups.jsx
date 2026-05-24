@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import tt from 'counterpart'
 
-import g from 'app/redux/GlobalReducer'
+import { fetchTopGroups } from 'app/redux/GlobalSlice';
 import { hideMyGroups, hideTopGroups, showCreateGroup } from 'app/redux/UserSlice';
 import Icon from 'app/components/elements/Icon'
 import LoadingIndicator from 'app/components/elements/LoadingIndicator'
@@ -103,8 +103,6 @@ class TopGroups extends React.Component {
         if (!top_groups) {
             groups = <LoadingIndicator type='circle' />
         } else {
-            top_groups = top_groups.toJS()
-
             if (!top_groups.length) {
                 groups = <div>
                     {tt('top_groups_jsx.empty')}
@@ -141,7 +139,7 @@ export default connect(
     (state, ownProps) => {
         const currentUser = state.user.current
         const username = currentUser && currentUser.username
-        const top_groups = state.global.get('top_groups')
+        const top_groups = state.global.top_groups
 
         return { ...ownProps,
             currentUser,
@@ -153,7 +151,7 @@ export default connect(
         fetchTopGroups: (currentUser) => {
             if (!currentUser) return
             const account = currentUser.username
-            dispatch(g.actions.fetchTopGroups({ account }))
+            dispatch(fetchTopGroups({ account }))
         },
         hideMyGroups: e => {
             if (e) e.preventDefault()

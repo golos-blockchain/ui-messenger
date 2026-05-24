@@ -91,13 +91,12 @@ class AuthorDropdown extends React.Component {
 export default withRouter(connect(
     (state, ownProps) => {
         const currentUser = state.user.current
-        const accounts = state.global.get('accounts')
+        const accounts = state.global.accounts
 
-        let authorAcc = accounts.get(ownProps.author)
-        authorAcc = authorAcc ? authorAcc.toJS() : null
+        let authorAcc = accounts && accounts[ownProps.author];
+        authorAcc = authorAcc || null;
 
-        let the_group = state.global.get('the_group')
-        if (the_group && the_group.toJS) the_group = the_group.toJS()
+        let the_group = state.global.the_group
 
         const username = state.user.current && state.user.current.username
 
@@ -105,7 +104,7 @@ export default withRouter(connect(
             username,
             authorAcc,
             the_group,
-            account: currentUser && accounts && accounts.toJS()[currentUser.username],
+            account: currentUser && accounts && accounts[currentUser.username],
         }
     },
     dispatch => ({

@@ -1,13 +1,12 @@
 import React from 'react'
 import {connect} from 'react-redux'
 import { Link } from 'react-router-dom'
-import { Map } from 'immutable'
 import { api, formatter } from 'golos-lib-js'
 import tt from 'counterpart'
 import cn from 'classnames'
 
 import DialogManager from 'app/components/elements/common/DialogManager'
-import g from 'app/redux/GlobalReducer'
+import { fetchMyGroups } from 'app/redux/GlobalSlice';
 import { broadcastOperation } from 'app/redux/TransactionSlice';
 import { showCreateGroup, showGroupMembers, showGroupSettings, showTopGroups } from 'app/redux/UserSlice';
 import DropdownMenu from 'app/components/elements/DropdownMenu'
@@ -260,8 +259,6 @@ class MyGroups extends React.Component {
         if (!my_groups) {
             groups = <LoadingIndicator type='circle' />
         } else {
-            my_groups = my_groups.toJS()
-
             let { tabs, markRead } = this._renderTabs()
 
             const reader = (username && markRead.length) ?
@@ -338,21 +335,21 @@ export default connect(
     (state, ownProps) => {
         const currentUser = state.user.current
         const username = currentUser && currentUser.username
-        const my_groups = state.global.get('my_groups')
-        const my_groups_stat = state.global.get('my_groups_stat')
+        const my_groups = state.global.my_groups
+        const my_groups_stat = state.global.my_groups_stat
 
         return { ...ownProps,
             currentUser,
             username,
             my_groups,
-            stat: my_groups_stat ? my_groups_stat.toJS() : {},
+            stat: my_groups_stat || {},
         }
     },
     dispatch => ({
         fetchMyGroups: (currentUser) => {
             if (!currentUser) return
             const account = currentUser.username
-            dispatch(g.actions.fetchMyGroups({ account }))
+            dispatch(fetchMyGroups({ account }))
         },
         showCreateGroup() {
             dispatch(showCreateGroup({ redirectAfter: false }))

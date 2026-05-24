@@ -4,7 +4,7 @@ import { Session, PageSession, signData } from 'golos-lib-js/lib/auth'
 import { PrivateKey, Signature, hash } from 'golos-lib-js/lib/auth/ecc'
 
 import { addNotification } from 'app/redux/AppSlice';
-import g from 'app/redux/GlobalReducer'
+import { receiveAccount } from 'app/redux/GlobalSlice';
 import uploadImageWatch from 'app/redux/UserSaga_UploadImage'
 import {
     getAccount,
@@ -66,7 +66,7 @@ function* handleUsernamePasswordLogin(action) {
     } else {
         // no saved password - should logout services if logged in
         // if (!username || !password) {
-        //     const offchain_account = yield select(state => state.offchain.get('account'))
+        //     const offchain_account = yield select(state => state.offchain.account)
         //     if (offchain_account) {
         //         notifyApiLogout()
         //         serverApiLogout()
@@ -301,12 +301,12 @@ function* getAccountHandler({ payload: { usernames, resolve, reject }}) {
     if (!usernames) {
         const current = yield select(state => state.user.current)
         if (!current) return
-        usernames = [current.get('username')]
+        usernames = [current.username]
     }
 
     const accounts = yield call([api, api.getAccountsAsync], usernames)
     for (let account of accounts) {
-        yield put(g.actions.receiveAccount({ account }))
+        yield put(receiveAccount({ account }))
     }
     if (resolve && accounts[0]) {
         resolve(accounts);

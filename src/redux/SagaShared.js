@@ -1,16 +1,14 @@
-import { fromJS } from 'immutable'
 import { call, put, select, } from 'redux-saga/effects'
 import { api } from 'golos-lib-js'
 
-import g from 'app/redux/GlobalReducer'
+import { receiveAccount } from 'app/redux/GlobalSlice';
 
 export function* getAccount(username, force = false) {
-    let account = yield select(state => state.global.get('accounts').get(username))
+    let account = yield select(state => state.global.accounts[username])
     if (force || !account) {
         [account] = yield call([api, api.getAccountsAsync], [username])
         if(account) {
-            account = fromJS(account)
-            yield put(g.actions.receiveAccount({account}))
+            yield put(receiveAccount({account}))
         }
     }
     return account

@@ -2,7 +2,9 @@ import { call, put, select, fork, cancelled, takeLatest, takeEvery } from 'redux
 import golos, { api, auth } from 'golos-lib-js'
 import tt from 'counterpart'
 
-import g from 'app/redux/GlobalReducer'
+import {
+    fetchGroupMembers, fetchMyGroups, fetchTopGroups, fetchUiaBalances,
+    receiveGroupMembers, receiveMyGroups, receiveState, receiveTopGroups, receiveUiaBalances } from 'app/redux/GlobalSlice';
 import { getRoleInGroup } from 'app/utils/groups'
 import { getSpaceInCache, saveToCache } from 'app/utils/Normalizators'
 
@@ -65,7 +67,7 @@ export function* fetchState(location_change_action) {
                 } catch (err) {
                     console.warn('fetchState:', logLabel, err)
                     state.nodeError = { reason: 'fetch', node: golos.config.get('websocket') }
-                    yield put(g.actions.receiveState(state))
+                    yield put(receiveState(state))
                     hasErr = true
                     return defValue
                 }
@@ -200,22 +202,22 @@ export function* fetchState(location_change_action) {
             }
         }
 
-        yield put(g.actions.receiveState(state))
+        yield put(receiveState(state))
     } catch (err) {
         console.error('fetchDataSaga error', err)
     }
 }
 
 export function* watchFetchUiaBalances() {
-    yield takeLatest('global/FETCH_UIA_BALANCES', fetchUiaBalances)
+    yield takeLatest(fetchUiaBalances.type, handleFetchUiaBalances)
 }
 
-export function* fetchUiaBalances({ payload: { account } }) {
+export function* handleFetchUiaBalances({ payload: { account } }) {
     try {
         let assets = yield call([api, api.getAccountsBalancesAsync], [account])
         assets = assets && assets[0]
         if (assets) {
-            yield put(g.actions.receiveUiaBalances({assets}))
+            yield put(receiveUiaBalances({assets}))
         }
     } catch (err) {
         console.error('fetchUiaBalances', err)
@@ -223,10 +225,10 @@ export function* fetchUiaBalances({ payload: { account } }) {
 }
 
 export function* watchFetchMyGroups() {
-    yield takeLatest('global/FETCH_MY_GROUPS', fetchMyGroups)
+    yield takeLatest(fetchMyGroups.type, handleFetchMyGroups)
 }
 
-export function* fetchMyGroups({ payload: { account } }) {
+export function* handleFetchMyGroups({ payload: { account } }) {
     try {
         const stat = {
             pending: 0,
@@ -284,17 +286,17 @@ export function* fetchMyGroups({ payload: { account } }) {
         }
         stat.current = current
 
-        yield put(g.actions.receiveMyGroups({ groups, stat }))
+        yield put(receiveMyGroups({ groups, stat }))
     } catch (err) {
         console.error('fetchMyGroups', err)
     }
 }
 
 export function* watchFetchTopGroups() {
-    yield takeLatest('global/FETCH_TOP_GROUPS', fetchTopGroups)
+    yield takeLatest(fetchTopGroups.type, handleFetchTopGroups)
 }
 
-export function* fetchTopGroups({ payload: { account } }) {
+export function* handleFetchTopGroups({ payload: { account } }) {
     try {
         const groupsWithoutMe = []
         let start_group = ''
@@ -326,24 +328,24 @@ export function* fetchTopGroups({ payload: { account } }) {
             }
         }
 
-        yield put(g.actions.receiveTopGroups({ groups: groupsWithoutMe }))
+        yield put(receiveTopGroups({ groups: groupsWithoutMe }))
     } catch (err) {
         console.error('fetchTopGroups', err)
     }
 }
 
 export function* watchFetchGroupMembers() {
-    yield takeLatest('global/FETCH_GROUP_MEMBERS', fetchGroupMembers)
+    yield takeLatest(fetchGroupMembers.type, handleFetchGroupMembers)
 }
 
-export function* fetchGroupMembers({ payload: { group, creatingNew, memberTypes, sortConditions } }) {
+export function* handleFetchGroupMembers({ payload: { group, creatingNew, memberTypes, sortConditions } }) {
     try {
         if (creatingNew) {
-            yield put(g.actions.receiveGroupMembers({ group, members: [], append: true }))
+            yield put(receiveGroupMembers({ group, members: [], append: true }))
             return
         }
 
-        yield put(g.actions.receiveGroupMembers({ group, loading: true }))
+        yield put(receiveGroupMembers({ group, loading: true }))
 
         const { members } = yield call([api, api.getGroupMembersAsync], {
             group,
@@ -354,7 +356,7 @@ export function* fetchGroupMembers({ payload: { group, creatingNew, memberTypes,
             accounts: true,
         })
 
-        yield put(g.actions.receiveGroupMembers({ group, members }))
+        yield put(receiveGroupMembers({ group, members }))
     } catch (err) {
         console.error('fetchGroupMembers', err)
     }

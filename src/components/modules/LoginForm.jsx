@@ -48,7 +48,7 @@ class LoginForm extends Component {
         this.onCancel = (e) => {
             if(e.preventDefault) e.preventDefault()
             const {onCancel, loginBroadcastOperation} = this.props;
-            const errorCallback = loginBroadcastOperation && loginBroadcastOperation.get('errorCallback');
+            const errorCallback = loginBroadcastOperation && loginBroadcastOperation.errorCallback;
             if (errorCallback) errorCallback('Canceled');
             if (onCancel) onCancel()
         };
@@ -126,7 +126,7 @@ class LoginForm extends Component {
         const {submitting, valid, handleSubmit} = this.state.login;
         const {usernameOnChange, onCancel, /*qrReader*/} = this;
         const disabled = submitting || !valid;
-        const opType = loginBroadcastOperation ? loginBroadcastOperation.get('type') : null;
+        const opType = loginBroadcastOperation ? loginBroadcastOperation.type : null;
         let postType = "";
         const authType = loginDefault && loginDefault.authType
         let isMemo = false;
@@ -315,7 +315,7 @@ export default connect(
         if (msg_match && msg_match.length > 1) msg = msg_match[1];
         hasError = !!loginError
         return {
-            loginError: (loginError && loginError.toJS) ? loginError.toJS() : loginError,
+            loginError,
             loginLoading: state.user.loginLoading,
             loginBroadcastOperation,
             initialValues,
@@ -331,7 +331,7 @@ export default connect(
             const {password, saveLogin} = data
             const username = data.username.trim().toLowerCase()
             if (loginBroadcastOperation) {
-                /*const {type, operation, trx, successCallback, errorCallback} = loginBroadcastOperation.toJS()
+                /*const {type, operation, trx, successCallback, errorCallback} = loginBroadcastOperation
                 const authSaver = () => {
                     if (!/^vote|comment/.test(type) && location.pathname.startsWith('/market')) {
                         pageSession.save(password, username, 'active');

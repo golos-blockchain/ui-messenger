@@ -40,9 +40,9 @@ class GroupFinal extends React.Component {
         let { group, submitError, cost } = this.props
         let moders = [], members = []
         if (group) {
-            let allMembers = group.get('members')
+            let allMembers = group.members
             if (allMembers) {
-                allMembers = allMembers.get('data').toJS()
+                allMembers = allMembers.data
                 const makeLink = (pgm) => {
                     return <Link key={pgm.account} to={'/@' + pgm.account} target='_blank' rel='noopener noreferrer'>
                         {'@' + pgm.account}
@@ -103,7 +103,7 @@ export default connect(
         if (newGroup) {
             currentGroup = newGroup
         }
-        const group = currentGroup && state.global.getIn(['groups', currentGroup.name])
+        const group = currentGroup && state.global.groups[currentGroup.name]
 
         return {
             ...ownProps,

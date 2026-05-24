@@ -13,7 +13,6 @@ import DropdownMenu from 'app/components/elements/DropdownMenu'
 import Icon from 'app/components/elements/Icon'
 import TimeAgoWrapper from 'app/components/elements/TimeAgoWrapper'
 import AccountDropdown from 'app/components/modules/AccountDropdown'
-import g from 'app/redux/GlobalReducer'
 import { broadcastOperation } from 'app/redux/TransactionSlice';
 import { showGroupMembers, showGroupSettings } from 'app/redux/UserSlice';
 import { getMemberType, getGroupLogo, getGroupMeta, getGroupTitle, } from 'app/utils/groups'
@@ -362,18 +361,17 @@ class MessagesTopCenter extends React.Component {
 export default withRouter(connect(
     (state, ownProps) => {
         const currentUser = state.user.current
-        const accounts = state.global.get('accounts')
+        const accounts = state.global.accounts
 
         const username = state.user.current && state.user.current.username
 
-        let the_group = state.global.get('the_group')
-        if (the_group && the_group.toJS) the_group = the_group.toJS()
+        let the_group = state.global.the_group
 
         return {
             the_group,
-            account: currentUser && accounts && accounts.toJS()[currentUser.username],
+            account: currentUser && accounts && accounts[currentUser.username],
             currentUser,
-            accounts: accounts ?  accounts.toJS() : {},
+            accounts: accounts || {},
             username,
         }
     },

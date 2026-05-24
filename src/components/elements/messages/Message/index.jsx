@@ -215,10 +215,10 @@ class Message extends React.Component {
 
 export default withRouter(connect(
     (state, ownProps) => {
-        const accounts = state.global.get('accounts')
+        const accounts = state.global.accounts
 
-        let authorAcc = ownProps.data && accounts.get(ownProps.data.from)
-        authorAcc = authorAcc ? authorAcc.toJS() : null
+        let authorAcc = ownProps.data && accounts && accounts[ownProps.data.from]
+        authorAcc = authorAcc || null
 
         return {
             authorAcc,

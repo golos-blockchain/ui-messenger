@@ -1,12 +1,11 @@
 import React from 'react'
 import {connect} from 'react-redux'
 import { Formik, Form, Field, ErrorMessage, } from 'formik'
-import { Map } from 'immutable'
 import { api } from 'golos-lib-js'
 import { Asset, Price, AssetEditor } from 'golos-lib-js/lib/utils'
 import tt from 'counterpart'
 
-import g from 'app/redux/GlobalReducer'
+import { receiveGroupMembers } from 'app/redux/GlobalSlice';
 import { broadcastOperation } from 'app/redux/TransactionSlice';
 import ExtLink from 'app/components/elements/ExtLink'
 import Icon from 'app/components/elements/Icon'
@@ -74,7 +73,7 @@ class CreateGroup extends React.Component {
             const { private_group_cost } = dgp
             const cost = await Asset(private_group_cost)
 
-            let acc = await api.getAccountsAsync([this.props.currentAccount.get('name')])
+            let acc = await api.getAccountsAsync([this.props.currentAccount.name])
             acc = acc[0]
             const { sbd_balance } = acc
             const gbgBalance = Asset(sbd_balance)
@@ -145,7 +144,6 @@ class CreateGroup extends React.Component {
         const { name } = data
         let { groups } = this.props
         if (groups) {
-            groups = groups.toJS()
             const group = groups[name]
             if (group) {
                 let mems = group.members
@@ -303,9 +301,10 @@ class CreateGroup extends React.Component {
 export default connect(
     (state, ownProps) => {
         const currentUser = state.user.current
-        const currentAccount = currentUser && state.global.getIn(['accounts', currentUser.username])
+        const currentAccount = currentUser && state.global.accounts
+             && state.global.accounts[currentUser.username]
 
-        const groups = state.global.get('groups')
+        const groups = state.global.groups
 
         return { ...ownProps,
             currentUser,
@@ -316,7 +315,7 @@ export default connect(
     },
     dispatch => ({
         stripGroupMembers: (group) => {
-            dispatch(g.actions.receiveGroupMembers({
+            dispatch(receiveGroupMembers({
                 group, members: [], append: false }))
         },
         privateGroup: ({ password, creator, name, title, logo, is_encrypted, privacy,

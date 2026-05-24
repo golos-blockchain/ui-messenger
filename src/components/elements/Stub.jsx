@@ -72,8 +72,7 @@ const Stub = connect(
 
         const username = state.user.current && state.user.current.username
 
-        let the_group = state.global.get('the_group')
-        if (the_group && the_group.toJS) the_group = the_group.toJS()
+        let the_group = state.global.the_group
 
         return {
             the_group,

@@ -4,7 +4,7 @@ import tt from 'counterpart'
 
 import DialogManager from 'app/components/elements/common/DialogManager'
 import VerticalMenu from 'app/components/elements/VerticalMenu'
-import g from 'app/redux/GlobalReducer'
+import { updateBlocking } from 'app/redux/GlobalSlice';
 import { broadcastOperation } from 'app/redux/TransactionSlice';
 import { maxDateStr, isBlockedByMe } from 'app/utils/misc'
 
@@ -70,14 +70,14 @@ class AccountDropdown extends React.Component {
 export default connect(
     (state, ownProps) => {
         const username = state.user.current && state.user.current.username
-        const messages = state.global.get('messages')
-        const contacts = state.global.get('contacts')
-        const accounts = state.global.get('accounts')
+        const messages = state.global.messages
+        const contacts = state.global.contacts
+        const accounts = state.global.accounts
         return {
             username,
-            messages: messages ? messages.toJS() : [],
-            contacts: contacts ? contacts.toJS() : [],
-            accounts: accounts ? accounts.toJS() : {},
+            messages: messages || [],
+            contacts: contacts || [],
+            accounts: accounts || {},
         }
     },
     dispatch => ({
@@ -95,7 +95,7 @@ export default connect(
                     extensions: []
                 },
                 successCallback: () => {
-                    dispatch(g.actions.updateBlocking({ blocker, blocking, block }))
+                    dispatch(updateBlocking({ blocker, blocking, block }))
                 },
                 errorCallback: (err, errStr) => {
                     console.error(err)

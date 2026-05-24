@@ -27,7 +27,7 @@ class TipAssetList extends React.Component {
 
     render() {
         const { currentAccount, currentBalance } = this.props
-        const golosBalance = Asset(currentAccount.get('tip_balance'))
+        const golosBalance = Asset(currentAccount.tip_balance)
         
         let tipBalanceValue = currentBalance && currentBalance.toString(0)
 
@@ -38,7 +38,7 @@ class TipAssetList extends React.Component {
             onClick: this.onSelected
         })
 
-        const uias = this.props.uias && this.props.uias.toJS()
+        const uias = this.props.uias
         if (uias) {
             for (const [sym, obj] of Object.entries(uias)) {
                 const balance = Asset(obj.tip_balance)

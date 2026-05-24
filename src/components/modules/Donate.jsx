@@ -1,12 +1,11 @@
 import React from 'react'
 import {connect} from 'react-redux'
 import { Formik, Form, Field, ErrorMessage, } from 'formik'
-import { Map } from 'immutable'
 import { Asset, AssetEditor } from 'golos-lib-js/lib/utils'
 import tt from 'counterpart'
 import Confetti from 'react-dom-confetti'
 
-import g from 'app/redux/GlobalReducer'
+import { fetchUiaBalances } from 'app/redux/GlobalSlice';
 import { broadcastOperation } from 'app/redux/TransactionSlice';
 import { getAccount, hideDonate, setDonateDefaults } from 'app/redux/UserSlice';
 import LoadingIndicator from 'app/components/elements/LoadingIndicator'
@@ -49,13 +48,13 @@ class Donate extends React.Component {
         const { sym } = opts
         if (sym === 'GOLOS') {
             if (currentAccount) {
-                const tip = currentAccount.get('tip_balance')
+                const tip = currentAccount.tip_balance
                 if (tip) {
                     res = Asset(tip)
                 }
             }
         } else {
-            const uias = this.props.uias && this.props.uias.toJS()
+            const uias = this.props.uias;
             if (uias && uias[sym]) {
                 res = Asset(uias[sym].tip_balance)
             }
@@ -182,15 +181,16 @@ class Donate extends React.Component {
 
 export default connect(
     (state, ownProps) => {
-        const opts = state.user.get('donate_defaults', Map()).toJS()
+        const opts = state.user.donate_defaults || {};
 
         const currentUser = state.user.current
-        const currentAccount = currentUser && state.global.getIn(['accounts', currentUser.username])
+        const currentAccount = currentUser && state.global.accounts
+             && state.global.accounts[currentUser.username]
 
-        let uias = state.global.get('assets')
+        let uias = state.global.assets
         let uia 
         if (uias) {
-            uia = uias.get(opts.sym)
+            uia = uias[opts.sym];
         }
 
         return { ...ownProps,
@@ -203,12 +203,12 @@ export default connect(
     dispatch => ({
         fetchBalance: (currentUser) => {
             if (!currentUser) return
-            dispatch(getAccount())
+            dispatch(getAccount({}))
         },
         fetchUIABalances: (currentUser) => {
             if (!currentUser) return
             const account = currentUser.username
-            dispatch(g.actions.fetchUiaBalances({ account }))
+            dispatch(fetchUiaBalances({ account }))
         },
         setDonateDefaults: (donateDefaults) => {
             dispatch(setDonateDefaults(donateDefaults))
