@@ -3,7 +3,7 @@ import tt from 'counterpart'
 import {connect} from 'react-redux'
 
 import Icon from 'app/components/elements/Icon'
-import user from 'app/redux/UserReducer'
+import { showCreateGroup } from 'app/redux/UserSlice';
 import './StartPanel.scss'
 
 class StartPanel extends React.Component {
@@ -57,7 +57,7 @@ export default connect(
     },
     dispatch => ({
         showCreateGroup() {
-            dispatch(user.actions.showCreateGroup({ redirectAfter: true }))
+            dispatch(showCreateGroup({ redirectAfter: true }))
         },
     })
 )(StartPanel)

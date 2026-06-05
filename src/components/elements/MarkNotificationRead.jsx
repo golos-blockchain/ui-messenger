@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import {connect} from 'react-redux'
 
 import { markNotificationRead } from 'app/utils/NotifyApiClient'
+import { updateNotificounters } from 'app/redux/AppSlice';
 
 class MarkNotificationRead extends React.Component {
 
@@ -79,5 +80,5 @@ class MarkNotificationRead extends React.Component {
 }
 
 export default connect(null, dispatch => ({
-    update: (payload) => { dispatch({type: 'UPDATE_NOTIFICOUNTERS', payload})},
+    update: (payload) => { dispatch(updateNotificounters(payload))},
 }))(MarkNotificationRead);

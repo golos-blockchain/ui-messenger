@@ -12,7 +12,7 @@ class FormikAgent extends React.Component {
     componentDidMount() {
         const { setFieldValue, currentUser, opts } = this.props
         if (currentUser) {
-            const username = currentUser.get('username')
+            const username = currentUser.username
             this.setVals(username)
         }
     }
@@ -21,7 +21,7 @@ class FormikAgent extends React.Component {
         const { setFieldValue, currentUser, opts } = this.props
         const { sym, precision } = opts
         if (currentUser && (!prevProps.currentUser || sym !== prevProps.opts.sym)) {
-            const username = currentUser.get('username')
+            const username = currentUser.username
             this.setVals(username)
         }
     }

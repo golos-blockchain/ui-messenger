@@ -8,7 +8,10 @@ import vitePluginRequire from "vite-plugin-require";
 
 export default defineConfig({
     css: {
-      preprocessorOptions: {
+        lightningcss: {
+            errorRecovery: true,
+        },
+        preprocessorOptions: {
             scss: {
                 logger: {
                     warn(message, options) {}

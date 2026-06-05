@@ -10,7 +10,7 @@ import Logo from 'app/components/elements/Logo'
 //import transaction from 'app/redux/Transaction'
 //import g from 'app/redux/GlobalReducer'
 import LoginAppReminder from 'app/components/elements/app/LoginAppReminder'
-import user from 'app/redux/UserReducer'
+import { usernamePasswordLogin } from 'app/redux/UserSlice';
 import {validate_account_name} from 'app/utils/ChainValidation';
 import runTests from 'app/utils/BrowserTests';
 import reactForm from 'app/utils/ReactForm'
@@ -48,7 +48,7 @@ class LoginForm extends Component {
         this.onCancel = (e) => {
             if(e.preventDefault) e.preventDefault()
             const {onCancel, loginBroadcastOperation} = this.props;
-            const errorCallback = loginBroadcastOperation && loginBroadcastOperation.get('errorCallback');
+            const errorCallback = loginBroadcastOperation && loginBroadcastOperation.errorCallback;
             if (errorCallback) errorCallback('Canceled');
             if (onCancel) onCancel()
         };
@@ -126,9 +126,9 @@ class LoginForm extends Component {
         const {submitting, valid, handleSubmit} = this.state.login;
         const {usernameOnChange, onCancel, /*qrReader*/} = this;
         const disabled = submitting || !valid;
-        const opType = loginBroadcastOperation ? loginBroadcastOperation.get('type') : null;
+        const opType = loginBroadcastOperation ? loginBroadcastOperation.type : null;
         let postType = "";
-        const authType = loginDefault && loginDefault.get('authType')
+        const authType = loginDefault && loginDefault.authType
         let isMemo = false;
         if (opType === "vote") {
             postType = tt('loginform_jsx.login_to_vote')
@@ -143,7 +143,7 @@ class LoginForm extends Component {
         }
         const title = postType ? postType : tt('g.login');
         const submitLabel = loginBroadcastOperation ? tt('g.sign_in') : tt('g.login');
-        const cancelIsRegister = loginDefault && loginDefault.get('cancelIsRegister');
+        const cancelIsRegister = loginDefault && loginDefault.cancelIsRegister;
         const { loginError } = this.props
         let error = !loginLoading && (loginError ? loginError.error : (password.touched && password.error && password.error))
         if (error === 'owner_login_blocked') {
@@ -222,7 +222,7 @@ class LoginForm extends Component {
                     <button type="submit" disabled={submitting || disabled} className="button">
                         {submitLabel}
                     </button>
-                    {!cancelIsRegister && this.props.onCancel && (!isMemo || !loginDefault.get('unclosable')) && <button type="button float-right" disabled={submitting} className="button hollow" onClick={onCancel}>
+                    {!cancelIsRegister && this.props.onCancel && (!isMemo || !loginDefault.unclosable) && <button type="button float-right" disabled={submitting} className="button hollow" onClick={onCancel}>
                         {tt('g.cancel')}
                     </button>}
                     {cancelIsRegister && !isMemo && <a href={authRegisterUrl()} target='_blank' type="button float-right" disabled={submitting} className="button hollow" onClick={this.checkRegisterEnabled}>
@@ -289,9 +289,9 @@ export default connect(
 
     // mapStateToProps
     (state) => {
-        const loginError = state.user.get('loginError')
-        const currentUser = state.user.get('current')
-        const loginBroadcastOperation = state.user.get('loginBroadcastOperation')
+        const loginError = state.user.loginError
+        const currentUser = state.user.current
+        const loginBroadcastOperation = state.user.loginBroadcastOperation
 
         const initialValues = {
             saveLogin: saveLoginDefault,
@@ -300,12 +300,12 @@ export default connect(
         }
 
         // The username input has a value prop, so it should not use initialValues
-        let initialUsername = currentUser && currentUser.has('username') ? currentUser.get('username') : urlAccountName()
+        let initialUsername = (currentUser && currentUser.username) || urlAccountName()
         //fixme - redesign (code duplication with USaga, UProfile)
 
-        const loginDefault = state.user.get('loginDefault')
+        const loginDefault = state.user.loginDefault
         if(loginDefault) {
-            const {username, authType} = loginDefault.toJS()
+            const {username, authType} = loginDefault
             if(username && authType) initialValues.username = username + '/' + authType
         } else if (initialUsername) {
             initialValues.username = initialUsername;
@@ -315,8 +315,8 @@ export default connect(
         if (msg_match && msg_match.length > 1) msg = msg_match[1];
         hasError = !!loginError
         return {
-            loginError: (loginError && loginError.toJS) ? loginError.toJS() : loginError,
-            loginLoading: state.user.get('loginLoading'),
+            loginError,
+            loginLoading: state.user.loginLoading,
             loginBroadcastOperation,
             initialValues,
             initialUsername,
@@ -331,7 +331,7 @@ export default connect(
             const {password, saveLogin} = data
             const username = data.username.trim().toLowerCase()
             if (loginBroadcastOperation) {
-                /*const {type, operation, trx, successCallback, errorCallback} = loginBroadcastOperation.toJS()
+                /*const {type, operation, trx, successCallback, errorCallback} = loginBroadcastOperation
                 const authSaver = () => {
                     if (!/^vote|comment/.test(type) && location.pathname.startsWith('/market')) {
                         pageSession.save(password, username, 'active');
@@ -343,7 +343,7 @@ export default connect(
                 dispatch(user.actions.usernamePasswordLogin({username, password, saveLogin: true, fromLoginForm, operationType: type}))
                 dispatch(user.actions.closeLogin())*/
             } else {
-                dispatch(user.actions.usernamePasswordLogin({username, password, saveLogin, fromLoginForm, authType}))
+                dispatch(usernamePasswordLogin({username, password, saveLogin, fromLoginForm, authType}))
             }
         },
         /*clearError: () => { if (hasError) dispatch(user.actions.loginError({error: null})) },

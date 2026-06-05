@@ -6,8 +6,8 @@ import tt from 'counterpart'
 import { validateAccountName } from 'golos-lib-js/lib/utils'
 import cn from 'classnames'
 
-import g from 'app/redux/GlobalReducer'
-import transaction from 'app/redux/TransactionReducer'
+import { fetchGroupMembers, receiveAccount, updateGroupMember } from 'app/redux/GlobalSlice';
+import { broadcastOperation } from 'app/redux/TransactionSlice';
 import AccountName from 'app/components/elements/common/AccountName'
 import Input from 'app/components/elements/common/Input';
 import GroupMember from 'app/components/elements/groups/GroupMember'
@@ -38,9 +38,9 @@ class GroupMembers extends React.Component {
     isLoading = () => {
         const { group } = this.props
         if (!group) return true
-        const members = group.get('members')
+        const members = group.members
         if (!members) return true
-        return members.get('loading')
+        return members.loading
     }
 
     init = (force = false) => {
@@ -142,9 +142,8 @@ class GroupMembers extends React.Component {
     render() {
         const { currentGroup, group, username, closeMe } = this.props
         const loading = this.isLoading()
-        let members = group && group.get('members')
-        if (members) members = members.get('data')
-        if (members) members = members.toJS()
+        let members = group && group.members
+        if (members) members = members.data
 
         const { creatingNew } = currentGroup
         let { amOwner, amModer } = getRoleInGroup(currentGroup, username)
@@ -275,30 +274,29 @@ class GroupMembers extends React.Component {
 export default connect(
     // mapStateToProps
     (state, ownProps) => {
-        const currentUser = state.user.get('current')
-        const username = currentUser && currentUser.get('username')
+        const currentUser = state.user.current
+        const username = currentUser && currentUser.username
 
         const { newGroup } = ownProps
         let currentGroup, current_tab
         if (newGroup) {
             currentGroup = newGroup
         } else {
-            const options = state.user.get('group_members_modal')
+            const options = state.user.group_members_modal
             if (options) {
-                currentGroup = options.get('group')
-                current_tab = options.get('current_tab')
+                currentGroup = options.group
+                current_tab = options.current_tab
             }
             if (currentGroup) {
                 const [ path, name ] = currentGroup
                 if (path === 'the_group') {
-                    currentGroup = state.global.get('the_group')
+                    currentGroup = state.global.the_group
                 } else {
-                    currentGroup = state.global.get('my_groups').find(g => g.get('name') === name)
+                    currentGroup = state.global.my_groups.find(g => g.name === name)
                 }
-                if (currentGroup) currentGroup = currentGroup.toJS()
             }
         }
-        const group = currentGroup && state.global.getIn(['groups', currentGroup.name])
+        const group = currentGroup && state.global.groups[currentGroup.name]
         return {
             ...ownProps,
             username,
@@ -309,16 +307,16 @@ export default connect(
     },
     dispatch => ({
         fetchGroupMembers: (group, memberTypes, sortConditions) => {
-            dispatch(g.actions.fetchGroupMembers({
+            dispatch(fetchGroupMembers({
                 group: group.name, creatingNew: !!group.creatingNew, memberTypes, sortConditions, }))
         },
         receiveAccounts: (accs) => {
             for (const acc of accs) {
-                dispatch(g.actions.receiveAccount({ account: acc }))
+                dispatch(receiveAccount({ account: acc }))
             }
         },
         updateGroupMember: (group, member, member_type) => {
-            dispatch(g.actions.updateGroupMember({
+            dispatch(updateGroupMember({
                 group, member, member_type, }))
         },
         groupMember: ({ requester, group, member, member_type,
@@ -335,7 +333,7 @@ export default connect(
             const plugin = 'private_message'
             const json = JSON.stringify(['private_group_member', opData])
 
-            dispatch(transaction.actions.broadcastOperation({
+            dispatch(broadcastOperation({
                 type: 'custom_json',
                 operation: {
                     id: plugin,

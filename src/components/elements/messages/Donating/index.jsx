@@ -4,7 +4,7 @@ import {connect} from 'react-redux'
 import { Asset } from 'golos-lib-js/lib/utils'
 
 import Icon from 'app/components/elements/Icon'
-import user from 'app/redux/UserReducer'
+import { setDonateDefaults, showDonate } from 'app/redux/UserSlice';
 import './index.css'
 
 class Donating extends React.Component {
@@ -73,12 +73,12 @@ export default connect(
     },
     dispatch => ({
         showDonate(group, from, to, nonce) {
-            dispatch(user.actions.setDonateDefaults({
+            dispatch(setDonateDefaults({
                 group, from, to, nonce,
                 sym: 'GOLOS',
                 precision: 3,
             }))
-            dispatch(user.actions.showDonate())
+            dispatch(showDonate())
         },
     })
 )(Donating)

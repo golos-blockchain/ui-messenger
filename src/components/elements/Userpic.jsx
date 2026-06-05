@@ -139,8 +139,9 @@ export default connect(
     (state, props) => {
         const { account, width, height, hideIfDefault, onClick } = props;
 
+        const acc = state.global.accounts && state.global.accounts[account];
         return {
-            json_metadata: state.global.getIn(['accounts', account, 'json_metadata']),
+            json_metadata: acc && acc.json_metadata,
             width,
             height,
             hideIfDefault,

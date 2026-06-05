@@ -4,8 +4,8 @@ import tt from 'counterpart'
 
 import DialogManager from 'app/components/elements/common/DialogManager'
 import VerticalMenu from 'app/components/elements/VerticalMenu'
-import g from 'app/redux/GlobalReducer'
-import transaction from 'app/redux/TransactionReducer'
+import { updateBlocking } from 'app/redux/GlobalSlice';
+import { broadcastOperation } from 'app/redux/TransactionSlice';
 import { maxDateStr, isBlockedByMe } from 'app/utils/misc'
 
 class AccountDropdown extends React.Component {
@@ -69,20 +69,20 @@ class AccountDropdown extends React.Component {
 
 export default connect(
     (state, ownProps) => {
-        const username = state.user.getIn(['current', 'username'])
-        const messages = state.global.get('messages')
-        const contacts = state.global.get('contacts')
-        const accounts = state.global.get('accounts')
+        const username = state.user.current && state.user.current.username
+        const messages = state.global.messages
+        const contacts = state.global.contacts
+        const accounts = state.global.accounts
         return {
             username,
-            messages: messages ? messages.toJS() : [],
-            contacts: contacts ? contacts.toJS() : [],
-            accounts: accounts ? accounts.toJS() : {},
+            messages: messages || [],
+            contacts: contacts || [],
+            accounts: accounts || {},
         }
     },
     dispatch => ({
         updateBlock: ({ blocker, blocking, block, onError }) => {
-            dispatch(transaction.actions.broadcastOperation({
+            dispatch(broadcastOperation({
                 type: 'account_setup',
                 operation: {
                     account: blocker,
@@ -95,7 +95,7 @@ export default connect(
                     extensions: []
                 },
                 successCallback: () => {
-                    dispatch(g.actions.updateBlocking({ blocker, blocking, block }))
+                    dispatch(updateBlocking({ blocker, blocking, block }))
                 },
                 errorCallback: (err, errStr) => {
                     console.error(err)
@@ -116,7 +116,7 @@ export default connect(
                     delete_contact
                 }]]
             }])
-            dispatch(transaction.actions.broadcastOperation({
+            dispatch(broadcastOperation({
                 type: 'custom_json',
                 operation: {
                     id: 'private_message',

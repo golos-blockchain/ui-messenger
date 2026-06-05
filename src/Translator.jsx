@@ -27,7 +27,7 @@ class Translator extends React.Component {
 
 export default connect(
     (state, ownProps) => {
-        const locale = state.user.get('locale')
+        const locale = state.user.locale
         return {
             locale
         }

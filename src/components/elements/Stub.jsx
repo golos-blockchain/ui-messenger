@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import tt from 'counterpart'
 
 import LoadingIndicator from 'app/components/elements/LoadingIndicator'
-import transaction from 'app/redux/TransactionReducer'
+import { broadcastOperation } from 'app/redux/TransactionSlice';
 import { getRoleInGroup } from 'app/utils/groups'
 import { maxDateStr, isBlockedByMe, isBlockingMe } from 'app/utils/misc'
 
@@ -68,12 +68,11 @@ class StubInner extends React.Component {
 
 const Stub = connect(
     (state, ownProps) => {
-        const currentUser = state.user.get('current')
+        const currentUser = state.user.current
 
-        const username = state.user.getIn(['current', 'username'])
+        const username = state.user.current && state.user.current.username
 
-        let the_group = state.global.get('the_group')
-        if (the_group && the_group.toJS) the_group = the_group.toJS()
+        let the_group = state.global.the_group
 
         return {
             the_group,
@@ -95,7 +94,7 @@ const Stub = connect(
             const plugin = 'private_message'
             const json = JSON.stringify(['private_group_member', opData])
 
-            dispatch(transaction.actions.broadcastOperation({
+            dispatch(broadcastOperation({
                 type: 'custom_json',
                 operation: {
                     id: plugin,

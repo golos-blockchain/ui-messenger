@@ -2,13 +2,9 @@ import React from 'react'
 import DropZone from 'react-dropzone'
 import {connect} from 'react-redux'
 import { Formik, Form, Field, ErrorMessage, } from 'formik'
-import { Map } from 'immutable'
 import { api, formatter } from 'golos-lib-js'
 import tt from 'counterpart'
 
-import g from 'app/redux/GlobalReducer'
-import transaction from 'app/redux/TransactionReducer'
-import user from 'app/redux/UserReducer'
 import DropdownMenu from 'app/components/elements/DropdownMenu'
 import ExtLink from 'app/components/elements/ExtLink'
 import Icon from 'app/components/elements/Icon'
@@ -16,7 +12,10 @@ import LoadingIndicator from 'app/components/elements/LoadingIndicator'
 import DialogManager from 'app/components/elements/common/DialogManager'
 import { showLoginDialog } from 'app/components/dialogs/LoginDialog'
 import { validateLogoStep } from 'app/components/modules/groups/GroupLogo'
+import { broadcastOperation } from 'app/redux/TransactionSlice';
+import { uploadImage, } from 'app/redux/UserSlice';
 import { getGroupMeta, getGroupTitle } from 'app/utils/groups'
+import { addNotification } from 'app/utils/NotificationService';
 import { proxifyImageUrlWithStrip } from 'app/utils/ProxifyUrl'
 
 class GroupSettings extends React.Component {
@@ -29,7 +28,7 @@ class GroupSettings extends React.Component {
 
     componentDidMount() {
         const { currentGroup } = this.props
-        const group = currentGroup.toJS()
+        const group = currentGroup
         const { name, privacy, json_metadata, is_encrypted } = group
         const meta = getGroupMeta(json_metadata)
         const initialValues = {
@@ -58,7 +57,7 @@ class GroupSettings extends React.Component {
     }
 
     uploadLogo = (file, name, { applyFieldValue }) => {
-        const { uploadImage } = this.props
+        const { notify, uploadImage } = this.props
         this.setState({ uploading: true })
         uploadImage(file, progress => {
             if (progress.url) {
@@ -66,7 +65,7 @@ class GroupSettings extends React.Component {
             }
             if (progress.error) {
                 const { error } = progress;
-                notify(error, 10000)
+                notify(error, 1000000)
             }
             this.setState({ uploading: false })
         })
@@ -104,7 +103,7 @@ class GroupSettings extends React.Component {
 
     _onSubmit = async (values, actions) => {
         const { currentUser } = this.props
-        const creator = currentUser.get('username')
+        const creator = currentUser.username
 
         this.setState({
             submitError: ''
@@ -152,7 +151,7 @@ class GroupSettings extends React.Component {
 
     render() {
         const { currentGroup } = this.props
-        const group = currentGroup.toJS()
+        const group = currentGroup
         const { name, json_metadata } = group
 
         const meta = getGroupMeta(json_metadata)
@@ -276,21 +275,19 @@ class GroupSettings extends React.Component {
 
 export default connect(
     (state, ownProps) => {
-        const currentUser = state.user.getIn(['current'])
-        const currentAccount = currentUser && state.global.getIn(['accounts', currentUser.get('username')])
+        const currentUser = state.user.current
+        const currentAccount = currentUser && state.global.accounts
+            && state.global.accounts[currentUser.username]
 
         return { ...ownProps,
             currentUser,
             currentAccount,
-            currentGroup: state.user.get('current_group'),
+            currentGroup: state.user.current_group,
         }
     },
     dispatch => ({
         uploadImage: (file, progress) => {
-            dispatch({
-                type: 'user/UPLOAD_IMAGE',
-                payload: {file, progress},
-            })
+            dispatch(uploadImage({ file, progress }));
         },
         privateGroup: ({ password, creator, name, title, logo, is_encrypted, privacy,
         onSuccess, onError }) => {
@@ -313,7 +310,7 @@ export default connect(
 
             const json = JSON.stringify(['private_group', opData])
 
-            dispatch(transaction.actions.broadcastOperation({
+            dispatch(broadcastOperation({
                 type: 'custom_json',
                 operation: {
                     id: 'private_message',
@@ -328,6 +325,13 @@ export default connect(
                     if (onError) onError(err, errStr)
                 },
             }));
+        },
+        notify: (message, dismiss = 3000) => {
+            addNotification({
+                key: 'group_logo_' + Date.now(),
+                message,
+                dismissAfter: dismiss
+            });
         }
     })
 )(GroupSettings)

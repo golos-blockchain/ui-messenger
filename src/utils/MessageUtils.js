@@ -6,27 +6,28 @@ export function displayQuoteMsg(body) {
 }
 
 export function processDatedGroup(group, messages, for_each) {
-    let deleteIt
+    let deleteIt;
+    
     if (group.nonce) {
-        const idx = messages.findIndex(i => i.get('nonce') === group.nonce);
+        const idx = messages.findIndex(i => i.nonce === group.nonce);
         if (idx !== -1) {
-            messages = messages.update(idx, (msg) => {
-                const { updated, fixIdx } = for_each(msg, idx)
-                if (!updated) {
-                    deleteIt = idx
-                }
-                return updated || msg
-            })
-            if (deleteIt !== undefined) {
-                messages = messages.delete(idx)
+            const { updated, fixIdx } = for_each(messages[idx], idx);
+            if (!updated) {
+                deleteIt = idx;
+            } else {
+                messages[idx] = updated;
+            }
+            if (deleteIt) {
+                messages.splice(deleteIt, 1);
             }
         }
     } else {
         let inRange = false;
-        for (let idx = 0; idx < messages.size; ++idx) {
-            let msg = messages.get(idx);
-            const date = msg.get('create_date');
-            const rec_date = msg.get('receive_date');
+        for (let idx = 0; idx < messages.length; ++idx) {
+            let msg = messages[idx];
+            const date = msg.create_date;
+            const rec_date = msg.receive_date;
+
             if (!inRange && date <= group.stop_date) {
                 inRange = true;
             }
@@ -34,23 +35,26 @@ export function processDatedGroup(group, messages, for_each) {
                 break;
             }
             if (inRange) {
-                deleteIt = undefined
-                messages = messages.update(idx, (msg) => {
-                    const { updated, fixIdx } = for_each(msg, idx)
-                    if (!updated) {
-                        deleteIt = idx
-                    }
-                    if (fixIdx !== undefined) {
-                        idx = fixIdx
-                    }
-                    return updated || msg
-                })
+                deleteIt = undefined;
+                const { updated, fixIdx } = for_each(msg, idx);
+
+                if (!updated) {
+                    deleteIt = idx;
+                } else {
+                    messages[idx] = updated;
+                }
+
+                if (fixIdx !== undefined) {
+                    idx = fixIdx;
+                }
+
                 if (deleteIt !== undefined) {
-                    messages = messages.delete(idx)
+                    messages.splice(deleteIt, 1);
                 }
             }
         }
     }
+    
     return messages;
 }
 

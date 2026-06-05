@@ -3,8 +3,8 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import tt from 'counterpart'
 
-import g from 'app/redux/GlobalReducer'
-import user from 'app/redux/UserReducer'
+import { fetchTopGroups } from 'app/redux/GlobalSlice';
+import { hideMyGroups, hideTopGroups, showCreateGroup } from 'app/redux/UserSlice';
 import Icon from 'app/components/elements/Icon'
 import LoadingIndicator from 'app/components/elements/LoadingIndicator'
 import { getGroupLogo, getGroupMeta, } from 'app/utils/groups'
@@ -103,8 +103,6 @@ class TopGroups extends React.Component {
         if (!top_groups) {
             groups = <LoadingIndicator type='circle' />
         } else {
-            top_groups = top_groups.toJS()
-
             if (!top_groups.length) {
                 groups = <div>
                     {tt('top_groups_jsx.empty')}
@@ -139,9 +137,9 @@ class TopGroups extends React.Component {
 
 export default connect(
     (state, ownProps) => {
-        const currentUser = state.user.getIn(['current'])
-        const username = currentUser && currentUser.get('username')
-        const top_groups = state.global.get('top_groups')
+        const currentUser = state.user.current
+        const username = currentUser && currentUser.username
+        const top_groups = state.global.top_groups
 
         return { ...ownProps,
             currentUser,
@@ -152,19 +150,19 @@ export default connect(
     dispatch => ({
         fetchTopGroups: (currentUser) => {
             if (!currentUser) return
-            const account = currentUser.get('username')
-            dispatch(g.actions.fetchTopGroups({ account }))
+            const account = currentUser.username
+            dispatch(fetchTopGroups({ account }))
         },
         hideMyGroups: e => {
             if (e) e.preventDefault()
-            dispatch(user.actions.hideMyGroups())
+            dispatch(hideMyGroups())
         },
         hideTopGroups: e => {
             if (e) e.preventDefault()
-            dispatch(user.actions.hideTopGroups())
+            dispatch(hideTopGroups())
         },
         showCreateGroup() {
-            dispatch(user.actions.showCreateGroup({ redirectAfter: false }))
+            dispatch(showCreateGroup({ redirectAfter: false }))
         },
     })
 )(TopGroups)

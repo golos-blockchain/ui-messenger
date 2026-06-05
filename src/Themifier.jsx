@@ -34,7 +34,7 @@ class Themifier extends React.Component {
 
 export default connect(
     (state, ownProps) => {
-        const nightmodeEnabled = state.user.get('nightmodeEnabled')
+        const nightmodeEnabled = state.user.nightmodeEnabled
         return {
             nightmodeEnabled
         }

@@ -40,7 +40,6 @@ const getMemberType = (member_list, username) => {
 }
 
 const getRoleInGroup = (group, username) => {
-    if (group.toJS) group = group.toJS()
     const { owner, member_list } = group
     const memberType = member_list && getMemberType(member_list, username)
 

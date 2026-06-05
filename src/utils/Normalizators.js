@@ -1,5 +1,6 @@
 import golos from 'golos-lib-js'
 import tt from 'counterpart'
+import cloneDeep from 'lodash/cloneDeep';
 
 import { getGroupLogo } from 'app/utils/groups'
 import { getProfileImage } from 'app/utils/NormalizeProfile';
@@ -120,16 +121,16 @@ export async function normalizeContacts(contacts, accounts, currentUser, cachedP
     if (!currentUser || !accounts)
         return [];
 
-    const currentAcc = accounts[currentUser.get('username')];
+    const currentAcc = accounts[currentUser.username];
     if (!currentAcc)
         return [];
 
-    const posting = currentUser.getIn(['private_keys', 'posting_private'])
-    const private_memo = currentUser.getIn(['private_keys', 'memo_private']);
+    const posting = currentUser && currentUser.private_keys.posting_private;
+    const private_memo = currentUser && currentUser.private_keys.memo_private;
 
     const tt_invalid_message = tt('messages.invalid_message');
 
-    let contactsCopy = contacts ? [...contacts.toJS()] : [];
+    let contactsCopy = contacts ? cloneDeep(contacts) : [];
     let messages = []
     for (let contact of contactsCopy) {
         let account = accounts && accounts[contact.contact];
@@ -198,16 +199,16 @@ export async function normalizeMessages(messages, accounts, currentUser, to) {
         return [];
     }
 
-    let messagesCopy = messages ? [...messages.toJS()] : [];
+    let messagesCopy = messages ? cloneDeep(messages) : [];
 
     let id = 0;
     try {
-        let currentAcc = accounts[currentUser.get('username')];
+        let currentAcc = accounts[currentUser.username];
 
         const tt_invalid_message = tt('messages.invalid_message');
 
-        const posting = currentUser.getIn(['private_keys', 'posting_private'])
-        const privateMemo = currentUser.getIn(['private_keys', 'memo_private']);
+        const posting = currentUser && currentUser.private_keys.posting_private
+        const privateMemo = currentUser && currentUser.private_keys.memo_private
 
         if (window._perfo) console.log('ttt', Date.now())
         const decoded = await decodeMsgs({ msgs: messagesCopy,

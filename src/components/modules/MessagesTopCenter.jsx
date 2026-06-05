@@ -13,9 +13,8 @@ import DropdownMenu from 'app/components/elements/DropdownMenu'
 import Icon from 'app/components/elements/Icon'
 import TimeAgoWrapper from 'app/components/elements/TimeAgoWrapper'
 import AccountDropdown from 'app/components/modules/AccountDropdown'
-import g from 'app/redux/GlobalReducer'
-import transaction from 'app/redux/TransactionReducer'
-import user from 'app/redux/UserReducer'
+import { broadcastOperation } from 'app/redux/TransactionSlice';
+import { showGroupMembers, showGroupSettings } from 'app/redux/UserSlice';
 import { getMemberType, getGroupLogo, getGroupMeta, getGroupTitle, } from 'app/utils/groups'
 import { getLastSeen } from 'app/utils/NormalizeProfile'
 
@@ -361,19 +360,18 @@ class MessagesTopCenter extends React.Component {
 
 export default withRouter(connect(
     (state, ownProps) => {
-        const currentUser = state.user.get('current')
-        const accounts = state.global.get('accounts')
+        const currentUser = state.user.current
+        const accounts = state.global.accounts
 
-        const username = state.user.getIn(['current', 'username'])
+        const username = state.user.current && state.user.current.username
 
-        let the_group = state.global.get('the_group')
-        if (the_group && the_group.toJS) the_group = the_group.toJS()
+        let the_group = state.global.the_group
 
         return {
             the_group,
-            account: currentUser && accounts && accounts.toJS()[currentUser.get('username')],
+            account: currentUser && accounts && accounts[currentUser.username],
             currentUser,
-            accounts: accounts ?  accounts.toJS() : {},
+            accounts: accounts || {},
             username,
         }
     },
@@ -392,7 +390,7 @@ export default withRouter(connect(
             const plugin = 'private_message'
             const json = JSON.stringify(['private_group_member', opData])
 
-            dispatch(transaction.actions.broadcastOperation({
+            dispatch(broadcastOperation({
                 type: 'custom_json',
                 operation: {
                     id: plugin,
@@ -408,10 +406,10 @@ export default withRouter(connect(
             }));
         },
         showGroupMembers({ group }) {
-            dispatch(user.actions.showGroupMembers({ group: ['the_group', group] }))
+            dispatch(showGroupMembers({ group: ['the_group', group] }))
         },
         showGroupSettings({ group }) {
-            dispatch(user.actions.showGroupSettings({ group }))
+            dispatch(showGroupSettings({ group }))
         },
         deleteGroup: ({ owner, name, password,
         onSuccess, onError }) => {
@@ -423,7 +421,7 @@ export default withRouter(connect(
 
             const json = JSON.stringify(['private_group_delete', opData])
 
-            dispatch(transaction.actions.broadcastOperation({
+            dispatch(broadcastOperation({
                 type: 'custom_json',
                 operation: {
                     id: 'private_message',

@@ -1,17 +1,17 @@
 import { combineReducers } from 'redux'
 import { connectRouter } from 'connected-react-router'
 
-import appReducer from './AppReducer'
-import globalReducerModule from './GlobalReducer'
-import transactionReducerModule from './TransactionReducer'
-import userReducerModule from './UserReducer'
+import appReducer from './AppSlice';
+import globalReducer from './GlobalSlice';
+import transactionReducer from './TransactionSlice';
+import userReducer from './UserSlice';
 
 const createRootReducer = (history) => combineReducers({
     router: connectRouter(history),
     app: appReducer,
-    global: globalReducerModule.reducer,
-    transaction: transactionReducerModule.reducer,
-    user: userReducerModule.reducer,
+    global: globalReducer,
+    transaction: transactionReducer,
+    user: userReducer,
 });
 
 export default createRootReducer

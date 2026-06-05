@@ -1,14 +1,18 @@
-import { Map, fromJS } from 'immutable'
 import { call, put, select, fork, takeLatest, takeEvery } from 'redux-saga/effects'
 import { auth, api, config } from 'golos-lib-js'
 import { Session, PageSession, signData } from 'golos-lib-js/lib/auth'
 import { PrivateKey, Signature, hash } from 'golos-lib-js/lib/auth/ecc'
 
-import g from 'app/redux/GlobalReducer'
-import user from 'app/redux/UserReducer'
-import { getAccount } from 'app/redux/SagaShared'
+import { receiveAccount } from 'app/redux/GlobalSlice';
 import uploadImageWatch from 'app/redux/UserSaga_UploadImage'
+import {
+    getAccount,
+    loginError, logout,
+    saveLogin, saveLoginConfirm, setUser, stopLoading,
+    usernamePasswordLogin,
+} from 'app/redux/UserSlice';
 import { authApiLogin, authApiLogout } from 'app/utils/AuthApiClient'
+import { addNotification } from 'app/utils/NotificationService';
 import { notifyApiLogin, notifyApiLogout, notificationUnsubscribe, firebaseUnregisterWs } from 'app/utils/NotifyApiClient'
 
 export const session = new Session('msgr_auth')
@@ -23,19 +27,19 @@ export function* userWatches() {
 }
 
 function* loginWatch() {
-    yield takeLatest('user/USERNAME_PASSWORD_LOGIN', usernamePasswordLogin)
+    yield takeLatest(usernamePasswordLogin.type, handleUsernamePasswordLogin);
 }
 
 function* saveLoginWatch() {
-    yield takeLatest('user/SAVE_LOGIN', saveLogin);
+    yield takeLatest(saveLogin.type, handleSaveLogin);
 }
 
 function* getAccountWatch() {
-    yield takeEvery('user/GET_ACCOUNT', getAccountHandler);
+    yield takeEvery(getAccount.type, getAccountHandler);
 }
 
 function* logoutWatch() {
-    yield takeLatest('user/LOGOUT', logout);
+    yield takeLatest(logout.type, handleLogout);
 }
 
 /**
@@ -43,8 +47,9 @@ function* logoutWatch() {
     @arg {object} action.password - Password or WIF private key.  A WIF becomes the posting key, a password can create all three
         key_types: active, owner, posting keys.
 */
-function* usernamePasswordLogin(action) {
-    let { username, password, saveLogin,
+function* handleUsernamePasswordLogin(action) {
+    const doSaveLogin = action.payload.saveLogin
+    let { username, password,
         operationType, fromLoginForm, authType } = action.payload
 
     let saved = false
@@ -61,7 +66,7 @@ function* usernamePasswordLogin(action) {
     } else {
         // no saved password - should logout services if logged in
         // if (!username || !password) {
-        //     const offchain_account = yield select(state => state.offchain.get('account'))
+        //     const offchain_account = yield select(state => state.offchain.account)
         //     if (offchain_account) {
         //         notifyApiLogout()
         //         serverApiLogout()
@@ -77,34 +82,34 @@ function* usernamePasswordLogin(action) {
             authRes = yield auth.login(username, password)
         } catch (err) {
             if (err === 'No such account') {
-                yield put(user.actions.loginError({ error: 'Username does not exist' }))
+                yield put(loginError({ error: 'Username does not exist' }))
             } else if (err === 'Account is frozen') {
-                yield put(user.actions.loginError({ error: 'Account is frozen' }))
+                yield put(loginError({ error: 'Account is frozen' }))
             } else {
                 console.error(err)
-                yield put(user.actions.loginError({ error: 'Node failure', node: config.get('websocket') }))
+                yield put(loginError({ error: 'Node failure', node: config.get('websocket') }))
             }
             return
         }
 
         if (authRes.active && !authRes.password && !role) {
-            yield put(user.actions.loginError({ error: 'This login gives owner or active permissions and should not be used here.  Please provide a posting only login.' }))
+            yield put(loginError({ error: 'This login gives owner or active permissions and should not be used here.  Please provide a posting only login.' }))
             session.clear()
             return
         }
 
         if (!authRes.memo && !authRes.posting) {
-            yield put(user.actions.loginError({ error: 'Incorrect Password' }))
+            yield put(loginError({ error: 'Incorrect Password' }))
             return
         }
 
         if (authType !== 'memo' && authRes.memo && !authRes.posting) {
-            yield put(user.actions.loginError({ error: 'Posting Not Memo Please' }))
+            yield put(loginError({ error: 'Posting Not Memo Please' }))
             return
         }
 
         if (authType === 'memo' && !authRes.memo) {
-            yield put(user.actions.loginError({ error: 'Incorrect Password' }))
+            yield put(loginError({ error: 'Incorrect Password' }))
             return
         }
 
@@ -112,26 +117,26 @@ function* usernamePasswordLogin(action) {
         memoWif = authRes.memo
 
         // clean error, in order to not show it in Memo login form after Posting login form
-        yield put(user.actions.loginError({ error: '' }))
+        yield put(loginError({ error: '' }))
     }
 
     if (!postingWif && !memoWif) {
-        yield put(user.actions.stopLoading())
+        yield put(stopLoading())
         return
     }
 
-    let private_keys = fromJS({})
+    let private_keys = {}
 
     if (postingWif) {
-        private_keys = private_keys.set('posting_private', PrivateKey.fromWif(postingWif))
+        private_keys.posting_private = PrivateKey.fromWif(postingWif);
     }
 
     if (memoWif) {
-        private_keys = private_keys.set('memo_private', PrivateKey.fromWif(memoWif))
+        private_keys.memo_private =  PrivateKey.fromWif(memoWif);
     }
 
     if (saved && !operationType) {
-        yield put(user.actions.setUser({ username, private_keys, }))
+        yield put(setUser({ username, private_keys, }))
     }
 
     const { errorLogs } = window
@@ -146,13 +151,10 @@ function* usernamePasswordLogin(action) {
                 const lastBadNet = parseInt(localStorage.getItem(lbnKey) || 0);
                 if (now - lastBadNet >= 10*60*1000) {
                     localStorage.setItem(lbnKey, now);
-                    window._reduxStore.dispatch({
-                        type: 'ADD_NOTIFICATION',
-                        payload: {
-                            key: 'bad_net_' + Date.now(),
-                            message,
-                            dismissAfter: 5000
-                        }
+                    addNotification({
+                        key: 'bad_net_' + Date.now(),
+                        message,
+                        dismissAfter: 5000
                     })
                 }
             }
@@ -225,19 +227,19 @@ function* usernamePasswordLogin(action) {
     }
 
     if (!saved && !operationType) {
-        yield put(user.actions.setUser({ username, private_keys, }))
+        yield put(setUser({ username, private_keys, }))
     }
 
-    if (!saved && saveLogin && !operationType)
-        yield put(user.actions.saveLogin())
+    if (!saved && doSaveLogin && !operationType)
+        yield put(saveLogin())
 
-    yield put(user.actions.stopLoading())
+    yield put(stopLoading())
 }
 
-function* saveLogin() {
+function* handleSaveLogin() {
     const [username, private_keys] = yield select(state => ([
-        state.user.getIn(['current', 'username']),
-        state.user.getIn(['current', 'private_keys']),
+        state.user.current && state.user.current.username,
+        state.user.current && state.user.current.private_keys,
     ]))
     if (!username) {
         session.clear();
@@ -245,19 +247,19 @@ function* saveLogin() {
         return
     }
     // Save the lowest security key
-    const posting_private = private_keys.get('posting_private')
+    const posting_private = private_keys.posting_private
     if (!posting_private) {
         session.clear();
         console.error('No posting key to save?')
         return
     }
     const postingPubkey = posting_private.toPublicKey().toString()
-    const memoKey = private_keys.get('memo_private')
+    const memoKey = private_keys.memo_private
     session.save(username, posting_private, memoKey);
 }
 
-function* logout() {
-    yield put(user.actions.saveLoginConfirm(false)) // Just incase it is still showing
+function* handleLogout() {
+    yield put(saveLoginConfirm(false)) // Just incase it is still showing
     const data = session.load()
     const username = data[0]
     try {
@@ -295,14 +297,14 @@ function* logout() {
 
 function* getAccountHandler({ payload: { usernames, resolve, reject }}) {
     if (!usernames) {
-        const current = yield select(state => state.user.get('current'))
+        const current = yield select(state => state.user.current)
         if (!current) return
-        usernames = [current.get('username')]
+        usernames = [current.username]
     }
 
     const accounts = yield call([api, api.getAccountsAsync], usernames)
     for (let account of accounts) {
-        yield put(g.actions.receiveAccount({ account }))
+        yield put(receiveAccount({ account }))
     }
     if (resolve && accounts[0]) {
         resolve(accounts);
