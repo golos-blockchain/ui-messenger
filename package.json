@@ -67,7 +67,7 @@
     "nodemon": "^3.1.10",
     "vite": "^8.0.14",
     "vite-plugin-html": "^3.2.2",
-    "vite-plugin-node-polyfills": "^0.23.0"
+    "vite-plugin-node-polyfills": "^0.28.0"
   },
   "gitDependencies": {
     "formik": "https://github.com/golos-blockchain/formik/tree/master/packages/formik#3b21166c33ade760d562091e1fa0b71d172a7aaf",

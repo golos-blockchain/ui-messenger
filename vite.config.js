@@ -19,14 +19,23 @@ export default defineConfig({
             }
         }
     },
+    // define: {
+    //     process: {
+    //         env: {
+    //             BROWSER: true,
+    //             IS_APP: !!process.env.IS_APP,
+    //             DESKTOP_APP: !!process.env.DESKTOP_APP,
+    //             MOBILE_APP: !!process.env.MOBILE_APP,
+    //             //NO_NOTIFY: 1,
+    //         }
+    //     }
+    // },
     define: {
-        'process.env': {
-            BROWSER: true,
-            IS_APP: !!process.env.IS_APP,
-            DESKTOP_APP: !!process.env.DESKTOP_APP,
-            MOBILE_APP: !!process.env.MOBILE_APP,
-            //NO_NOTIFY: 1,
-        }
+        'process.env.BROWSER': JSON.stringify(true),
+        'process.env.IS_APP': JSON.stringify(!!process.env.IS_APP),
+        'process.env.DESKTOP_APP': JSON.stringify(!!process.env.DESKTOP_APP),
+        'process.env.MOBILE_APP': JSON.stringify(!!process.env.MOBILE_APP),
+        //'process.env.NO_NOTIFY': JSON.stringify(1),
     },
     resolve: {
         alias: {
