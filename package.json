@@ -76,7 +76,8 @@
   "scripts": {
     "preinstall": "node git-install.js",
     "cordova": "cordova",
-    "dev": "vite --host",
+    "dev": "vite",
+    "dev-public": "vite --host",
     "dev:server": "nodemon server",
     "build": "vite build",
     "prod": "NODE_ENV=production node server/index.js",

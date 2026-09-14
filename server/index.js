@@ -92,4 +92,4 @@ if (env === 'production') {
 app.use(router.routes())
 app.use(router.allowedMethods())
 
-app.listen(8080, () => console.log('running on port 8080'))
+app.listen(8080, process.env.HOST || undefined, () => console.log('running on port 8080'))
