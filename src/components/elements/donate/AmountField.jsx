@@ -1,31 +1,46 @@
 import React from 'react'
-import { Field, ErrorMessage, } from 'formik'
-import { AssetEditor } from 'golos-lib-js/lib/utils'
+import { Field, ErrorMessage } from 'formik'
 
-class AmountField extends React.Component {
-    _renderInput = ({ field, form }) => {
-        const { value, ...rest } = field
-        const { values, setFieldValue } = form
-        return <input type='text' value={value.amountStr}
-            {...rest} onChange={(e) => this.onChange(e, values, setFieldValue)}
-            />
-    }
+const AmountField = (props) => {
+    const { placeholder, name, onChange, ...rest } = props
 
-    onChange = (e, values, setFieldValue) => {
-        const newAmount = values.amount.withChange(e.target.value)
+    const handleChange = (e, values, form) => {
+        const newAmount = values[name].withChange(e.target.value)
         if (newAmount.hasChange && newAmount.asset.amount >= 0) {
-            setFieldValue('amount', newAmount)
+            const { applyFieldValue } = form
+            applyFieldValue(name, newAmount)
+            if (onChange) {
+                onChange(newAmount.asset, form)
+            }
         }
     }
 
-    render() {
-        const { placeholder, } = this.props
-        return (<Field name='amount' type='text'
-            placeholder={placeholder}
-            autoComplete='off' autoCorrect='off' spellCheck='false'>
-                {this._renderInput}
-            </Field>)
+    const renderInput = ({ field, form }) => {
+        const { value } = field
+        const { values } = form
+        return (
+            <input
+                type='text'
+                value={value.amountStr}
+                placeholder={placeholder}
+                autoComplete='off'
+                autoCorrect='off'
+                spellCheck='false'
+                {...rest}
+                onChange={(e) => handleChange(e, values, form)}
+            />
+        )
     }
+
+    return (
+        <Field name={name} type='text' placeholder={placeholder}>
+            {renderInput}
+        </Field>
+    )
+}
+
+AmountField.defaultProps = {
+    name: 'amount'
 }
 
 export default AmountField
