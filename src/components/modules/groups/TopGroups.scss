@@ -1,7 +1,9 @@
+@use '@styles/themes' as t;
+
 .TopGroups {
     td {
-        @include themify($themes) {
-            color: themed('textColorPrimary');
+        @include t.themify(t.$themes) using ($theme) {
+            color: t.themed('textColorPrimary', $theme);
         }
     }
     .group-title {
