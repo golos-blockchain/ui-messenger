@@ -31,15 +31,17 @@ export default defineConfig({
     //     }
     // },
     define: {
-        'process.env.BROWSER': JSON.stringify(true),
-        'process.env.IS_APP': JSON.stringify(!!process.env.IS_APP),
-        'process.env.DESKTOP_APP': JSON.stringify(!!process.env.DESKTOP_APP),
-        'process.env.MOBILE_APP': JSON.stringify(!!process.env.MOBILE_APP),
-        //'process.env.NO_NOTIFY': JSON.stringify(1),
+        'global_env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
+        'global_env.BROWSER': JSON.stringify(true),
+        'global_env.IS_APP': JSON.stringify(!!process.env.IS_APP),
+        'global_env.DESKTOP_APP': JSON.stringify(!!process.env.DESKTOP_APP),
+        'global_env.MOBILE_APP': JSON.stringify(!!process.env.MOBILE_APP),
+        //'global_env.NO_NOTIFY': JSON.stringify(1),
     },
     resolve: {
         alias: {
             "app": path.resolve(__dirname, "./src"),
+            "@styles": path.resolve(__dirname, "./src"),
         }
     },
     plugins: [

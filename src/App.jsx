@@ -8,6 +8,8 @@ import { Provider } from 'react-redux'
 import { ConnectedRouter } from 'connected-react-router'
 import { Toaster } from 'react-hot-toast';
 
+import * as processEnvPolyfill from 'app/utils/processEnvPolyfill';
+
 import configureStore, { history}  from './redux/store'
 import AppReminder from 'app/components/elements/app/AppReminder'
 import DialogManager from 'app/components/elements/common/DialogManager'

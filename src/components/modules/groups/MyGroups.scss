@@ -1,3 +1,5 @@
+@use '@styles/themes' as t;
+
 .MyGroups {
     h3 {
         margin-bottom: 0.75rem;
@@ -13,8 +15,8 @@
     .group-title {
         font-weight: bold;
         font-size: 110%;
-        @include themify($themes) {
-            color: themed('textColorPrimary');
+        @include t.themify(t.$themes) using ($theme) {
+            color: t.themed('textColorPrimary', $theme);
         }
     }
     .create-group {
